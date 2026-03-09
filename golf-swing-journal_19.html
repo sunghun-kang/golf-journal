@@ -119,7 +119,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
   <div><h1>🏌️ 골프 스윙 일지</h1></div>
   <div class="top-right">
     <span class="cnt" id="cnt"></span>
-    <span id="sync-status" style="font-size:0.72rem;color:#9fc;margin-right:4px;"></span><button class="btn-io" onclick="openSettings()" title="서버 URL 설정">⚙️ 연동</button><button class="btn-io" onclick="loadFromServer()" title="서버에서 불러오기">🔄</button><button class="btn-io" onclick="importFile()" title="JSON 파일 불러오기">📂 불러오기</button>
+    <span id="sync-status" style="font-size:0.72rem;color:#9fc;margin-right:4px;"></span><button class="btn-io" onclick="loadFromServer()" title="서버에서 불러오기">🔄</button><button class="btn-io" onclick="importFile()" title="JSON 파일 불러오기">📂 불러오기</button>
     <button class="btn-io" onclick="exportFile()" title="JSON 파일로 저장">💾 내보내기</button>
     <button class="btn-add" onclick="openAdd()">+ 추가</button>
   </div>
@@ -167,50 +167,42 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 var data = [{"date": "2026-02-08", "vt": "", "venue": "", "title": "백슁 L자 유레카 ①팔내림, ②전완근 돌리면 헤드닫힘 멀돌박", "memo": "ㅡ 팔을 ①내리느냐? 칠려고펴느냐 캐스팅 전완근, 하완이를 돌려 닫는것\n①멀리빼고 ②어께돌려 ③그립끝내리박아, 전완근 돌아\n왼등짝 돌아가서/돌면서 샤프트 딸려오는느낌, 왼팔로땡기면 치킨윙", "important": true}, {"date": "2026-02-07", "vt": "S", "venue": "스클", "title": "이글 공 왼발안에, 왼팔 몸에서멀리, L자, 팔꿈치바닥, 몸통회전", "memo": "ㅡ 왼다리, 골반 먼저 돌아버림 조프로, 골반잡고 등지고 팔내리기, 레깅.발바닥붙임\nㅡ 백스윙 골반이 돌면 단슁 돌아오는 시간/공간이 확보됨, 인아웃"}, {"date": "2026-02-06", "vt": "", "venue": "", "title": "또 팔쳐짐, 위로 뒤로어께돌아야, 백팔로우모두, in싸이드에 팔, 제자리축, 상하체분리", "memo": ""}, {"date": "2026-02-04", "vt": "", "venue": "", "title": "왼팔펴기, 왼팔내림백스핀, 스핀로프트", "memo": ""}, {"date": "2026-02-03", "vt": "", "venue": "", "title": "백슁/단슁 기본기", "memo": "ㅡ 백슁 어께수평돌게 척추각유지, 일어섬, 배치기\nㅡ 단슁 상체잡고 팔을내려 인아웃 자세로 만들어야\n단슁 꼬인상태에서 팔을/팔만내려(왼하체 올리면) inout상태 만들어야\n왼팔펴기, 오른엄지 타겟반대, 아빠통통 밖으로\nㅡ 어께가 돌아서 팔이 in위치에가게, 골반뒤"}, {"date": "2026-02-01", "vt": "F", "venue": "오너스", "title": "오너스 97타, 트리풀*3", "memo": "ㅡ 치킨윙 오른팔꿈치방향 앞향하게, 아웃인 충분한백슁&팔뒤로내리기\n테크백 접힘 왼팔펴기, 스클 배치기, 어께회전+팔은위로그립이 타겟으로, 체고정", "bold": true}, {"date": "2026-01-29", "vt": "", "venue": "", "title": "스웨이 왼쪽잡아라 뒤로 타겟, 하체로시작 임팩 팔던져라", "memo": "ㅡ 양 팔꿈치를 겨드랑이에 붙이고 회전, 위로 타원유지되게\n엡덕션 오른팔 외전, 왼골반 타겟으로, 스웨이 안밀리게\n오른팔열면 팔꿈치방향 밖/뒤로 나감, 팔꿈치 안/앞으로"}, {"date": "2026-01-24", "vt": "S", "venue": "스클", "title": "휘둘려야! 찍지말고, 치킨윙", "memo": "ㅡ 단슁 왼무릎올려 오른어께내려가게\nㅡ 왼골반 확 돌아가버림, 축 버텨줘야함, 오른어께 턱밑으로 보내주기\nㅡ 어께 열어야, 백슁 팔이 좁아짐, 배치기, 골반노란선, 체중앞으로, 어께빼기"}, {"date": "2026-01-22", "vt": "", "venue": "", "title": "크로스오버 백슁탑 오른손목 돌림", "memo": "ㅡ 검지 중지가 샤프트 잡아야, 무게 느껴야, 배넣기, 배 감추기", "bold": true}, {"date": "2026-01-15", "vt": "", "venue": "", "title": "백슁 왼옆구리 찌그러짐, 헤드앞, 크로스발생", "memo": "ㅡ 오른팔꿈치 앞으로 밀어라, 왼옆구리 돌아가게", "bold": true}, {"date": "2026-01-13", "vt": "", "venue": "", "title": "손목뒤로 꺽으면, 힌징하면 헤드끝이 낮아질수없다", "memo": "ㅡ 크로스, 오버, 샤프트가 낮아짐 방지", "bold": true}, {"date": "2026-01-11", "vt": "S", "venue": "스클", "title": "스클, 엎어침, 50 스피드", "memo": "ㅡ 오른어께 튀어나옴, 쳐짐, 헤드뒤로눕힘, 헤드무게중심 뒤에있게", "bold": true}, {"date": "2026-01-10", "vt": "S", "venue": "스클", "title": "스클 테크백 왼어께 못내림, 뒤로쳐짐 돌아감", "memo": "ㅡ 테크백, 오른발안쪽에 힘주기", "bold": true}, {"date": "2026-01-06", "vt": "", "venue": "", "title": "월례회의, 기술된거만 읽기, 헷갈린다, 다르면모른다", "memo": ""}, {"date": "2026-01-04", "vt": "", "venue": "", "title": "방콕", "memo": ""}, {"date": "2026-01-03", "vt": "S", "venue": "스클", "title": "스클 빵꾸, 38.6도 방콕 식은땀", "memo": "", "bold": true}, {"date": "2026-01-02", "vt": "", "venue": "", "title": "휴무, 신도림, 치카", "memo": ""}, {"date": "2026-01-01", "vt": "", "venue": "", "title": "신년", "memo": ""}, {"date": "2025-12-31", "vt": "", "venue": "", "title": "땡길것인가 던질것인가? 오른팔꿈치 들면 왼어께가 돌수있다", "memo": "ㅡ 오른손 딱지치기, 밖으로 던짐", "bold": true}, {"date": "2025-12-28", "vt": "", "venue": "", "title": "블록, 염소, 한강카페", "memo": ""}, {"date": "2025-12-27", "vt": "", "venue": "", "title": "286, 수산시장 안마심", "memo": ""}, {"date": "2025-12-26", "vt": "S", "venue": "스클", "title": "스클, 팔꿈치 뒤로빠짐, 벌려야 안빠짐, 아크 커짐 유레카!", "memo": "ㅡ 유레카! 팔꿈치몸에붙어 뒤로 빠짐, 벌려야 안빠짐, 아크 커짐, 역설!", "bold": true}, {"date": "2025-12-26", "vt": "", "venue": "", "title": "단슁 팔 안쪽을 겨드랑이 붙여라 + 손목레깅유지", "memo": "ㅡ 테크백 오른팔을 옆으로 충분히 벌려라, 팔로스루 왼팔을 벌려 접어라\n단슁 팔꿈치 안쪽을 몸에 겨드랑이 붙여라, 팔꿈치 바깥쪽 아님\n이게 수직낙하, 인아웃, 손목접힘유지, 레깅유지됨", "bold": true}, {"date": "2025-12-26", "vt": "S", "venue": "스클", "title": "스클, 오른팔뒤로 접을려고하니 몸에붙음, 밖으로 밀어접어야", "memo": "ㅡ 공간없음, 던질수없음, 팔붙어엎어치게됨, 크로스의식, 충분히 백스윙 안함!\nㅡ 후반 15번 어께잡기, 무조건 헤드 먼저던져져야, 손목 공까지 끌고 가지마라\nㅡ 던짐, 밑에살짝내리기만, 놔야 낮고길게, 회전축 우측이동, 손목뒤로접기", "bold": true}, {"date": "2025-12-21", "vt": "S", "venue": "스클", "title": "스클 테크백 왼어께돌때 스웨이발생, 왼옆구리 꼬임안됨", "memo": "", "bold": true}, {"date": "2025-12-20", "vt": "S", "venue": "스클", "title": "스클 연습", "memo": "", "bold": true}, {"date": "2025-12-18", "vt": "", "venue": "", "title": "왼다리로 축을, 왼다리로 단슁", "memo": ""}, {"date": "2025-12-15", "vt": "", "venue": "", "title": "왼손그립 힘점유지", "memo": ""}, {"date": "2025-12-13", "vt": "F", "venue": "정모", "title": "정모 퍼팅 힘을같게 유지, 힘빼고 때리지마라", "memo": "ㅡ 테크백 팔을 몸에붙여라, 팔만 따로분리되서 힘없이 넘어가게 하지마라\nㅡ 손은 귀를 벗어나지 않게, 왼무릎,왼힙으로 단슁, 오른골반잡기\n에이밍 우측 좌측, 어께상체로 테크백, 상체안돌리고 팔로만하고있음", "bold": true}, {"date": "2025-12-12", "vt": "", "venue": "", "title": "유레카, 오른팔 위로 들기만, 몸이멈춰야 헤드팅겨나감", "memo": "", "bold": true}, {"date": "2025-12-10", "vt": "", "venue": "", "title": "엎어침, 슬라스, 뒤로빠짐 고질병 점검", "memo": "ㅡ 테크백 어께로 밑내려가게 회전, 팔은올림\nㅡ 고질병 손목커핑, 헤드열림, 왼손외전, 양팔꿈치몸에붙임"}, {"date": "2025-12-10", "vt": "", "venue": "", "title": "슬라스, 백슁 손목커핑으로 탑에서 헤드열림, 닫을려고 엎어침", "memo": "ㅡ 백슁모양 다르다, 다운슁 모두같음"}, {"date": "2025-12-09", "vt": "", "venue": "", "title": "테크백 왼어께 회전으로 어께내려감, 팔로만빼면 뒤로쳐짐 유레카", "memo": "ㅡ 팔은 회전, 밀지않는다, 위아래, 특히왼팔, 왼손목 외전\nㅡ 회전 몸이 멈추면 팔도 멈춰야 함, 연습해라"}, {"date": "2025-12-07", "vt": "F", "venue": "썬", "title": "썬CC 서사장, 슬라스, 엎어침, 왼팔펴기, 뒤로안쳐지기", "memo": "ㅡ 가라스윙 가치, 왜 다름?", "bold": true}, {"date": "2025-12-07", "vt": "", "venue": "", "title": "팔을내림, 왼어께밀고 오른어께뒤로땡김, 활", "memo": "ㅡ 도리깨, 못질, 오른팔 몸안에넣고붙임\nㅡ 백스핀 3000에서 2000으로, 공 앞위으로 돌게\nㅡ 유레카 셋업 왼팔 쭉내림, 폄, 접지말고", "bold": true}, {"date": "2025-12-06", "vt": "S", "venue": "스클", "title": "스클 백스핀작게!! 밑을 팔것인가? 공앞으로 돌게할것인가?", "memo": "ㅡ GG 오른팔꿈치 몸안에, 그립손목만 세움, 충분한백스윙으로 공간확보\nㅡ 오른발옆에 내림, 던짐, 끌고가면 못던짐, 2중진자의 힘으로 채가 던져지도록", "bold": true}, {"date": "2025-12-05", "vt": "", "venue": "", "title": "오른팔빠짐, 오른팔눕혀들어와야", "memo": "ㅡ 왼골반 옆밀리지말고 타겟쪽 뒤로빼야\nㅡ 그립끝이 같이 낮고길게, 공간확보가능"}, {"date": "2025-11-30", "vt": "F", "venue": "BA", "title": "BA 렉스필드 클럽없다!! 헤드못닫음", "memo": "ㅡ 헤드못닫음, 손목 못감음, 슬라스!! 어께내려야, 이중진자, 우측에내림\nㅡ 너무 끌고옴, 던진공간없음, 수직회전, 골반잡아야 던질수있음", "bold": true}, {"date": "2025-11-23", "vt": "S", "venue": "스클", "title": "스클 칠순 코칭, 뒷땅, 배치기", "memo": "ㅡ 그립셋업 중앙 손왼쪽, 오른쪽너무 기울임, 머리고정, 골반왼쪽밀기\nㅡ 백슁시 오른골반 빠짐, 지탱해야", "bold": true}, {"date": "2025-11-18", "vt": "", "venue": "", "title": "낮고길게, 헤드앞에, 인아웃, 상체잡고있어야", "memo": "ㅡ 도리깨, 도끼질\nㅡ 왜 크로스되는가? 어께회전, 팔꿈치 위로올려야\n오른손목방향 유지 오른어께최대늦게 따라오기\n슬라스 헤드열림, 손과헤드같이가야, 아웃인, 몸어께먼저나옴, 엎어침\n유레카, 손목안돌림, 오른손그립 약지에서 중지+검지로 변경"}, {"date": "2025-11-17", "vt": "", "venue": "", "title": "오른팔로 시작, 도리깨, 90도올림, 손목접어 인아웃 만듦", "memo": "ㅡ 도인 도리깨 인아웃 어께,몸통 회전 도회인 헤드는 탑까지 밖에"}, {"date": "2025-11-14", "vt": "", "venue": "", "title": "그립끝 공안쪽, 헤드탑까지 앞뒤로넘어가야, 임팩 왼팔펴접혀야", "memo": "ㅡ 인생도 골프도 팔씨름 지는게임, 낮고길게 양팔을 모아서 편상태로 접기\n크로스 방지 백슁탑까지 갈때까지 계속 헤드앞에 오른손 내전\n단슁할때 비로소 뒤로접기, 시계방향\n백스윙 궤도 벗어남, 오른팔꿈치 빨리 접어야, 90도 직각으로 올려야"}, {"date": "2025-11-09", "vt": "F", "venue": "정모", "title": "정모 전반슬라스, 그립끝이동시켜야, 축은 손아니고 몸", "memo": "ㅡ 슬라스 궤도 못만듦\nㅡ 오른쪽 뒤에 팔내려야\n팔몸에서 떨어짐, 상체어께나옴 엎어침, 아웃인, 등져야, 손우측뒤로 공간확보", "bold": true}, {"date": "2025-11-02", "vt": "S", "venue": "스클", "title": "스클 서종프로, 꼬이는/풀리는순서: 팔-어께-골반", "memo": "ㅡ 체중이동, 골반으로 단슁\nㅡ 오른무릎 나감, 발꿈치 들림, 엎어침, 오른어께 나감\n오른발 안쪽전체가 바닥에붙여 무릎이 왼쪽에 닿게\n셋업 왼팔 툭 느려뜨려 눌러잡아라, 테크백 왼어께 확돌려라, 골반접힘\n골반 눌러안듯이 왼쪽밀고 골반돌아야, 어께 안나오게", "bold": true}, {"date": "2025-10-30", "vt": "F", "venue": "BA", "title": "썬/BA 렉스필드, 전부슬라스, 짧은홀1개만 드로우", "memo": "ㅡ 못던짐, 끌고만 와서 공간없음, 명치팔간격좁아짐, 팔이늦게보임\nㅡ 습관, 치고마는, 치고돌아야, 피니쉬 끝까지\nㅡ 숏아이언 방향 좋아짐, 미들 뒷땅 슬라스 아니면 완전 왼쪽 훅\n헤드앞에있다가 뒤로넘어가야, 오른팔꿈치, 수직낙하, 수직회전", "bold": true}];
 
 // =============================================
-// Google Apps Script 연동
+// Firebase Realtime Database 연동
 // =============================================
-var GAS_URL = 'https://script.google.com/macros/s/AKfycbzSy09c6Qxj3cuFbVFY9v1-4Xs8l_9X0GYbLCI7-axVpTC6htHPPEffByiL3xay00qP/exec'; // 여기에 배포 URL 입력
+var FIREBASE_URL =  + FIREBASE_URL + ;
+var GAS_URL = '';
+var FIREBASE_URL = 'https://golf-journal-70e2f-default-rtdb.firebaseio.com';
 
 function loadFromServer() {
-  if (!GAS_URL) { render(); return; }
   showSyncStatus('불러오는중...');
-  // JSONP 방식으로 GET
-  var cbName = 'gasCallback_' + Date.now();
-  var script = document.createElement('script');
-  var timeout = setTimeout(function(){
-    render();
-    showSyncStatus('⚠️ 오프라인 모드');
-    delete window[cbName];
-    if(script.parentNode) script.parentNode.removeChild(script);
-  }, 8000);
-  window[cbName] = function(d){
-    clearTimeout(timeout);
-    delete window[cbName];
-    if(script.parentNode) script.parentNode.removeChild(script);
-    if(Array.isArray(d) && d.length > 0){
-      data = d;
+  fetch(FIREBASE_URL + '/golf.json')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(d && Array.isArray(d) && d.length > 0){
+        data = d;
+        render();
+        showSyncStatus('✅ 불러오기 완료 ('+d.length+'개)');
+      } else {
+        render();
+        showSyncStatus('📋 기본 데이터 사용중');
+      }
+    })
+    .catch(function(){
       render();
-      showSyncStatus('✅ 불러오기 완료 ('+d.length+'개)');
-    } else {
-      render();
-      showSyncStatus('📋 기본 데이터 사용중');
-    }
-  };
-  script.src = GAS_URL + '?callback=' + cbName;
-  document.head.appendChild(script);
+      showSyncStatus('⚠️ 오프라인 모드');
+    });
 }
 
 function saveToServer() {
-  if (!GAS_URL) { save(); return; }
-  save(); // localStorage도 같이 저장
-  fetch(GAS_URL, {
-    method: 'POST',
-    mode: 'no-cors',
-    body: JSON.stringify(data),
-    headers: {'Content-Type': 'text/plain'}
+  save();
+  fetch(FIREBASE_URL + '/golf.json', {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(data)
   })
+  .then(function(r){ return r.json(); })
   .then(function(){ showSyncStatus('✅ 저장완료'); })
-  .catch(function(){ showSyncStatus('⚠️ 저장실패 (오프라인)'); });
+  .catch(function(){ showSyncStatus('⚠️ 저장실패'); });
 }
 
 function showSyncStatus(msg) {
