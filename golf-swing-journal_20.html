@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="골프일지">
+<meta name="theme-color" content="#1b3a1b">
+<link rel="manifest" href="manifest.json">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>골프 스윙 일지</title>
+<style>
+
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#efefea;color:#222;font-size:14px}
+.top{background:#1b3a1b;color:#fff;padding:12px 16px;position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center}
+.top h1{font-size:1rem;font-weight:700}
+.top-right{display:flex;align-items:center;gap:10px}
+.cnt{font-size:0.75rem;color:#9bc}
+.btn-add{background:#4a9a4a;color:#fff;border:none;border-radius:7px;padding:7px 15px;font-size:0.85rem;cursor:pointer;font-family:inherit;font-weight:700}
+.btn-io{background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:7px;padding:6px 11px;font-size:0.78rem;cursor:pointer;font-family:inherit}
+.btn-io:hover{background:rgba(255,255,255,0.25)}
+.searchbar{background:#fff;padding:9px 14px;border-bottom:1px solid #ddd}
+.searchbar input{width:100%;padding:7px 11px;border:1px solid #ccc;border-radius:7px;font-size:0.87rem;font-family:inherit}
+.list{padding:10px 12px}
+.div-month{margin-top:14px;margin-bottom:4px;padding:3px 6px;font-size:0.78rem;font-weight:700;color:#557;letter-spacing:0.05em;border-bottom:1px solid #ccc}
+.div-year{margin-top:26px;margin-bottom:6px;padding:4px 6px;font-size:0.9rem;font-weight:700;color:#1b3a1b;border-bottom:2px solid #1b3a1b;letter-spacing:0.08em}
+
+.card{background:#fff;border-left:4px solid #ddd;border-radius:0 9px 9px 0;margin:5px 0;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.card.field{border-left-color:#2d7a2d}
+.card.screen{border-left-color:#1a4d9e}
+.card.important{border-left-color:#d42020;background:#fff8f8}
+
+.row{padding:9px 12px;cursor:pointer;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.date{font-size:0.82rem;font-weight:700;white-space:nowrap;flex-shrink:0}
+.date.sun,.date.holiday{color:#d42020}
+.date.sat{color:#1a8a1a}
+
+.vt{font-size:0.71rem;font-weight:700;color:#fff;padding:2px 7px;border-radius:4px;flex-shrink:0}
+.vt-f{background:#2d7a2d}.vt-s{background:#1a4d9e}
+.venue{font-size:0.76rem;color:#555;background:#eee;padding:2px 7px;border-radius:4px;flex-shrink:0}
+
+.title{font-size:0.87rem;line-height:1.4;flex:1;min-width:0}
+.card.important .title{color:#c00;font-weight:700}
+
+.acts{margin-left:auto;display:flex;gap:4px;flex-shrink:0}
+.acts button{background:none;border:1px solid #ddd;border-radius:5px;padding:2px 8px;font-size:0.73rem;cursor:pointer;color:#666;font-family:inherit}
+.acts button:hover{background:#f0f0ee}
+.btn-view{border-color:#4a7aaa!important;color:#1a4d9e!important;font-weight:600!important}
+
+.body{display:none;padding:8px 12px 11px;background:#fafaf5;border-top:1px solid #eee}
+.memo{font-size:0.82rem;line-height:1.8;color:#444;white-space:pre-wrap}
+
+/* 모달 */
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;align-items:flex-start;justify-content:center;padding-top:40px;overflow-y:auto}
+.ov.open{display:flex}
+.modal{background:#fff;border-radius:12px;padding:20px;width:94%;max-width:480px;margin-bottom:40px}
+.modal h2{font-size:0.98rem;font-weight:700;color:#1b3a1b;margin-bottom:14px}
+.fr{margin-bottom:10px}
+.fr label{display:block;font-size:0.76rem;color:#666;font-weight:600;margin-bottom:3px}
+.fr input,.fr textarea,.fr select{width:100%;padding:8px 10px;border:1px solid #ccc;border-radius:7px;font-size:0.85rem;font-family:inherit;color:#222}
+.fr textarea{height:110px;resize:vertical}
+.fr.row2{display:flex;gap:7px}
+.fr.row2 > *{flex:1}
+.chk-row{display:flex;align-items:center;gap:8px;margin-top:8px}
+.chk-row input{width:auto}
+.chk-row label{font-size:0.84rem;color:#c00;font-weight:600;margin:0}
+.mbtns{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+.mbtns button{padding:8px 18px;border-radius:7px;border:none;cursor:pointer;font-size:0.87rem;font-family:inherit;font-weight:700}
+.bs{background:#2d7a2d;color:#fff}.bc{background:#eee;color:#444}
+
+/* 탭 */
+.tab-bar{display:flex;background:#fff;border-bottom:2px solid #ddd;position:sticky;top:52px;z-index:19;}
+.tab-btn{flex:1;padding:9px 0;border:none;background:none;font-size:0.85rem;font-weight:700;color:#888;cursor:pointer;font-family:inherit;border-bottom:3px solid transparent;margin-bottom:-2px;}
+.tab-btn.active{color:#1b3a1b;border-bottom-color:#1b3a1b;}
+/* 달력 */
+.cal-wrap{display:none;padding:10px 12px;}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.cal-nav button{background:#1b3a1b;color:#fff;border:none;border-radius:6px;padding:4px 14px;font-size:1.1rem;cursor:pointer;}
+.cal-nav span{font-size:0.95rem;font-weight:700;color:#1b3a1b;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.cal-dow{text-align:center;font-size:0.72rem;font-weight:700;color:#888;padding:4px 0;}
+.cal-cell{min-height:62px;background:#fff;border-radius:6px;padding:3px 4px;border:1px solid #eee;overflow:hidden;}
+.cal-cell.other{background:#f5f5f3;opacity:0.45;}
+.cal-cell.today{border:2px solid #4a9a4a;}
+.cal-dn{font-size:0.74rem;font-weight:700;color:#333;margin-bottom:2px;}
+.cal-cell.csun .cal-dn,.cal-cell.chol .cal-dn{color:#d42020;}
+.cal-cell.csat .cal-dn{color:#1a8a1a;}
+.ctag{font-size:0.67rem;font-weight:700;color:#fff;border-radius:3px;padding:1px 5px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;display:block;}
+.ctag:hover{filter:brightness(1.15);}
+.ctag.tf{background:#2d7a2d;}
+.ctag.ts{background:#1a4d9e;}
+.ctag.tn{background:#777;}
+.ctag.ti{background:#d42020;}
+/* 팝업 */
+.cpop{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);z-index:999;align-items:flex-start;justify-content:center;padding-top:70px;}
+.cpop.on{display:flex;}
+.cpop-box{background:#fff;border-radius:12px;width:94%;max-width:500px;max-height:76vh;overflow-y:auto;padding:18px;box-shadow:0 8px 32px rgba(0,0,0,0.25);}
+.cpop-hd{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #1b3a1b;padding-bottom:8px;margin-bottom:12px;}
+.cpop-hd h3{font-size:0.95rem;font-weight:700;color:#1b3a1b;margin:0;}
+.cpop-hd button{background:none;border:none;font-size:1.4rem;cursor:pointer;color:#888;line-height:1;padding:0;}
+.cpop-card{border-left:4px solid #ccc;border-radius:0 8px 8px 0;padding:10px 12px;margin-bottom:8px;background:#fafaf8;}
+.cpop-card.cf{border-left-color:#2d7a2d;}
+.cpop-card.cs{border-left-color:#1a4d9e;}
+.cpop-card.ci{border-left-color:#d42020;background:#fff8f8;}
+.cpop-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:5px;}
+.cpop-tag{font-size:0.7rem;font-weight:700;padding:2px 7px;border-radius:3px;color:#fff;}
+.cpop-title{font-size:0.87rem;line-height:1.4;color:#222;}
+.cpop-title.bold{font-weight:700;}
+.cpop-title.imp{color:#c00;font-weight:700;}
+.cpop-memo{font-size:0.8rem;color:#555;line-height:1.75;white-space:pre-wrap;margin-top:6px;border-top:1px solid #eee;padding-top:6px;}
+
+</style>
+</head>
+<body>
+<div class="top">
+  <div><h1>🏌️ 골프 스윙 일지</h1></div>
+  <div class="top-right">
+    <span class="cnt" id="cnt"></span>
+    <span id="sync-status" style="font-size:0.72rem;color:#9fc;margin-right:4px;"></span><button class="btn-io" onclick="openSettings()" title="서버 URL 설정">⚙️ 연동</button><button class="btn-io" onclick="loadFromServer()" title="서버에서 불러오기">🔄</button><button class="btn-io" onclick="importFile()" title="JSON 파일 불러오기">📂 불러오기</button>
+    <button class="btn-io" onclick="exportFile()" title="JSON 파일로 저장">💾 내보내기</button>
+    <button class="btn-add" onclick="openAdd()">+ 추가</button>
+  </div>
+</div>
+<div class="tab-bar">
+  <button class="tab-btn active" id="tb-list" onclick="swTab('list')">📋 목록</button>
+  <button class="tab-btn" id="tb-cal" onclick="swTab('cal')">📅 달력</button>
+</div>
+<div id="list-sec">
+<div class="searchbar">
+  <input id="q" type="text" placeholder="검색 (유레카, 치킨윙, 슬라스...)">
+</div>
+<div class="list" id="list"></div>
+</div>
+<div class="cal-wrap" id="cal-sec"><div class="cal-nav"><button onclick="calPrev()">&#8249;</button><span id="cal-title"></span><button onclick="calNext()">&#8250;</button></div><div class="cal-grid" id="cal-grid"></div></div>
+
+<div class="ov" id="ov">
+  <div class="modal">
+    <h2 id="mtitle">새 기록 추가</h2>
+    <div class="fr row2">
+      <div><label>날짜</label><input type="date" id="mDate"></div>
+      <div><label>구분</label>
+        <select id="mVt">
+          <option value="">없음</option>
+          <option value="F">F 필드</option>
+          <option value="S">S 스크린</option>
+        </select>
+      </div>
+    </div>
+    <div class="fr"><label>구장명 (선택)</label><input type="text" id="mVenue" placeholder="스클, 오너스, BA..."></div>
+    <div class="fr"><label>핵심 키워드 / 제목</label><input type="text" id="mTitle" placeholder="오늘의 핵심 키워드"></div>
+    <div class="fr"><label>상세 메모</label><textarea id="mMemo" placeholder="ㅡ 상세 내용&#10;ㅡ 느낀점"></textarea></div>
+    <div class="fr"><label>📎 사진 / 영상 첨부</label>
+      <input type="file" id="mMedia" accept="image/*,video/*" multiple style="font-size:0.82rem;padding:6px 0">
+      <div id="mMediaPreview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px"></div>
+    </div>
+    <div class="chk-row"><input type="checkbox" id="mImp"><label for="mImp">🔴 중요 표시 (빨간색 강조)</label></div>
+    <div class="mbtns">
+      <button class="bc" onclick="closeOv()">취소</button>
+      <button class="bs" onclick="saveMod()">저장</button>
+    </div>
+  </div>
+</div>
+<script>
+var data = [{"date": "2026-02-08", "vt": "", "venue": "", "title": "백슁 L자 유레카 ①팔내림, ②전완근 돌리면 헤드닫힘 멀돌박", "memo": "ㅡ 팔을 ①내리느냐? 칠려고펴느냐 캐스팅 전완근, 하완이를 돌려 닫는것\n①멀리빼고 ②어께돌려 ③그립끝내리박아, 전완근 돌아\n왼등짝 돌아가서/돌면서 샤프트 딸려오는느낌, 왼팔로땡기면 치킨윙", "important": true}, {"date": "2026-02-07", "vt": "S", "venue": "스클", "title": "이글 공 왼발안에, 왼팔 몸에서멀리, L자, 팔꿈치바닥, 몸통회전", "memo": "ㅡ 왼다리, 골반 먼저 돌아버림 조프로, 골반잡고 등지고 팔내리기, 레깅.발바닥붙임\nㅡ 백스윙 골반이 돌면 단슁 돌아오는 시간/공간이 확보됨, 인아웃"}, {"date": "2026-02-06", "vt": "", "venue": "", "title": "또 팔쳐짐, 위로 뒤로어께돌아야, 백팔로우모두, in싸이드에 팔, 제자리축, 상하체분리", "memo": ""}, {"date": "2026-02-04", "vt": "", "venue": "", "title": "왼팔펴기, 왼팔내림백스핀, 스핀로프트", "memo": ""}, {"date": "2026-02-03", "vt": "", "venue": "", "title": "백슁/단슁 기본기", "memo": "ㅡ 백슁 어께수평돌게 척추각유지, 일어섬, 배치기\nㅡ 단슁 상체잡고 팔을내려 인아웃 자세로 만들어야\n단슁 꼬인상태에서 팔을/팔만내려(왼하체 올리면) inout상태 만들어야\n왼팔펴기, 오른엄지 타겟반대, 아빠통통 밖으로\nㅡ 어께가 돌아서 팔이 in위치에가게, 골반뒤"}, {"date": "2026-02-01", "vt": "F", "venue": "오너스", "title": "오너스 97타, 트리풀*3", "memo": "ㅡ 치킨윙 오른팔꿈치방향 앞향하게, 아웃인 충분한백슁&팔뒤로내리기\n테크백 접힘 왼팔펴기, 스클 배치기, 어께회전+팔은위로그립이 타겟으로, 체고정", "bold": true}, {"date": "2026-01-29", "vt": "", "venue": "", "title": "스웨이 왼쪽잡아라 뒤로 타겟, 하체로시작 임팩 팔던져라", "memo": "ㅡ 양 팔꿈치를 겨드랑이에 붙이고 회전, 위로 타원유지되게\n엡덕션 오른팔 외전, 왼골반 타겟으로, 스웨이 안밀리게\n오른팔열면 팔꿈치방향 밖/뒤로 나감, 팔꿈치 안/앞으로"}, {"date": "2026-01-24", "vt": "S", "venue": "스클", "title": "휘둘려야! 찍지말고, 치킨윙", "memo": "ㅡ 단슁 왼무릎올려 오른어께내려가게\nㅡ 왼골반 확 돌아가버림, 축 버텨줘야함, 오른어께 턱밑으로 보내주기\nㅡ 어께 열어야, 백슁 팔이 좁아짐, 배치기, 골반노란선, 체중앞으로, 어께빼기"}, {"date": "2026-01-22", "vt": "", "venue": "", "title": "크로스오버 백슁탑 오른손목 돌림", "memo": "ㅡ 검지 중지가 샤프트 잡아야, 무게 느껴야, 배넣기, 배 감추기", "bold": true}, {"date": "2026-01-15", "vt": "", "venue": "", "title": "백슁 왼옆구리 찌그러짐, 헤드앞, 크로스발생", "memo": "ㅡ 오른팔꿈치 앞으로 밀어라, 왼옆구리 돌아가게", "bold": true}, {"date": "2026-01-13", "vt": "", "venue": "", "title": "손목뒤로 꺽으면, 힌징하면 헤드끝이 낮아질수없다", "memo": "ㅡ 크로스, 오버, 샤프트가 낮아짐 방지", "bold": true}, {"date": "2026-01-11", "vt": "S", "venue": "스클", "title": "스클, 엎어침, 50 스피드", "memo": "ㅡ 오른어께 튀어나옴, 쳐짐, 헤드뒤로눕힘, 헤드무게중심 뒤에있게", "bold": true}, {"date": "2026-01-10", "vt": "S", "venue": "스클", "title": "스클 테크백 왼어께 못내림, 뒤로쳐짐 돌아감", "memo": "ㅡ 테크백, 오른발안쪽에 힘주기", "bold": true}, {"date": "2026-01-06", "vt": "", "venue": "", "title": "월례회의, 기술된거만 읽기, 헷갈린다, 다르면모른다", "memo": ""}, {"date": "2026-01-04", "vt": "", "venue": "", "title": "방콕", "memo": ""}, {"date": "2026-01-03", "vt": "S", "venue": "스클", "title": "스클 빵꾸, 38.6도 방콕 식은땀", "memo": "", "bold": true}, {"date": "2026-01-02", "vt": "", "venue": "", "title": "휴무, 신도림, 치카", "memo": ""}, {"date": "2026-01-01", "vt": "", "venue": "", "title": "신년", "memo": ""}, {"date": "2025-12-31", "vt": "", "venue": "", "title": "땡길것인가 던질것인가? 오른팔꿈치 들면 왼어께가 돌수있다", "memo": "ㅡ 오른손 딱지치기, 밖으로 던짐", "bold": true}, {"date": "2025-12-28", "vt": "", "venue": "", "title": "블록, 염소, 한강카페", "memo": ""}, {"date": "2025-12-27", "vt": "", "venue": "", "title": "286, 수산시장 안마심", "memo": ""}, {"date": "2025-12-26", "vt": "S", "venue": "스클", "title": "스클, 팔꿈치 뒤로빠짐, 벌려야 안빠짐, 아크 커짐 유레카!", "memo": "ㅡ 유레카! 팔꿈치몸에붙어 뒤로 빠짐, 벌려야 안빠짐, 아크 커짐, 역설!", "bold": true}, {"date": "2025-12-26", "vt": "", "venue": "", "title": "단슁 팔 안쪽을 겨드랑이 붙여라 + 손목레깅유지", "memo": "ㅡ 테크백 오른팔을 옆으로 충분히 벌려라, 팔로스루 왼팔을 벌려 접어라\n단슁 팔꿈치 안쪽을 몸에 겨드랑이 붙여라, 팔꿈치 바깥쪽 아님\n이게 수직낙하, 인아웃, 손목접힘유지, 레깅유지됨", "bold": true}, {"date": "2025-12-26", "vt": "S", "venue": "스클", "title": "스클, 오른팔뒤로 접을려고하니 몸에붙음, 밖으로 밀어접어야", "memo": "ㅡ 공간없음, 던질수없음, 팔붙어엎어치게됨, 크로스의식, 충분히 백스윙 안함!\nㅡ 후반 15번 어께잡기, 무조건 헤드 먼저던져져야, 손목 공까지 끌고 가지마라\nㅡ 던짐, 밑에살짝내리기만, 놔야 낮고길게, 회전축 우측이동, 손목뒤로접기", "bold": true}, {"date": "2025-12-21", "vt": "S", "venue": "스클", "title": "스클 테크백 왼어께돌때 스웨이발생, 왼옆구리 꼬임안됨", "memo": "", "bold": true}, {"date": "2025-12-20", "vt": "S", "venue": "스클", "title": "스클 연습", "memo": "", "bold": true}, {"date": "2025-12-18", "vt": "", "venue": "", "title": "왼다리로 축을, 왼다리로 단슁", "memo": ""}, {"date": "2025-12-15", "vt": "", "venue": "", "title": "왼손그립 힘점유지", "memo": ""}, {"date": "2025-12-13", "vt": "F", "venue": "정모", "title": "정모 퍼팅 힘을같게 유지, 힘빼고 때리지마라", "memo": "ㅡ 테크백 팔을 몸에붙여라, 팔만 따로분리되서 힘없이 넘어가게 하지마라\nㅡ 손은 귀를 벗어나지 않게, 왼무릎,왼힙으로 단슁, 오른골반잡기\n에이밍 우측 좌측, 어께상체로 테크백, 상체안돌리고 팔로만하고있음", "bold": true}, {"date": "2025-12-12", "vt": "", "venue": "", "title": "유레카, 오른팔 위로 들기만, 몸이멈춰야 헤드팅겨나감", "memo": "", "bold": true}, {"date": "2025-12-10", "vt": "", "venue": "", "title": "엎어침, 슬라스, 뒤로빠짐 고질병 점검", "memo": "ㅡ 테크백 어께로 밑내려가게 회전, 팔은올림\nㅡ 고질병 손목커핑, 헤드열림, 왼손외전, 양팔꿈치몸에붙임"}, {"date": "2025-12-10", "vt": "", "venue": "", "title": "슬라스, 백슁 손목커핑으로 탑에서 헤드열림, 닫을려고 엎어침", "memo": "ㅡ 백슁모양 다르다, 다운슁 모두같음"}, {"date": "2025-12-09", "vt": "", "venue": "", "title": "테크백 왼어께 회전으로 어께내려감, 팔로만빼면 뒤로쳐짐 유레카", "memo": "ㅡ 팔은 회전, 밀지않는다, 위아래, 특히왼팔, 왼손목 외전\nㅡ 회전 몸이 멈추면 팔도 멈춰야 함, 연습해라"}, {"date": "2025-12-07", "vt": "F", "venue": "썬", "title": "썬CC 서사장, 슬라스, 엎어침, 왼팔펴기, 뒤로안쳐지기", "memo": "ㅡ 가라스윙 가치, 왜 다름?", "bold": true}, {"date": "2025-12-07", "vt": "", "venue": "", "title": "팔을내림, 왼어께밀고 오른어께뒤로땡김, 활", "memo": "ㅡ 도리깨, 못질, 오른팔 몸안에넣고붙임\nㅡ 백스핀 3000에서 2000으로, 공 앞위으로 돌게\nㅡ 유레카 셋업 왼팔 쭉내림, 폄, 접지말고", "bold": true}, {"date": "2025-12-06", "vt": "S", "venue": "스클", "title": "스클 백스핀작게!! 밑을 팔것인가? 공앞으로 돌게할것인가?", "memo": "ㅡ GG 오른팔꿈치 몸안에, 그립손목만 세움, 충분한백스윙으로 공간확보\nㅡ 오른발옆에 내림, 던짐, 끌고가면 못던짐, 2중진자의 힘으로 채가 던져지도록", "bold": true}, {"date": "2025-12-05", "vt": "", "venue": "", "title": "오른팔빠짐, 오른팔눕혀들어와야", "memo": "ㅡ 왼골반 옆밀리지말고 타겟쪽 뒤로빼야\nㅡ 그립끝이 같이 낮고길게, 공간확보가능"}, {"date": "2025-11-30", "vt": "F", "venue": "BA", "title": "BA 렉스필드 클럽없다!! 헤드못닫음", "memo": "ㅡ 헤드못닫음, 손목 못감음, 슬라스!! 어께내려야, 이중진자, 우측에내림\nㅡ 너무 끌고옴, 던진공간없음, 수직회전, 골반잡아야 던질수있음", "bold": true}, {"date": "2025-11-23", "vt": "S", "venue": "스클", "title": "스클 칠순 코칭, 뒷땅, 배치기", "memo": "ㅡ 그립셋업 중앙 손왼쪽, 오른쪽너무 기울임, 머리고정, 골반왼쪽밀기\nㅡ 백슁시 오른골반 빠짐, 지탱해야", "bold": true}, {"date": "2025-11-18", "vt": "", "venue": "", "title": "낮고길게, 헤드앞에, 인아웃, 상체잡고있어야", "memo": "ㅡ 도리깨, 도끼질\nㅡ 왜 크로스되는가? 어께회전, 팔꿈치 위로올려야\n오른손목방향 유지 오른어께최대늦게 따라오기\n슬라스 헤드열림, 손과헤드같이가야, 아웃인, 몸어께먼저나옴, 엎어침\n유레카, 손목안돌림, 오른손그립 약지에서 중지+검지로 변경"}, {"date": "2025-11-17", "vt": "", "venue": "", "title": "오른팔로 시작, 도리깨, 90도올림, 손목접어 인아웃 만듦", "memo": "ㅡ 도인 도리깨 인아웃 어께,몸통 회전 도회인 헤드는 탑까지 밖에"}, {"date": "2025-11-14", "vt": "", "venue": "", "title": "그립끝 공안쪽, 헤드탑까지 앞뒤로넘어가야, 임팩 왼팔펴접혀야", "memo": "ㅡ 인생도 골프도 팔씨름 지는게임, 낮고길게 양팔을 모아서 편상태로 접기\n크로스 방지 백슁탑까지 갈때까지 계속 헤드앞에 오른손 내전\n단슁할때 비로소 뒤로접기, 시계방향\n백스윙 궤도 벗어남, 오른팔꿈치 빨리 접어야, 90도 직각으로 올려야"}, {"date": "2025-11-09", "vt": "F", "venue": "정모", "title": "정모 전반슬라스, 그립끝이동시켜야, 축은 손아니고 몸", "memo": "ㅡ 슬라스 궤도 못만듦\nㅡ 오른쪽 뒤에 팔내려야\n팔몸에서 떨어짐, 상체어께나옴 엎어침, 아웃인, 등져야, 손우측뒤로 공간확보", "bold": true}, {"date": "2025-11-02", "vt": "S", "venue": "스클", "title": "스클 서종프로, 꼬이는/풀리는순서: 팔-어께-골반", "memo": "ㅡ 체중이동, 골반으로 단슁\nㅡ 오른무릎 나감, 발꿈치 들림, 엎어침, 오른어께 나감\n오른발 안쪽전체가 바닥에붙여 무릎이 왼쪽에 닿게\n셋업 왼팔 툭 느려뜨려 눌러잡아라, 테크백 왼어께 확돌려라, 골반접힘\n골반 눌러안듯이 왼쪽밀고 골반돌아야, 어께 안나오게", "bold": true}, {"date": "2025-10-30", "vt": "F", "venue": "BA", "title": "썬/BA 렉스필드, 전부슬라스, 짧은홀1개만 드로우", "memo": "ㅡ 못던짐, 끌고만 와서 공간없음, 명치팔간격좁아짐, 팔이늦게보임\nㅡ 습관, 치고마는, 치고돌아야, 피니쉬 끝까지\nㅡ 숏아이언 방향 좋아짐, 미들 뒷땅 슬라스 아니면 완전 왼쪽 훅\n헤드앞에있다가 뒤로넘어가야, 오른팔꿈치, 수직낙하, 수직회전", "bold": true}];
+
+// =============================================
+// Google Apps Script 연동
+// =============================================
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbzgqkXUeiqpa3q_foZKv9ef1m1LMG2ovjExdz6d8K47PGcAGYiUp04ofpzrwCOUCgXI/exec'; // 여기에 배포 URL 입력
+
+function loadFromServer() {
+  if (!GAS_URL) { render(); return; }
+  showSyncStatus('불러오는중...');
+  fetch(GAS_URL)
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (Array.isArray(d) && d.length > 0) {
+        // 서버 데이터가 로컬보다 많으면 서버 우선
+        if(d.length >= data.length){
+          data = d;
+          save(); // 서버 데이터를 localStorage에도 저장
+          showSyncStatus('✅ 서버에서 불러옴 ('+d.length+'개)');
+        } else {
+          showSyncStatus('💾 로컬 데이터 유지 ('+data.length+'개)');
+        }
+      } else {
+        showSyncStatus('💾 로컬 데이터 사용중 ('+data.length+'개)');
+      }
+      render();
+    })
+    .catch(function(e){
+      render();
+      showSyncStatus('⚠️ 오프라인 모드 (로컬: '+data.length+'개)');
+    });
+}
+
+function saveToServer() {
+  save(); // 항상 localStorage에 먼저 저장
+  if (!GAS_URL) { showSyncStatus('💾 로컬 저장됨'); return; }
+  fetch(GAS_URL, {
+    method: 'POST',
+    body: JSON.stringify(data),
+    headers: {'Content-Type': 'application/json'}
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    if (d.status === 'ok') showSyncStatus('✅ 서버 저장완료');
+    else showSyncStatus('💾 로컬 저장됨 (서버 저장실패)');
+  })
+  .catch(function(){ showSyncStatus('💾 로컬 저장됨 (오프라인)'); });
+}
+
+function showSyncStatus(msg) {
+  var el = document.getElementById('sync-status');
+  if (el) { el.textContent = msg; setTimeout(function(){ el.textContent=''; }, 3000); }
+}
+
+function openSettings() {
+  var url = prompt('Google Apps Script 배포 URL을 입력하세요:', GAS_URL);
+  if (url !== null) {
+    GAS_URL = url.trim();
+    localStorage.setItem('gasUrl', GAS_URL);
+    if (GAS_URL) loadFromServer();
+  }
+}
+
+var data = [{"date": "2026-02-08", "vt": "", "venue": "", "title": "백슁 L자 유레카 ①팔내림, ②전완근 돌리면 헤드닫힘 멀돌박", "memo": "ㅡ 팔을 ①내리느냐? 칠려고펴느냐 캐스팅 전완근, 하완이를 돌려 닫는것\n①멀리빼고 ②어께돌려 ③그립끝내리박아, 전완근 돌아\n왼등짝 돌아가서/돌면서 샤프트 딸려오는느낌, 왼팔로땡기면 치킨윙", "important": true}, {"date": "2026-02-07", "vt": "S", "venue": "스클", "title": "이글 공 왼발안에, 왼팔 몸에서멀리, L자, 팔꿈치바닥, 몸통회전", "memo": "ㅡ 왼다리, 골반 먼저 돌아버림 조프로, 골반잡고 등지고 팔내리기, 레깅.발바닥붙임\nㅡ 백스윙 골반이 돌면 단슁 돌아오는 시간/공간이 확보됨, 인아웃"}, {"date": "2026-02-06", "vt": "", "venue": "", "title": "또 팔쳐짐, 위로 뒤로어께돌아야, 백팔로우모두, in싸이드에 팔, 제자리축, 상하체분리", "memo": ""}, {"date": "2026-02-04", "vt": "", "venue": "", "title": "왼팔펴기, 왼팔내림백스핀, 스핀로프트", "memo": ""}, {"date": "2026-02-03", "vt": "", "venue": "", "title": "백슁/단슁 기본기", "memo": "ㅡ 백슁 어께수평돌게 척추각유지, 일어섬, 배치기\nㅡ 단슁 상체잡고 팔을내려 인아웃 자세로 만들어야\n단슁 꼬인상태에서 팔을/팔만내려(왼하체 올리면) inout상태 만들어야\n왼팔펴기, 오른엄지 타겟반대, 아빠통통 밖으로\nㅡ 어께가 돌아서 팔이 in위치에가게, 골반뒤"}, {"date": "2026-02-01", "vt": "F", "venue": "오너스", "title": "오너스 97타, 트리풀*3", "memo": "ㅡ 치킨윙 오른팔꿈치방향 앞향하게, 아웃인 충분한백슁&팔뒤로내리기\n테크백 접힘 왼팔펴기, 스클 배치기, 어께회전+팔은위로그립이 타겟으로, 체고정", "bold": true}, {"date": "2026-01-29", "vt": "", "venue": "", "title": "스웨이 왼쪽잡아라 뒤로 타겟, 하체로시작 임팩 팔던져라", "memo": "ㅡ 양 팔꿈치를 겨드랑이에 붙이고 회전, 위로 타원유지되게\n엡덕션 오른팔 외전, 왼골반 타겟으로, 스웨이 안밀리게\n오른팔열면 팔꿈치방향 밖/뒤로 나감, 팔꿈치 안/앞으로"}, {"date": "2026-01-24", "vt": "S", "venue": "스클", "title": "휘둘려야! 찍지말고, 치킨윙", "memo": "ㅡ 단슁 왼무릎올려 오른어께내려가게\nㅡ 왼골반 확 돌아가버림, 축 버텨줘야함, 오른어께 턱밑으로 보내주기\nㅡ 어께 열어야, 백슁 팔이 좁아짐, 배치기, 골반노란선, 체중앞으로, 어께빼기"}, {"date": "2026-01-22", "vt": "", "venue": "", "title": "크로스오버 백슁탑 오른손목 돌림", "memo": "ㅡ 검지 중지가 샤프트 잡아야, 무게 느껴야, 배넣기, 배 감추기", "bold": true}, {"date": "2026-01-15", "vt": "", "venue": "", "title": "백슁 왼옆구리 찌그러짐, 헤드앞, 크로스발생", "memo": "ㅡ 오른팔꿈치 앞으로 밀어라, 왼옆구리 돌아가게", "bold": true}, {"date": "2026-01-13", "vt": "", "venue": "", "title": "손목뒤로 꺽으면, 힌징하면 헤드끝이 낮아질수없다", "memo": "ㅡ 크로스, 오버, 샤프트가 낮아짐 방지", "bold": true}, {"date": "2026-01-11", "vt": "S", "venue": "스클", "title": "스클, 엎어침, 50 스피드", "memo": "ㅡ 오른어께 튀어나옴, 쳐짐, 헤드뒤로눕힘, 헤드무게중심 뒤에있게", "bold": true}, {"date": "2026-01-10", "vt": "S", "venue": "스클", "title": "스클 테크백 왼어께 못내림, 뒤로쳐짐 돌아감", "memo": "ㅡ 테크백, 오른발안쪽에 힘주기", "bold": true}, {"date": "2026-01-06", "vt": "", "venue": "", "title": "월례회의, 기술된거만 읽기, 헷갈린다, 다르면모른다", "memo": ""}, {"date": "2026-01-04", "vt": "", "venue": "", "title": "방콕", "memo": ""}, {"date": "2026-01-03", "vt": "S", "venue": "스클", "title": "스클 빵꾸, 38.6도 방콕 식은땀", "memo": "", "bold": true}, {"date": "2026-01-02", "vt": "", "venue": "", "title": "휴무, 신도림, 치카", "memo": ""}, {"date": "2026-01-01", "vt": "", "venue": "", "title": "신년", "memo": ""}, {"date": "2025-12-31", "vt": "", "venue": "", "title": "땡길것인가 던질것인가? 오른팔꿈치 들면 왼어께가 돌수있다", "memo": "ㅡ 오른손 딱지치기, 밖으로 던짐", "bold": true}, {"date": "2025-12-28", "vt": "", "venue": "", "title": "블록, 염소, 한강카페", "memo": ""}, {"date": "2025-12-27", "vt": "", "venue": "", "title": "286, 수산시장 안마심", "memo": ""}, {"date": "2025-12-26", "vt": "S", "venue": "스클", "title": "스클, 팔꿈치 뒤로빠짐, 벌려야 안빠짐, 아크 커짐 유레카!", "memo": "ㅡ 유레카! 팔꿈치몸에붙어 뒤로 빠짐, 벌려야 안빠짐, 아크 커짐, 역설!", "bold": true}, {"date": "2025-12-26", "vt": "", "venue": "", "title": "단슁 팔 안쪽을 겨드랑이 붙여라 + 손목레깅유지", "memo": "ㅡ 테크백 오른팔을 옆으로 충분히 벌려라, 팔로스루 왼팔을 벌려 접어라\n단슁 팔꿈치 안쪽을 몸에 겨드랑이 붙여라, 팔꿈치 바깥쪽 아님\n이게 수직낙하, 인아웃, 손목접힘유지, 레깅유지됨", "bold": true}, {"date": "2025-12-26", "vt": "S", "venue": "스클", "title": "스클, 오른팔뒤로 접을려고하니 몸에붙음, 밖으로 밀어접어야", "memo": "ㅡ 공간없음, 던질수없음, 팔붙어엎어치게됨, 크로스의식, 충분히 백스윙 안함!\nㅡ 후반 15번 어께잡기, 무조건 헤드 먼저던져져야, 손목 공까지 끌고 가지마라\nㅡ 던짐, 밑에살짝내리기만, 놔야 낮고길게, 회전축 우측이동, 손목뒤로접기", "bold": true}, {"date": "2025-12-21", "vt": "S", "venue": "스클", "title": "스클 테크백 왼어께돌때 스웨이발생, 왼옆구리 꼬임안됨", "memo": "", "bold": true}, {"date": "2025-12-20", "vt": "S", "venue": "스클", "title": "스클 연습", "memo": "", "bold": true}, {"date": "2025-12-18", "vt": "", "venue": "", "title": "왼다리로 축을, 왼다리로 단슁", "memo": ""}, {"date": "2025-12-15", "vt": "", "venue": "", "title": "왼손그립 힘점유지", "memo": ""}, {"date": "2025-12-13", "vt": "F", "venue": "정모", "title": "정모 퍼팅 힘을같게 유지, 힘빼고 때리지마라", "memo": "ㅡ 테크백 팔을 몸에붙여라, 팔만 따로분리되서 힘없이 넘어가게 하지마라\nㅡ 손은 귀를 벗어나지 않게, 왼무릎,왼힙으로 단슁, 오른골반잡기\n에이밍 우측 좌측, 어께상체로 테크백, 상체안돌리고 팔로만하고있음", "bold": true}, {"date": "2025-12-12", "vt": "", "venue": "", "title": "유레카, 오른팔 위로 들기만, 몸이멈춰야 헤드팅겨나감", "memo": "", "bold": true}, {"date": "2025-12-10", "vt": "", "venue": "", "title": "엎어침, 슬라스, 뒤로빠짐 고질병 점검", "memo": "ㅡ 테크백 어께로 밑내려가게 회전, 팔은올림\nㅡ 고질병 손목커핑, 헤드열림, 왼손외전, 양팔꿈치몸에붙임"}, {"date": "2025-12-10", "vt": "", "venue": "", "title": "슬라스, 백슁 손목커핑으로 탑에서 헤드열림, 닫을려고 엎어침", "memo": "ㅡ 백슁모양 다르다, 다운슁 모두같음"}, {"date": "2025-12-09", "vt": "", "venue": "", "title": "테크백 왼어께 회전으로 어께내려감, 팔로만빼면 뒤로쳐짐 유레카", "memo": "ㅡ 팔은 회전, 밀지않는다, 위아래, 특히왼팔, 왼손목 외전\nㅡ 회전 몸이 멈추면 팔도 멈춰야 함, 연습해라"}, {"date": "2025-12-07", "vt": "F", "venue": "썬", "title": "썬CC 서사장, 슬라스, 엎어침, 왼팔펴기, 뒤로안쳐지기", "memo": "ㅡ 가라스윙 가치, 왜 다름?", "bold": true}, {"date": "2025-12-07", "vt": "", "venue": "", "title": "팔을내림, 왼어께밀고 오른어께뒤로땡김, 활", "memo": "ㅡ 도리깨, 못질, 오른팔 몸안에넣고붙임\nㅡ 백스핀 3000에서 2000으로, 공 앞위으로 돌게\nㅡ 유레카 셋업 왼팔 쭉내림, 폄, 접지말고", "bold": true}, {"date": "2025-12-06", "vt": "S", "venue": "스클", "title": "스클 백스핀작게!! 밑을 팔것인가? 공앞으로 돌게할것인가?", "memo": "ㅡ GG 오른팔꿈치 몸안에, 그립손목만 세움, 충분한백스윙으로 공간확보\nㅡ 오른발옆에 내림, 던짐, 끌고가면 못던짐, 2중진자의 힘으로 채가 던져지도록", "bold": true}, {"date": "2025-12-05", "vt": "", "venue": "", "title": "오른팔빠짐, 오른팔눕혀들어와야", "memo": "ㅡ 왼골반 옆밀리지말고 타겟쪽 뒤로빼야\nㅡ 그립끝이 같이 낮고길게, 공간확보가능"}, {"date": "2025-11-30", "vt": "F", "venue": "BA", "title": "BA 렉스필드 클럽없다!! 헤드못닫음", "memo": "ㅡ 헤드못닫음, 손목 못감음, 슬라스!! 어께내려야, 이중진자, 우측에내림\nㅡ 너무 끌고옴, 던진공간없음, 수직회전, 골반잡아야 던질수있음", "bold": true}, {"date": "2025-11-23", "vt": "S", "venue": "스클", "title": "스클 칠순 코칭, 뒷땅, 배치기", "memo": "ㅡ 그립셋업 중앙 손왼쪽, 오른쪽너무 기울임, 머리고정, 골반왼쪽밀기\nㅡ 백슁시 오른골반 빠짐, 지탱해야", "bold": true}, {"date": "2025-11-18", "vt": "", "venue": "", "title": "낮고길게, 헤드앞에, 인아웃, 상체잡고있어야", "memo": "ㅡ 도리깨, 도끼질\nㅡ 왜 크로스되는가? 어께회전, 팔꿈치 위로올려야\n오른손목방향 유지 오른어께최대늦게 따라오기\n슬라스 헤드열림, 손과헤드같이가야, 아웃인, 몸어께먼저나옴, 엎어침\n유레카, 손목안돌림, 오른손그립 약지에서 중지+검지로 변경"}, {"date": "2025-11-17", "vt": "", "venue": "", "title": "오른팔로 시작, 도리깨, 90도올림, 손목접어 인아웃 만듦", "memo": "ㅡ 도인 도리깨 인아웃 어께,몸통 회전 도회인 헤드는 탑까지 밖에"}, {"date": "2025-11-14", "vt": "", "venue": "", "title": "그립끝 공안쪽, 헤드탑까지 앞뒤로넘어가야, 임팩 왼팔펴접혀야", "memo": "ㅡ 인생도 골프도 팔씨름 지는게임, 낮고길게 양팔을 모아서 편상태로 접기\n크로스 방지 백슁탑까지 갈때까지 계속 헤드앞에 오른손 내전\n단슁할때 비로소 뒤로접기, 시계방향\n백스윙 궤도 벗어남, 오른팔꿈치 빨리 접어야, 90도 직각으로 올려야"}, {"date": "2025-11-09", "vt": "F", "venue": "정모", "title": "정모 전반슬라스, 그립끝이동시켜야, 축은 손아니고 몸", "memo": "ㅡ 슬라스 궤도 못만듦\nㅡ 오른쪽 뒤에 팔내려야\n팔몸에서 떨어짐, 상체어께나옴 엎어침, 아웃인, 등져야, 손우측뒤로 공간확보", "bold": true}, {"date": "2025-11-02", "vt": "S", "venue": "스클", "title": "스클 서종프로, 꼬이는/풀리는순서: 팔-어께-골반", "memo": "ㅡ 체중이동, 골반으로 단슁\nㅡ 오른무릎 나감, 발꿈치 들림, 엎어침, 오른어께 나감\n오른발 안쪽전체가 바닥에붙여 무릎이 왼쪽에 닿게\n셋업 왼팔 툭 느려뜨려 눌러잡아라, 테크백 왼어께 확돌려라, 골반접힘\n골반 눌러안듯이 왼쪽밀고 골반돌아야, 어께 안나오게", "bold": true}, {"date": "2025-10-30", "vt": "F", "venue": "BA", "title": "썬/BA 렉스필드, 전부슬라스, 짧은홀1개만 드로우", "memo": "ㅡ 못던짐, 끌고만 와서 공간없음, 명치팔간격좁아짐, 팔이늦게보임\nㅡ 습관, 치고마는, 치고돌아야, 피니쉬 끝까지\nㅡ 숏아이언 방향 좋아짐, 미들 뒷땅 슬라스 아니면 완전 왼쪽 훅\n헤드앞에있다가 뒤로넘어가야, 오른팔꿈치, 수직낙하, 수직회전", "bold": true}];
+// important 필드 초기화
+data.forEach(function(r){if(!r.important)r.important=false;});
+
+var HOLIDAYS = new Set(["2026-12-25", "2025-05-05", "2026-01-28", "2025-01-01", "2025-03-01", "2025-10-06", "2026-06-06", "2026-10-03", "2025-10-08", "2026-01-29", "2026-05-25", "2025-01-30", "2025-10-07", "2025-01-28", "2026-08-15", "2026-09-25", "2026-03-01", "2025-12-25", "2025-06-06", "2025-08-15", "2026-09-26", "2025-05-15", "2026-05-05", "2026-09-24", "2025-01-29", "2026-10-09", "2026-01-01", "2026-01-30", "2025-10-03", "2025-10-09"]);
+var editIdx = -1;
+
+function dow(ds){
+  var d=new Date(ds+'T00:00:00');
+  return['일','월','화','수','목','금','토'][d.getDay()];
+}
+function dowN(ds){
+  var d=new Date(ds+'T00:00:00');
+  return d.getDay(); // 0=일,6=토
+}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+var calY=new Date().getFullYear(), calM=new Date().getMonth();
+
+function swTab(t){
+  var isL = t==='list';
+  document.getElementById('tb-list').classList.toggle('active', isL);
+  document.getElementById('tb-cal').classList.toggle('active', !isL);
+  document.getElementById('list-sec').style.display = isL ? '' : 'none';
+  document.getElementById('cal-sec').style.display = isL ? 'none' : 'block';
+  if(!isL) renderCal();
+}
+
+function calPrev(){ calM--; if(calM<0){calM=11;calY--;} renderCal(); }
+function calNext(){ calM++; if(calM>11){calM=0;calY++;} renderCal(); }
+
+function renderCal(){
+  var today=new Date().toISOString().slice(0,10);
+  document.getElementById('cal-title').textContent=calY+'년 '+(calM+1)+'월';
+  var dows=['일','월','화','수','목','금','토'];
+  var h='';
+  var dcls=['csun','','','','','','csat'];
+  dows.forEach(function(d,i){ h+='<div class="cal-dow" style="'+(i===0?'color:#d42020':i===6?'color:#1a8a1a':'')+'" >'+d+'</div>'; });
+
+  var dm={};
+  data.forEach(function(r){ if(!dm[r.date])dm[r.date]=[]; dm[r.date].push(r); });
+
+  var first=new Date(calY,calM,1), last=new Date(calY,calM+1,0);
+  for(var i=0;i<first.getDay();i++) h+='<div class="cal-cell other"></div>';
+
+  for(var d=1;d<=last.getDate();d++){
+    var ds=calY+'-'+String(calM+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    var dw=new Date(calY,calM,d).getDay();
+    var isHol=HOLIDAYS.has(ds);
+    var cc='cal-cell'+(dw===0||isHol?' csun'+(isHol?' chol':''):dw===6?' csat':'')+(ds===today?' today':'');
+    h+='<div class="'+cc+'"><div class="cal-dn">'+d+'</div>';
+    if(dm[ds]){
+      var recs=dm[ds];
+      recs.forEach(function(r,i){
+        if(i>=3){ if(i===3) h+='<span style="font-size:0.65rem;color:#999;padding:0 2px">+'+(recs.length-3)+'개</span>'; return; }
+        var tc=r.important?'ti':r.vt==='F'?'tf':r.vt==='S'?'ts':'tn';
+        var lbl=r.vt==='F'?'F ':r.vt==='S'?'S ':'';
+        var venue=r.venue||(r.vt==='F'?'필드':r.vt==='S'?'스크린':'메모');
+        h+='<span class="ctag '+tc+'" data-date="'+ds+'">'+lbl+esc(venue)+'</span>';
+      });
+    }
+    h+='</div>';
+  }
+  var tot=first.getDay()+last.getDate(), rem=tot%7===0?0:7-tot%7;
+  for(var i=0;i<rem;i++) h+='<div class="cal-cell other"></div>';
+  var grid=document.getElementById('cal-grid');
+  grid.innerHTML=h;
+  // 이벤트 위임으로 클릭 처리
+  grid.onclick=function(e){
+    var tag=e.target.closest('.ctag');
+    if(tag) showCpop(tag.dataset.date);
+  };
+}
+
+function showCpop(ds){
+  var recs=data.filter(function(r){return r.date===ds;});
+  if(!recs.length) return;
+  var dows=['일','월','화','수','목','금','토'];
+  document.getElementById('cpop-dt').textContent=ds+' ('+dows[new Date(ds).getDay()]+')';
+  var b='';
+  recs.forEach(function(r){
+    var cc=r.important?'ci':r.vt==='F'?'cf':r.vt==='S'?'cs':'';
+    var tags='';
+    if(r.vt==='F') tags+='<span class="cpop-tag" style="background:#2d7a2d">F 필드</span>';
+    if(r.vt==='S') tags+='<span class="cpop-tag" style="background:#1a4d9e">S 스크린</span>';
+    if(r.venue) tags+='<span class="cpop-tag" style="background:#888">'+esc(r.venue)+'</span>';
+    if(r.important) tags+='<span class="cpop-tag" style="background:#d42020">🔴 중요</span>';
+    var tc='cpop-title'+(r.important?' imp':r.bold?' bold':'');
+    b+='<div class="cpop-card '+cc+'">'
+      +(tags?'<div class="cpop-tags">'+tags+'</div>':'')
+      +'<div class="'+tc+'">'+esc(r.title)+'</div>'
+      +(r.memo?'<div class="cpop-memo">'+esc(r.memo)+'</div>':'')
+      +'</div>';
+  });
+  document.getElementById('cpop-bd').innerHTML=b;
+  document.getElementById('cpop').classList.add('on');
+}
+function closeCpop(){ document.getElementById('cpop').classList.remove('on'); }
+document.addEventListener('click',function(e){
+  var pop=document.getElementById('cpop');
+  if(pop && pop.classList.contains('on') && e.target===pop) closeCpop();
+});
+
+
+function render(){
+  var q=document.getElementById('q').value.toLowerCase();
+  var html=''; var shown=0;
+  var lastYear=''; var lastMonth='';
+  for(var i=0;i<data.length;i++){
+    var r=data[i];
+    var text=(r.title+' '+(r.memo||'')+' '+(r.venue||'')).toLowerCase();
+    if(q && text.indexOf(q)<0) continue;
+    shown++;
+
+    var yr=r.date.slice(0,4); var mo=r.date.slice(0,7);
+    if(!q){
+      if(yr!==lastYear){
+        html+='<div class="div-year">━ '+yr+'년</div>';
+        lastYear=yr; lastMonth='';
+      }
+      if(mo!==lastMonth){
+        var mNum=parseInt(r.date.slice(5,7));
+        html+='<div class="div-month">'+mNum+'월</div>';
+        lastMonth=mo;
+      }
+    }
+
+    var dw=dowN(r.date);
+    var isHol=HOLIDAYS.has(r.date);
+    var dateColor=(dw===0||isHol)?'sun':(dw===6?'sat':'');
+    var dateStr=r.date+'('+dow(r.date)+')';
+
+    var cardCls='card'+(r.important?' important':r.vt==='F'?' field':r.vt==='S'?' screen':'');
+    var vtHtml=r.vt==='F'?'<span class="vt vt-f">F</span>':r.vt==='S'?'<span class="vt vt-s">S</span>':'';
+    var venueHtml=r.venue?'<span class="venue">'+esc(r.venue)+'</span>':'';
+    var memoHtml=r.memo?'<div class="memo">'+esc(r.memo)+'</div>':'';
+
+    // 미디어 표시
+    var mediaHtml='';
+    if(r.media&&r.media.length){
+      mediaHtml='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">';
+      r.media.forEach(function(m){
+        if(m.type==='image'){
+          mediaHtml+='<img src="'+m.data+'" style="max-width:160px;max-height:120px;border-radius:6px;border:1px solid #ddd;cursor:pointer" onclick="this.style.maxWidth=this.style.maxWidth===\'100%\'?\'160px\':\'100%\'">';
+        } else {
+          mediaHtml+='<video src="'+m.data+'" controls style="max-width:240px;max-height:160px;border-radius:6px;border:1px solid #ddd"></video>';
+        }
+      });
+      mediaHtml+='</div>';
+    }
+
+    var hasBody=r.memo||mediaHtml;
+    html+='<div class="'+cardCls+'" id="c'+i+'">'
+      +'<div class="row">'
+      +'<span class="date '+dateColor+'">'+dateStr+'</span>'
+      +vtHtml+venueHtml
+      +'<span class="title" style="'+(r.bold?'font-weight:700':'')+'">'+esc(r.title)+'</span>'
+      +'<span class="acts" onclick="event.stopPropagation()">'
+      +(hasBody?'<button class="btn-view" id="vb'+i+'" onclick="tog('+i+')">내용보기</button>':'')
+      +'<button onclick="ed('+i+')">수정</button>'
+      +'<button onclick="dl('+i+')">삭제</button>'
+      +'</span></div>'
+      +'<div class="body" id="b'+i+'">'+(memoHtml)+(mediaHtml)+'</div>'
+      +'</div>';
+  }
+  document.getElementById('list').innerHTML=html||'<div style="padding:40px;color:#aaa">검색 결과 없음</div>';
+  document.getElementById('cnt').textContent='총 '+shown+'개';
+}
+
+function tog(i){
+  var b=document.getElementById('b'+i);
+  var vb=document.getElementById('vb'+i);
+  if(!b)return;
+  var open=b.style.display==='block';
+  b.style.display=open?'none':'block';
+  if(vb)vb.textContent=open?'내용보기':'닫기';
+}
+
+function openAdd(){
+  editIdx=-1;
+  document.getElementById('mtitle').textContent='새 기록 추가';
+  document.getElementById('mDate').value=new Date().toISOString().split('T')[0];
+  document.getElementById('mVt').value='';
+  document.getElementById('mVenue').value='';
+  document.getElementById('mTitle').value='';
+  document.getElementById('mMemo').value='';
+  document.getElementById('mImp').checked=false;
+  document.getElementById('mMedia').value='';
+  document.getElementById('mMediaPreview').innerHTML='';
+  pendingMedia=[];
+  document.getElementById('ov').classList.add('open');
+}
+function ed(i){
+  editIdx=i; var r=data[i];
+  document.getElementById('mtitle').textContent='기록 수정';
+  document.getElementById('mDate').value=r.date;
+  document.getElementById('mVt').value=r.vt||'';
+  document.getElementById('mVenue').value=r.venue||'';
+  document.getElementById('mTitle').value=r.title||'';
+  document.getElementById('mMemo').value=r.memo||'';
+  document.getElementById('mImp').checked=!!r.important;
+  document.getElementById('mMedia').value='';
+  pendingMedia=r.media?r.media.slice():[];
+  renderMediaPreview();
+  document.getElementById('ov').classList.add('open');
+}
+var pendingMedia=[];
+
+function renderMediaPreview(){
+  var p=document.getElementById('mMediaPreview');
+  p.innerHTML='';
+  pendingMedia.forEach(function(m,idx){
+    var wrap=document.createElement('div');
+    wrap.style.cssText='position:relative;display:inline-block';
+    var el=m.type==='image'?document.createElement('img'):document.createElement('video');
+    el.src=m.data; el.style.cssText='max-width:100px;max-height:80px;border-radius:5px;border:1px solid #ccc';
+    if(m.type==='video'){el.controls=true;}
+    var btn=document.createElement('button');
+    btn.textContent='✕'; btn.dataset.idx=idx;
+    btn.style.cssText='position:absolute;top:-4px;right:-4px;background:#e44;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;padding:0;line-height:18px';
+    btn.onclick=function(){pendingMedia.splice(+this.dataset.idx,1);renderMediaPreview();};
+    wrap.appendChild(el); wrap.appendChild(btn);
+    p.appendChild(wrap);
+  });
+}
+
+document.getElementById('mMedia').addEventListener('change',function(e){
+  var files=Array.from(e.target.files);
+  var readers=files.map(function(file){
+    return new Promise(function(resolve){
+      var reader=new FileReader();
+      reader.onload=function(ev){
+        resolve({type:file.type.startsWith('image')?'image':'video', data:ev.target.result});
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+  Promise.all(readers).then(function(results){
+    pendingMedia=pendingMedia.concat(results);
+    renderMediaPreview();
+  });
+});
+
+function save(){try{localStorage.setItem('golfLog',JSON.stringify(data));}catch(e){}}
+
+function closeOv(){document.getElementById('ov').classList.remove('open');}
+function saveMod(){
+  var date=document.getElementById('mDate').value;
+  var title=document.getElementById('mTitle').value.trim();
+  if(!date||!title){alert('날짜와 키워드는 필수!');return;}
+  var rec={
+    date:date,vt:document.getElementById('mVt').value,
+    venue:document.getElementById('mVenue').value.trim(),
+    title:title,memo:document.getElementById('mMemo').value.trim(),
+    important:document.getElementById('mImp').checked,
+    media:pendingMedia.slice()
+  };
+  if(editIdx>=0){data[editIdx]=rec;}
+  else{
+    var inserted=false;
+    for(var i=0;i<data.length;i++){
+      if(data[i].date<=rec.date){data.splice(i,0,rec);inserted=true;break;}
+    }
+    if(!inserted)data.push(rec);
+  }
+  saveToServer(); closeOv(); render();
+}
+function dl(i){if(!confirm('삭제할까요?'))return;data.splice(i,1);saveToServer();render();}
+
+// 파일로 내보내기
+function exportFile(){
+  var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='golf-log-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+}
+// 파일에서 불러오기
+function importFile(){
+  var input=document.createElement('input');
+  input.type='file'; input.accept='.json';
+  input.onchange=function(e){
+    var file=e.target.files[0]; if(!file)return;
+    var reader=new FileReader();
+    reader.onload=function(ev){
+      try{
+        var imported=JSON.parse(ev.target.result);
+        if(!Array.isArray(imported))throw new Error();
+        if(!confirm('불러온 데이터 '+imported.length+'개로 교체할까요?\n(현재 데이터는 사라집니다)'))return;
+        data=imported;
+        saveToServer(); render();
+        alert('불러오기 완료!');
+      }catch(e){alert('파일 형식이 올바르지 않습니다.');}
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+document.getElementById('q').addEventListener('input',render);
+document.getElementById('ov').addEventListener('click',function(e){if(e.target===this)closeOv();});
+
+// localStorage에 저장된 데이터가 있으면 우선 로드 (오프라인 fallback)
+try{
+  var lsData=localStorage.getItem('golfLog');
+  if(lsData){
+    var parsed=JSON.parse(lsData);
+    if(Array.isArray(parsed)&&parsed.length>0) data=parsed;
+  }
+}catch(e){}
+
+
+// GAS URL 복원
+try { var savedUrl=localStorage.getItem('gasUrl'); if(savedUrl) GAS_URL=savedUrl; } catch(e){}
+// 시작시 서버에서 로드
+loadFromServer();
+
+</script>
+
+<div class="cpop" id="cpop" onclick="if(event.target===this)closeCpop()">
+  <div class="cpop-box">
+    <div class="cpop-hd">
+      <h3 id="cpop-dt"></h3>
+      <button onclick="closeCpop()">&#10005;</button>
+    </div>
+    <div id="cpop-bd"></div>
+  </div>
+</div>
+</body>
+</html>
