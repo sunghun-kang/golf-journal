@@ -173,23 +173,8 @@ var GAS_URL = '';
 var FIREBASE_URL = 'https://golf-journal-70e2f-default-rtdb.firebaseio.com';
 
 function loadFromServer() {
-  showSyncStatus('불러오는중...');
-  fetch(FIREBASE_URL + '/golf.json')
-    .then(function(r){ return r.json(); })
-    .then(function(d){
-      if(d && Array.isArray(d) && d.length > 0){
-        data = d;
-        render();
-        showSyncStatus('✅ 불러오기 완료 ('+d.length+'개)');
-      } else {
-        render();
-        showSyncStatus('📋 기본 데이터 사용중');
-      }
-    })
-    .catch(function(){
-      render();
-      showSyncStatus('⚠️ 오프라인 모드');
-    });
+  render();
+  showSyncStatus('');
 }
 
 function saveToServer() {
