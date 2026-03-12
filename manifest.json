@@ -1,25 +1,14 @@
 {
   "name": "골프 스윙 일지",
   "short_name": "골프일지",
-  "start_url": "./golf-swing-journal_20a_20260310.html",
+  "start_url": "golf-swing-journal_22.html",
   "display": "standalone",
   "background_color": "#1b3a1b",
   "theme_color": "#1b3a1b",
-  "orientation": "portrait",
   "icons": [
     {
-      "src": "https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/26f3.png",
-      "sizes": "72x72",
-      "type": "image/png"
-    },
-    {
-      "src": "https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/26f3.png",
+      "src": "https://sunghun-kang.github.io/golf-journal/icon.png",
       "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/26f3.png",
-      "sizes": "512x512",
       "type": "image/png"
     }
   ]
