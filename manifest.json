@@ -7,8 +7,13 @@
   "theme_color": "#1b3a1b",
   "icons": [
     {
-      "src": "https://sunghun-kang.github.io/golf-journal/icon.png",
+      "src": "icon.png",
       "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
       "type": "image/png"
     }
   ]
