@@ -33,7 +33,9 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .card.screen{border-left-color:#1a4d9e}
 .card.important{border-left-color:#d42020;background:#fff8f8}
 
-.row{padding:9px 12px;cursor:pointer;display:flex;align-items:center;gap:7px;flex-wrap:nowrap}
+.row{padding:9px 12px;cursor:pointer;display:flex;flex-direction:column;gap:5px}
+.row-top{display:flex;align-items:center;gap:6px;flex-wrap:nowrap}
+.row-title{font-size:0.87rem;line-height:1.4;word-break:keep-all;padding:2px 0}
 .date{font-size:0.82rem;font-weight:700;white-space:nowrap;flex-shrink:0}
 .date.sun,.date.holiday{color:#d42020}
 .date.sat{color:#1a8a1a}
@@ -42,7 +44,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .vt-f{background:#2d7a2d}.vt-s{background:#1a4d9e}
 .venue{font-size:0.76rem;color:#555;background:#eee;padding:2px 7px;border-radius:4px;flex-shrink:0}
 
-.title{font-size:0.87rem;line-height:1.4;flex:1;min-width:0;word-break:keep-all;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.title{font-size:0.87rem;line-height:1.4;flex:1;min-width:0;word-break:keep-all}
 .card.important .title{}
 
 .acts{margin-left:auto;display:flex;gap:4px;flex-shrink:0}
@@ -435,22 +437,25 @@ function render(){
 
     var hasBody=r.memo||mediaHtml;
     html+='<div class="'+cardCls+'" id="c'+i+'">'
-      +'<div class="row">'
-      +(r.important?'<span style="color:#d42020;font-weight:700;margin-right:2px">★</span>':'<span style="display:inline-block;width:1.1em;margin-right:2px"></span>')+'<span class="date '+dateColor+'">'+dateStr+'</span>'
+      +'<div class="row" onclick="tog('+i+')">'
+      +'<div class="row-top">'
+      +(r.important?'<span style="color:#d42020;font-weight:700">★</span>':'')
+      +'<span class="date '+dateColor+'">'+dateStr+'</span>'
       +vtHtml+venueHtml+memberHtml
+      +'<span class="acts" onclick="event.stopPropagation()">'
+      +(hasBody?'<button class="btn-view" id="vb'+i+'" onclick="tog('+i+')">내용보기</button>':'')
+      +'<button onclick="ed('+i+')">수정</button>'
+      +'<button onclick="dl('+i+')">삭제</button>'
+      +'</span></div>'
       +(function(){
       var s='';
       if(r.bold)s+='font-weight:700;';
       if(r.color==='red')s+='color:#c00;';
       else if(r.color==='green')s+='color:#1a7a1a;';
       else if(r.color==='blue')s+='color:#1a4d9e;';
-      return '<span class="title" style="'+s+'">'+hilite(r.title)+'</span>';
+      return '<div class="title" style="'+s+'">'+hilite(r.title)+'</div>';
     })()
-      +'<span class="acts" onclick="event.stopPropagation()">'
-      +(hasBody?'<button class="btn-view" id="vb'+i+'" onclick="tog('+i+')">내용보기</button>':'')
-      +'<button onclick="ed('+i+')">수정</button>'
-      +'<button onclick="dl('+i+')">삭제</button>'
-      +'</span></div>'
+      +'</div>'
       +'<div class="body" id="b'+i+'">'+(memoHtml)+(mediaHtml)+'</div>'
       +'</div>';
   }
