@@ -76,7 +76,8 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 /* 탭 */
 .tab-bar{display:flex;background:#fff;border-bottom:2px solid #ddd;position:sticky;top:52px;z-index:19;}
 .tab-btn{flex:1;padding:9px 0;border:none;background:none;font-size:0.85rem;font-weight:700;color:#888;cursor:pointer;font-family:inherit;border-bottom:3px solid transparent;margin-bottom:-2px;}
-.tab-btn.active{color:#1b3a1b;border-bottom-color:#1b3a1b;}
+.vt-filter{display:flex;gap:12px;padding:6px 12px;background:#f5f5f0;border-bottom:1px solid #ddd;font-size:0.82rem;flex-wrap:wrap}
+.vt-filter label{display:flex;align-items:center;gap:4px;cursor:pointer;user-select:none}
 /* 달력 */
 .cal-wrap{display:none;padding:10px 12px;}
 .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
@@ -129,6 +130,13 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <div class="tab-bar">
   <button class="tab-btn active" id="tb-list" onclick="swTab('list')">📋 목록</button>
   <button class="tab-btn" id="tb-cal" onclick="swTab('cal')">📅 달력</button>
+</div>
+<div class="vt-filter">
+  <label><input type="checkbox" id="flt-all" checked onchange="fltChange('all')"> 전체</label>
+  <label><input type="checkbox" id="flt-f" checked onchange="fltChange('f')"> 🟢 필드</label>
+  <label><input type="checkbox" id="flt-s" checked onchange="fltChange('s')"> 🔵 스크린</label>
+  <label><input type="checkbox" id="flt-star" checked onchange="fltChange('star')"> ⭐ 중요</label>
+  <label><input type="checkbox" id="flt-n" checked onchange="fltChange('n')"> ⬜ 기타</label>
 </div>
 <div id="list-sec">
 <div class="searchbar">
@@ -387,12 +395,23 @@ document.addEventListener('click',function(e){
 
 function render(){
   var q=document.getElementById('q').value.toLowerCase();
+  var fF=document.getElementById('flt-f').checked;
+  var fS=document.getElementById('flt-s').checked;
+  var fStar=document.getElementById('flt-star').checked;
+  var fN=document.getElementById('flt-n').checked;
   var html=''; var shown=0;
   var lastYear=''; var lastMonth='';
   for(var i=0;i<data.length;i++){
     var r=data[i];
     var text=(r.title+' '+(r.memo||'')+' '+(r.venue||'')).toLowerCase();
     if(q && text.indexOf(q)<0) continue;
+    // vt/중요 필터 (OR 방식)
+    var show = false;
+    if(fF && r.vt==='F') show=true;
+    if(fS && r.vt==='S') show=true;
+    if(fStar && r.important) show=true;
+    if(fN && r.vt!=='F' && r.vt!=='S' && !r.important) show=true;
+    if(!show) continue;
     shown++;
 
     var yr=r.date.slice(0,4); var mo=r.date.slice(0,7);
@@ -597,6 +616,23 @@ function importFile(){
     reader.readAsText(file);
   };
   input.click();
+}
+
+function fltChange(type){
+  if(type==='all'){
+    var all=document.getElementById('flt-all').checked;
+    document.getElementById('flt-f').checked=all;
+    document.getElementById('flt-s').checked=all;
+    document.getElementById('flt-star').checked=all;
+    document.getElementById('flt-n').checked=all;
+  } else {
+    var f=document.getElementById('flt-f').checked;
+    var s=document.getElementById('flt-s').checked;
+    var star=document.getElementById('flt-star').checked;
+    var n=document.getElementById('flt-n').checked;
+    document.getElementById('flt-all').checked=(f&&s&&star&&n);
+  }
+  render();
 }
 
 document.getElementById('q').addEventListener('input',render);
