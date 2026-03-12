@@ -202,13 +202,11 @@ function loadFromServer() {
     delete window[cbName];
     document.body.removeChild(script);
     if (Array.isArray(d) && d.length > 0) {
-      if (d.length >= data.length) {
-        data = d;
-        save();
-        showSyncStatus('✅ 서버에서 불러옴 ('+d.length+'개)');
-      } else {
-        showSyncStatus('💾 로컬 데이터 유지 ('+data.length+'개)');
-      }
+      var merged = mergeData(data, d);
+      data = merged;
+      save();
+      saveToServer();
+      showSyncStatus('✅ 병합완료 ('+data.length+'개)');
     } else {
       showSyncStatus('💾 로컬 데이터 사용중 ('+data.length+'개)');
     }
@@ -253,8 +251,24 @@ function openSettings() {
 }
 
 
-// important 필드 초기화
-data.forEach(function(r){if(!r.important)r.important=false;});
+// ID 및 updatedAt 초기화
+data.forEach(function(r){
+  if(!r.important)r.important=false;
+  if(!r.id)r.id=r.date+"_"+(r.title||"").substring(0,10).replace(/\s/g,"_")+"_"+Math.random().toString(36).substr(2,4);
+  if(!r.updatedAt)r.updatedAt=r.date+"T00:00:00.000Z";
+});
+
+function mergeData(local,server){
+  var map={};
+  server.forEach(function(r){if(r.id)map[r.id]=r;});
+  local.forEach(function(r){
+    if(!r.id)return;
+    if(!map[r.id]||r.updatedAt>map[r.id].updatedAt)map[r.id]=r;
+  });
+  var merged=Object.values(map);
+  merged.sort(function(a,b){return b.date.localeCompare(a.date);});
+  return merged;
+}
 
 var HOLIDAYS = new Map([
   // 2024
@@ -571,6 +585,7 @@ function saveMod(){
   var date=document.getElementById('mDate').value;
   var title=document.getElementById('mTitle').value.trim();
   if(!date||!title){alert('날짜와 키워드는 필수!');return;}
+  var now = new Date().toISOString();
   var rec={
     date:date,vt:document.getElementById('mVt').value,
     venue:document.getElementById('mVenue').value.trim(),
@@ -579,12 +594,18 @@ function saveMod(){
     important:document.getElementById('mImp').checked,
     color:document.querySelector('input[name=mColor]:checked').value,
     bold:document.getElementById('mBold').checked,
-    media:pendingMedia.slice()
+    media:pendingMedia.slice(),
+    updatedAt: now
   };
-  if(editIdx>=0){data[editIdx]=rec;}
-  else{data.push(rec);}
+  if(editIdx>=0){
+    rec.id = data[editIdx].id || (date+'_'+(title||'').substring(0,10).replace(/\s/g,'_')+'_'+Math.random().toString(36).substr(2,4));
+    data[editIdx]=rec;
+  } else {
+    rec.id = date+'_'+(title||'').substring(0,10).replace(/\s/g,'_')+'_'+Math.random().toString(36).substr(2,4);
+    data.push(rec);
+  }
   data.sort(function(a,b){return b.date.localeCompare(a.date);});
-  save(); closeOv(); render();
+  saveToServer(); closeOv(); render();
 }
 function dl(i){if(!confirm('삭제할까요?'))return;data.splice(i,1);saveToServer();render();}
 
