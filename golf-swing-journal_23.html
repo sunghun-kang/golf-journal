@@ -202,12 +202,10 @@ function loadFromServer() {
     delete window[cbName];
     document.body.removeChild(script);
     if (Array.isArray(d) && d.length > 0) {
-      var merged = mergeData(data, d);
-      data = merged;
+      data = d;
       save();
-      saveToServer();
       serverLoaded = true;
-      showSyncStatus('✅ 병합완료 ('+data.length+'개)');
+      showSyncStatus('✅ 불러옴 ('+data.length+'개)');
     } else {
       serverLoaded = true;
       showSyncStatus('💾 로컬 데이터 사용중 ('+data.length+'개)');
@@ -224,29 +222,55 @@ function loadFromServer() {
   document.body.appendChild(script);
 }
 
-function saveToServer() {
-  save();
-  if (!GAS_URL) { showSyncStatus('💾 로컬 저장됨'); return; }
-  showSyncStatus('저장중...');
+function uploadToServer(dataToSave, onDone) {
   var cbName = 'gasSaveCallback_' + Date.now();
   var script = document.createElement('script');
   window[cbName] = function(res) {
     delete window[cbName];
     if(document.body.contains(script)) document.body.removeChild(script);
-    if(res && res.status === 'ok') {
-      showSyncStatus('✅ 서버 저장완료');
-    } else {
-      showSyncStatus('⚠️ 저장 실패');
-    }
+    if(onDone) onDone(res && res.status === 'ok');
   };
   script.onerror = function() {
     delete window[cbName];
     if(document.body.contains(script)) document.body.removeChild(script);
-    showSyncStatus('💾 로컬 저장됨 (오프라인)');
+    if(onDone) onDone(false);
   };
-  var encoded = encodeURIComponent(JSON.stringify(data));
+  var encoded = encodeURIComponent(JSON.stringify(dataToSave));
   script.src = GAS_URL + '?callback=' + cbName + '&save=' + encoded;
   document.body.appendChild(script);
+}
+
+function fetchFromServer(onDone) {
+  var cbName = 'gasGetCallback_' + Date.now();
+  var script = document.createElement('script');
+  window[cbName] = function(d) {
+    delete window[cbName];
+    if(document.body.contains(script)) document.body.removeChild(script);
+    if(onDone) onDone(Array.isArray(d) ? d : null);
+  };
+  script.onerror = function() {
+    delete window[cbName];
+    if(document.body.contains(script)) document.body.removeChild(script);
+    if(onDone) onDone(null);
+  };
+  script.src = GAS_URL + '?callback=' + cbName;
+  document.body.appendChild(script);
+}
+
+function saveToServer() {
+  save();
+  if (!GAS_URL) { showSyncStatus('💾 로컬 저장됨'); return; }
+  showSyncStatus('저장중...');
+  // 서버에서 최신 데이터 가져와서 merge 후 저장
+  fetchFromServer(function(serverData) {
+    var finalData = serverData ? mergeData(data, serverData) : data;
+    data = finalData;
+    save();
+    render();
+    uploadToServer(finalData, function(ok) {
+      showSyncStatus(ok ? '✅ 서버 저장완료' : '💾 로컬 저장됨 (오프라인)');
+    });
+  });
 }
 
 function showSyncStatus(msg) {
