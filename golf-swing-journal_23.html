@@ -222,48 +222,18 @@ function loadFromServer() {
   document.body.appendChild(script);
 }
 
-function uploadToServer(dataToSave, onDone) {
-  var cbName = 'gasSaveCallback_' + Date.now();
-  var script = document.createElement('script');
-  window[cbName] = function(res) {
-    delete window[cbName];
-    if(document.body.contains(script)) document.body.removeChild(script);
-    if(onDone) onDone(res && res.status === 'ok');
-  };
-  script.onerror = function() {
-    delete window[cbName];
-    if(document.body.contains(script)) document.body.removeChild(script);
-    if(onDone) onDone(false);
-  };
-  var encoded = encodeURIComponent(JSON.stringify(dataToSave));
-  script.src = GAS_URL + '?callback=' + cbName + '&save=' + encoded;
-  document.body.appendChild(script);
-}
-
-function fetchFromServer(onDone) {
-  var cbName = 'gasGetCallback_' + Date.now();
-  var script = document.createElement('script');
-  window[cbName] = function(d) {
-    delete window[cbName];
-    if(document.body.contains(script)) document.body.removeChild(script);
-    if(onDone) onDone(Array.isArray(d) ? d : null);
-  };
-  script.onerror = function() {
-    delete window[cbName];
-    if(document.body.contains(script)) document.body.removeChild(script);
-    if(onDone) onDone(null);
-  };
-  script.src = GAS_URL + '?callback=' + cbName;
-  document.body.appendChild(script);
-}
-
 function saveToServer() {
   save();
   if (!GAS_URL) { showSyncStatus('💾 로컬 저장됨'); return; }
   showSyncStatus('저장중...');
-  uploadToServer(data, function(ok) {
-    showSyncStatus(ok ? '✅ 서버 저장완료' : '💾 로컬 저장됨 (오프라인)');
-  });
+  fetch(GAS_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    body: JSON.stringify(data),
+    headers: {'Content-Type': 'text/plain'}
+  })
+  .then(function(){ showSyncStatus('✅ 서버 저장완료'); })
+  .catch(function(){ showSyncStatus('💾 로컬 저장됨 (오프라인)'); });
 }
 
 function showSyncStatus(msg) {
