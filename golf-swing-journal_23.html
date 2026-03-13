@@ -22,6 +22,11 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .btn-add{background:#4a9a4a;color:#fff;border:none;border-radius:7px;padding:7px 15px;font-size:0.85rem;cursor:pointer;font-family:inherit;font-weight:700}
 .btn-io{background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:7px;padding:6px 11px;font-size:0.78rem;cursor:pointer;font-family:inherit}
 .btn-io:hover{background:rgba(255,255,255,0.25)}
+.more-menu{position:relative;display:inline-block}
+.more-dropdown{display:none;position:absolute;right:0;top:110%;background:#2d5a2d;border:1px solid rgba(255,255,255,0.2);border-radius:8px;min-width:130px;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,0.3)}
+.more-dropdown.open{display:block}
+.more-dropdown button{display:block;width:100%;text-align:left;background:none;border:none;color:#fff;padding:10px 14px;font-size:0.82rem;cursor:pointer;font-family:inherit}
+.more-dropdown button:hover{background:rgba(255,255,255,0.1)}
 .searchbar{background:#fff;padding:9px 14px;border-bottom:1px solid #ddd}
 .searchbar input{width:100%;padding:7px 11px;border:1px solid #ccc;border-radius:7px;font-size:0.87rem;font-family:inherit}
 .list{padding:10px 12px}
@@ -122,8 +127,16 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
   <div><h1>🏌️ 강'방콕</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.23 · 26-3-13</div></div>
   <div class="top-right">
     <span class="cnt" id="cnt"></span>
-    <span id="sync-status" style="font-size:0.72rem;color:#9fc;margin-right:4px;"></span><button class="btn-io" onclick="openSettings()" title="서버 URL 설정">⚙️ 연동</button><button class="btn-io" onclick="loadFromServer()" title="서버에서 불러오기">🔄</button><button class="btn-io" onclick="importFile()" title="JSON 파일 불러오기">📂 가져오기</button>
-    <button class="btn-io" onclick="exportFile()" title="JSON 파일로 저장">💾 보냄</button>
+    <span id="sync-status" style="font-size:0.72rem;color:#9fc;margin-right:4px;"></span>
+    <button class="btn-io" onclick="loadFromServer()" title="서버에서 불러오기">🔄</button>
+    <div class="more-menu">
+      <button class="btn-io" onclick="toggleMore()" title="더보기">⋮</button>
+      <div class="more-dropdown" id="more-dropdown">
+        <button onclick="openSettings();toggleMore()">⚙️ 연동</button>
+        <button onclick="importFile();toggleMore()">📂 가져오기</button>
+        <button onclick="exportFile();toggleMore()">💾 보냄</button>
+      </div>
+    </div>
     <button class="btn-add" onclick="openAdd()">+ 추가</button>
   </div>
 </div>
@@ -235,6 +248,14 @@ function saveToServer() {
   .then(function(){ showSyncStatus('✅ 서버 저장완료'); })
   .catch(function(){ showSyncStatus('💾 로컬 저장됨 (오프라인)'); });
 }
+
+function toggleMore(){
+  var d=document.getElementById('more-dropdown');
+  d.classList.toggle('open');
+}
+document.addEventListener('click', function(e){
+  if(!e.target.closest('.more-menu')) document.getElementById('more-dropdown').classList.remove('open');
+});
 
 function showSyncStatus(msg) {
   var el = document.getElementById('sync-status');
