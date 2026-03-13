@@ -762,5 +762,10 @@ loadFromServer();
 <div id="photo-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:9999;align-items:center;justify-content:center" onclick="closePhoto()">
   <img id="photo-modal-img" src="" style="max-width:95%;max-height:95%;border-radius:8px">
 </div>
+<script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js');
+}
+</script>
 </body>
 </html>
