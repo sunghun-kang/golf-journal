@@ -261,15 +261,8 @@ function saveToServer() {
   save();
   if (!GAS_URL) { showSyncStatus('💾 로컬 저장됨'); return; }
   showSyncStatus('저장중...');
-  // 서버에서 최신 데이터 가져와서 merge 후 저장
-  fetchFromServer(function(serverData) {
-    var finalData = serverData ? mergeData(data, serverData) : data;
-    data = finalData;
-    save();
-    render();
-    uploadToServer(finalData, function(ok) {
-      showSyncStatus(ok ? '✅ 서버 저장완료' : '💾 로컬 저장됨 (오프라인)');
-    });
+  uploadToServer(data, function(ok) {
+    showSyncStatus(ok ? '✅ 서버 저장완료' : '💾 로컬 저장됨 (오프라인)');
   });
 }
 
@@ -310,10 +303,16 @@ function closePhoto(){
 
 function mergeData(local,server){
   var map={};
-  server.forEach(function(r){if(r.id)map[r.id]=r;});
+  // id 없는 항목에 임시 id 부여
+  function ensureId(r){
+    if(!r.id) r.id=r.date+'_'+(r.title||'').substring(0,10).replace(/\s/g,'_')+'_x';
+    if(!r.updatedAt) r.updatedAt=r.date+'T00:00:00.000Z';
+    return r;
+  }
+  server.forEach(function(r){r=ensureId(r); map[r.id]=r;});
   local.forEach(function(r){
-    if(!r.id)return;
-    if(!map[r.id]||r.updatedAt>map[r.id].updatedAt)map[r.id]=r;
+    r=ensureId(r);
+    if(!map[r.id]||r.updatedAt>=map[r.id].updatedAt)map[r.id]=r;
   });
   var merged=Object.values(map);
   merged.sort(function(a,b){return b.date.localeCompare(a.date);});
