@@ -150,11 +150,11 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
   <label><input type="checkbox" id="flt-f" checked onchange="fltChange('f')"> 🟢 필드</label>
   <label><input type="checkbox" id="flt-s" checked onchange="fltChange('s')"> 🔵 스크린</label>
   <label><input type="checkbox" id="flt-star" checked onchange="fltChange('star')"> ⭐ 중요</label>
-  <label><input type="checkbox" id="flt-n" checked onchange="fltChange('n')"> ⬜ 기타</label>
+  <input id="q" type="text" placeholder="검색..." style="flex:1;min-width:80px;padding:4px 8px;border-radius:6px;border:1px solid #ccc;font-size:0.82rem;font-family:inherit">
 </div>
 <div id="list-sec">
-<div class="searchbar">
-  <input id="q" type="text" placeholder="검색 (유레카, 치킨윙, 슬라스...)">
+<div class="searchbar" style="display:none">
+  <input type="text" style="display:none">
 </div>
 <div class="list" id="list"></div>
 </div>
@@ -387,7 +387,7 @@ function renderCal(){
   var fF=document.getElementById('flt-f').checked;
   var fS=document.getElementById('flt-s').checked;
   var fStar=document.getElementById('flt-star').checked;
-  var fN=document.getElementById('flt-n').checked;
+  var fN=true;
   var dm={};
   data.forEach(function(r){
     var show=false;
@@ -477,7 +477,7 @@ function render(){
   var fF=document.getElementById('flt-f').checked;
   var fS=document.getElementById('flt-s').checked;
   var fStar=document.getElementById('flt-star').checked;
-  var fN=document.getElementById('flt-n').checked;
+  var fN=true;
   var html=''; var shown=0;
   var lastYear=''; var lastMonth='';
   for(var i=0;i<data.length;i++){
@@ -718,12 +718,12 @@ function fltChange(type){
     document.getElementById('flt-f').checked=all;
     document.getElementById('flt-s').checked=all;
     document.getElementById('flt-star').checked=all;
-    document.getElementById('flt-n').checked=all;
+    
   } else {
     var f=document.getElementById('flt-f').checked;
     var s=document.getElementById('flt-s').checked;
     var star=document.getElementById('flt-star').checked;
-    var n=document.getElementById('flt-n').checked;
+    var n=true;
     document.getElementById('flt-all').checked=(f&&s&&star&&n);
   }
   render(); renderCal();
