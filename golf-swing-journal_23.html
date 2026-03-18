@@ -205,6 +205,17 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <script>
 var data = [];
 
+function nowKST() {
+  var d = new Date();
+  var kst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+  return kst.toISOString().replace('Z', '+09:00');
+}
+function todayKST() {
+  var d = new Date();
+  var kst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+  return kst.toISOString().slice(0, 10);
+}
+
 // =============================================
 // Google Apps Script 연동
 // =============================================
@@ -365,7 +376,7 @@ function dowN(ds){
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function hilite(s){return esc(s).replace(/유레카/g,'<span style="color:#d42020;font-weight:700">유레카</span>');}
 
-var calY=new Date().getFullYear(), calM=new Date().getMonth();
+var calY=new Date(new Date().getTime()+9*60*60*1000).getFullYear(), calM=new Date(new Date().getTime()+9*60*60*1000).getMonth();
 
 function swTab(t){
   var isL = t==='list';
@@ -382,7 +393,7 @@ function calPrev(){ calM--; if(calM<0){calM=11;calY--;} renderCal(); }
 function calNext(){ calM++; if(calM>11){calM=0;calY++;} renderCal(); }
 
 function renderCal(){
-  var today=new Date().toISOString().slice(0,10);
+  var today=todayKST();
   document.getElementById('cal-title').textContent=calY+'년 '+(calM+1)+'월';
   var dows=['일','월','화','수','목','금','토'];
   var h='';
@@ -586,7 +597,7 @@ function openAdd(){
   if(!serverLoaded){alert("서버에서 데이터를 불러오는 중입니다. 잠시 후 다시 시도하세요.");return;}
   editIdx=-1;
   document.getElementById('mtitle').textContent='새 기록 추가';
-  document.getElementById('mDate').value=new Date().toISOString().split('T')[0];
+  document.getElementById('mDate').value=todayKST();
   document.getElementById('mVt').value='';
   document.getElementById('mVenue').value='';
   document.getElementById('mTitle').value='';
@@ -663,7 +674,7 @@ function saveMod(){
   var date=document.getElementById('mDate').value;
   var title=document.getElementById('mTitle').value.trim();
   if(!date||!title){alert('날짜와 키워드는 필수!');return;}
-  var now = new Date().toISOString();
+  var now = nowKST();
   var rec={
     date:date,vt:document.getElementById('mVt').value,
     venue:document.getElementById('mVenue').value.trim(),
@@ -692,7 +703,7 @@ function exportFile(){
   var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   var a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
-  a.download='golf-log-'+new Date().toISOString().slice(0,10)+'.json';
+  a.download='golf-log-'+todayKST()+'.json';
   a.click();
 }
 // 파일에서 불러오기
