@@ -673,7 +673,8 @@ function closeOv(){document.getElementById('ov').classList.remove('open');}
 function saveMod(){
   var date=document.getElementById('mDate').value;
   var title=document.getElementById('mTitle').value.trim();
-  if(!date||!title){alert('날짜와 키워드는 필수!');return;}
+  if(!date){alert('날짜는 필수!');return;}
+  if(!title){alert('키워드는 필수!');return;}
   var now = nowKST();
   var rec={
     date:date,vt:document.getElementById('mVt').value,
