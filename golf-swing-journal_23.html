@@ -331,7 +331,7 @@ function mergeData(local,server){
     if(!map[r.id]||r.updatedAt>=map[r.id].updatedAt)map[r.id]=r;
   });
   var merged=Object.values(map);
-  merged.sort(function(a,b){return b.date.localeCompare(a.date);});
+  merged.sort(function(a,b){ var dc=b.date.localeCompare(a.date); if(dc!==0)return dc; return (b.updatedAt||'').localeCompare(a.updatedAt||''); });
   return merged;
 }
 
@@ -694,7 +694,7 @@ function saveMod(){
     rec.id = date+'_'+(title||'').substring(0,10).replace(/\s/g,'_')+'_'+Math.random().toString(36).substr(2,4);
     data.push(rec);
   }
-  data.sort(function(a,b){return b.date.localeCompare(a.date);});
+  data.sort(function(a,b){ var dc=b.date.localeCompare(a.date); if(dc!==0)return dc; return (b.updatedAt||'').localeCompare(a.updatedAt||''); });
   saveToServer(); closeOv(); render();
 }
 function dl(i){if(!confirm('삭제할까요?'))return;data.splice(i,1);saveToServer();render();}
