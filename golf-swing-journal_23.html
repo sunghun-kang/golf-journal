@@ -47,7 +47,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .date.sat{color:#1a8a1a}
 
 .vt{font-size:0.71rem;font-weight:700;color:#fff;padding:2px 7px;border-radius:4px;flex-shrink:0}
-.vt-f{background:#2d7a2d}.vt-s{background:#1a4d9e}
+.vt-f{background:#2d7a2d}.vt-s{background:#1a4d9e}.vt-e{background:#8b4513}
 .venue{font-size:0.76rem;color:#555;background:#eee;padding:2px 7px;border-radius:4px;flex-shrink:0}
 
 .title{font-size:0.87rem;line-height:1.4;flex:1;min-width:0;word-break:keep-all}
@@ -152,6 +152,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
   <label><input type="checkbox" id="flt-all" checked onchange="fltChange('all')"> 전체</label>
   <label><input type="checkbox" id="flt-f" checked onchange="fltChange('f')"> 🟢 필드</label>
   <label><input type="checkbox" id="flt-s" checked onchange="fltChange('s')"> 🔵 스크린</label>
+  <label><input type="checkbox" id="flt-e" checked onchange="fltChange('e')"> 🟤 영어</label>
   <label><input type="checkbox" id="flt-star" checked onchange="fltChange('star')"> ⭐ 중요</label>
   <input id="q" type="text" placeholder="검색..." style="flex:1;min-width:80px;padding:4px 8px;border-radius:6px;border:1px solid #ccc;font-size:0.82rem;font-family:inherit">
 </div>
@@ -173,6 +174,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
           <option value="">없음</option>
           <option value="F">F 필드</option>
           <option value="S">S 스크린</option>
+          <option value="E">E 영어</option>
         </select>
       </div>
     </div>
@@ -409,8 +411,9 @@ function renderCal(){
     var show=false;
     if(fF && r.vt==='F') show=true;
     if(fS && r.vt==='S') show=true;
+    if(fE && r.vt==='E') show=true;
     if(fStar && r.important) show=true;
-    if(fN && r.vt!=='F' && r.vt!=='S' && !r.important) show=true;
+    if(fN && r.vt!=='F' && r.vt!=='S' && r.vt!=='E' && !r.important) show=true;
     if(!show) return;
     if(!dm[r.date])dm[r.date]=[];
     dm[r.date].push(r);
@@ -437,6 +440,8 @@ function renderCal(){
           tagTxt=esc(r.venue||'필드');
         } else if(r.vt==='S'){
           tagTxt='S '+esc(r.venue||'스크린');
+        } else if(r.vt==='E') {
+          cls+=' screen'; tagTxt='E '+esc(r.venue||'영어');
         } else {
           tagTxt=esc((r.title||'').slice(0,10));
         }
@@ -468,6 +473,7 @@ function showCpop(ds){
     var tags='';
     if(r.vt==='F') tags+='<span class="cpop-tag" style="background:#2d7a2d">F 필드</span>';
     if(r.vt==='S') tags+='<span class="cpop-tag" style="background:#1a4d9e">S 스크린</span>';
+    if(r.vt==='E') tags+='<span class="cpop-tag" style="background:#8b4513">E 영어</span>';
     if(r.venue) tags+='<span class="cpop-tag" style="background:#888">'+esc(r.venue)+'</span>';
     if(r.members) tags+='<span class="cpop-tag" style="background:#4a7a4a">👤'+esc(r.members)+'</span>';
     if(r.important) tags+='<span class="cpop-tag" style="background:#d42020">🔴 중요</span>';
@@ -504,8 +510,9 @@ function render(){
     var show = false;
     if(fF && r.vt==='F') show=true;
     if(fS && r.vt==='S') show=true;
+    if(fE && r.vt==='E') show=true;
     if(fStar && r.important) show=true;
-    if(fN && r.vt!=='F' && r.vt!=='S' && !r.important) show=true;
+    if(fN && r.vt!=='F' && r.vt!=='S' && r.vt!=='E' && !r.important) show=true;
     if(!show) continue;
     shown++;
 
@@ -529,7 +536,7 @@ function render(){
     var dateStr=r.date+'('+dow(r.date)+(holName?', '+holName:'')+')'; 
 
     var cardCls='card'+(r.important?' important':r.vt==='F'?' field':r.vt==='S'?' screen':'');
-    var vtHtml=r.vt==='F'?'<span class="vt vt-f">F</span>':r.vt==='S'?'<span class="vt vt-s">S</span>':'';
+    var vtHtml=r.vt==='F'?'<span class="vt vt-f">F</span>':r.vt==='S'?'<span class="vt vt-s">S</span>':r.vt==='E'?'<span class="vt vt-e">E</span>':'';
     var venueHtml=r.venue?'<span class="venue">'+esc(r.venue)+'</span>':'';
     var member1=r.members?(r.members.split(/[,\s]+/).filter(Boolean)[0]||''):'';
     var memberHtml=member1?'<span class="venue" style="background:#e8f0e8;color:#2d6a2d">👤'+esc(member1)+'</span>':'';
@@ -734,11 +741,13 @@ function fltChange(type){
     var all=document.getElementById('flt-all').checked;
     document.getElementById('flt-f').checked=all;
     document.getElementById('flt-s').checked=all;
+    document.getElementById('flt-e').checked=all;
     document.getElementById('flt-star').checked=all;
     
   } else {
     var f=document.getElementById('flt-f').checked;
     var s=document.getElementById('flt-s').checked;
+    var e=document.getElementById('flt-e').checked;
     var star=document.getElementById('flt-star').checked;
     var n=true;
     document.getElementById('flt-all').checked=(f&&s&&star&&n);
