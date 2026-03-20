@@ -501,7 +501,7 @@ function render(){
   var fS=document.getElementById('flt-s').checked;
   var fE=document.getElementById('flt-e').checked;
   var fStar=document.getElementById('flt-star').checked;
-  var fN=true;
+  var fN=document.getElementById('flt-all').checked;
   var html=''; var shown=0;
   var lastYear=''; var lastMonth='';
   for(var i=0;i<data.length;i++){
@@ -752,7 +752,7 @@ function fltChange(type){
     var e=document.getElementById('flt-e').checked;
     var star=document.getElementById('flt-star').checked;
     var n=true;
-    document.getElementById('flt-all').checked=(f&&s&&star&&n);
+    document.getElementById('flt-all').checked=(f&&s&&e&&star&&n);
   }
   render(); renderCal();
 }
