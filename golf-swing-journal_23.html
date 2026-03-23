@@ -64,7 +64,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 /* 모달 */
 .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;align-items:flex-start;justify-content:center;padding-top:40px;overflow-y:auto}
 .ov.open{display:flex}
-.modal{background:#fff;border-radius:12px;padding:20px;width:94%;max-width:480px;margin-bottom:40px}
+.modal{background:#fff;border-radius:12px;padding:20px;width:98%;max-width:600px;margin-bottom:40px}
 .modal h2{font-size:0.98rem;font-weight:700;color:#1b3a1b;margin-bottom:14px}
 .fr{margin-bottom:10px}
 .fr label{display:block;font-size:0.76rem;color:#666;font-weight:600;margin-bottom:3px}
@@ -82,7 +82,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 /* 탭 */
 .tab-bar{display:flex;background:#fff;border-bottom:2px solid #ddd;}
 .tab-btn{flex:1;padding:9px 0;border:none;background:none;font-size:0.85rem;font-weight:700;color:#888;cursor:pointer;font-family:inherit;border-bottom:3px solid transparent;margin-bottom:-2px;}
-.vt-filter{display:flex;gap:8px;padding:4px 10px;background:#f5f5f0;border-bottom:1px solid #ddd;font-size:0.82rem;flex-wrap:wrap;align-items:center}
+.vt-filter{display:flex;gap:14px;padding:6px 10px;background:#f5f5f0;border-bottom:1px solid #ddd;font-size:0.82rem;flex-wrap:wrap;align-items:center}
 .vt-filter label{display:flex;align-items:center;gap:4px;cursor:pointer;user-select:none}
 .flt-f-lbl{color:#2d7a2d;font-weight:700}
 .flt-f-lbl input{accent-color:#2d7a2d}
@@ -194,14 +194,13 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
       <div id="mMediaPreview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px"></div>
     </div>
     <div class="fr" style="margin-top:6px">
-      <div style="display:flex;gap:5px;align-items:center;flex-wrap:nowrap">
-        <label style="display:flex;align-items:center;gap:2px;font-size:0.75rem"><input type="radio" name="mColor" value="" checked> 기본</label>
-        <label style="display:flex;align-items:center;gap:2px;font-size:0.75rem;color:#c00"><input type="radio" name="mColor" value="red"> 빨강</label>
-        <label style="display:flex;align-items:center;gap:2px;font-size:0.75rem;color:#1a7a1a"><input type="radio" name="mColor" value="green"> 녹색</label>
-        <label style="display:flex;align-items:center;gap:2px;font-size:0.75rem;color:#1a4d9e"><input type="radio" name="mColor" value="blue"> 파랑</label>
-        <span style="width:1px;background:#ddd;height:16px;display:inline-block"></span>
-        <label style="display:flex;align-items:center;gap:2px;font-size:0.75rem"><input type="checkbox" id="mBold"> <b>굵게</b></label>
-        <label style="display:flex;align-items:center;gap:2px;font-size:0.75rem;color:#d42020"><input type="checkbox" id="mImp"> ★중요</label>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:nowrap">
+        <label style="display:flex;align-items:center;gap:1px;font-size:0.7rem"><input type="radio" name="mColor" value="" checked> 기본</label>
+        <label style="display:flex;align-items:center;gap:1px;font-size:0.7rem;color:#c00"><input type="radio" name="mColor" value="red"> 빨</label>
+        <label style="display:flex;align-items:center;gap:1px;font-size:0.7rem;color:#1a7a1a"><input type="radio" name="mColor" value="green"> 녹</label>
+        <label style="display:flex;align-items:center;gap:1px;font-size:0.7rem;color:#1a4d9e"><input type="radio" name="mColor" value="blue"> 파</label>
+        <label style="display:flex;align-items:center;gap:1px;font-size:0.7rem"><input type="checkbox" id="mBold"> <b>굵</b></label>
+        <label style="display:flex;align-items:center;gap:1px;font-size:0.7rem;color:#d42020"><input type="checkbox" id="mImp"> ★중요</label>
       </div>
     </div>
     <div class="mbtns">
