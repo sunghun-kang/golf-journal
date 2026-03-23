@@ -69,7 +69,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .fr{margin-bottom:10px}
 .fr label{display:block;font-size:0.76rem;color:#666;font-weight:600;margin-bottom:3px}
 .fr input,.fr textarea,.fr select{width:100%;padding:8px 10px;border:1px solid #ccc;border-radius:7px;font-size:0.85rem;font-family:inherit;color:#222}
-.fr textarea{height:220px;resize:vertical}
+.fr textarea{height:320px;resize:vertical}
 .fr.row2{display:flex;gap:7px}
 .fr.row2 > *{flex:1}
 .chk-row{display:flex;align-items:center;gap:8px;margin-top:8px}
@@ -85,9 +85,13 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .vt-filter{display:flex;gap:8px;padding:4px 10px;background:#f5f5f0;border-bottom:1px solid #ddd;font-size:0.82rem;flex-wrap:wrap;align-items:center}
 .vt-filter label{display:flex;align-items:center;gap:4px;cursor:pointer;user-select:none}
 .flt-f-lbl{color:#2d7a2d;font-weight:700}
+.flt-f-lbl input{accent-color:#2d7a2d}
 .flt-s-lbl{color:#1a4d9e;font-weight:700}
+.flt-s-lbl input{accent-color:#1a4d9e}
 .flt-e-lbl{color:#8b4513;font-weight:700}
+.flt-e-lbl input{accent-color:#8b4513}
 .flt-star-lbl{color:#d42020;font-weight:700}
+.flt-star-lbl input{accent-color:#d42020}
 /* 달력 */
 .cal-wrap{display:none;padding:10px 12px;}
 .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
@@ -154,10 +158,10 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 
 <div class="vt-filter">
   <label><input type="checkbox" id="flt-all" checked onchange="fltChange('all')"> 전체</label>
-  <label class="flt-f-lbl"><input type="checkbox" id="flt-f" checked onchange="fltChange('f')"> 🟢 필드</label>
-  <label class="flt-s-lbl"><input type="checkbox" id="flt-s" checked onchange="fltChange('s')"> 🔵 스크린</label>
-  <label class="flt-e-lbl"><input type="checkbox" id="flt-e" checked onchange="fltChange('e')"> 🟤 영어</label>
-  <label class="flt-star-lbl"><input type="checkbox" id="flt-star" checked onchange="fltChange('star')"> ⭐ 중요</label>
+  <label class="flt-f-lbl"><input type="checkbox" id="flt-f" checked onchange="fltChange('f')"> 필드</label>
+  <label class="flt-s-lbl"><input type="checkbox" id="flt-s" checked onchange="fltChange('s')"> 스크린</label>
+  <label class="flt-e-lbl"><input type="checkbox" id="flt-e" checked onchange="fltChange('e')"> 영어</label>
+  <label class="flt-star-lbl"><input type="checkbox" id="flt-star" checked onchange="fltChange('star')"> 중요</label>
   <input id="q" type="text" placeholder="검색..." style="flex:1;min-width:80px;padding:4px 8px;border-radius:6px;border:1px solid #ccc;font-size:0.82rem;font-family:inherit">
 </div>
 <div id="list-sec">
@@ -186,20 +190,18 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
     <div class="fr"><label>멤버 (쉼표로 구분)</label><input type="text" id="mMembers" placeholder="홍길동, 김철수..."></div>
     <div class="fr"><label>핵심 키워드 / 제목</label><input type="text" id="mTitle" placeholder="오늘의 핵심 키워드"></div>
     <div class="fr"><label>상세 메모</label><textarea id="mMemo" placeholder="ㅡ 상세 내용&#10;ㅡ 느낀점"></textarea></div>
-    <div class="fr"><label>📎 첨부</label>
-      <input type="file" id="mMedia" accept="image/*,video/*" multiple style="font-size:0.82rem;padding:6px 0">
+    <div class="fr"><input type="file" id="mMedia" accept="image/*,video/*" multiple style="font-size:0.82rem;padding:6px 0">
       <div id="mMediaPreview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px"></div>
     </div>
     <div class="fr" style="margin-top:6px">
-      <label>글자 색상 / 굵기 / 중요</label>
-      <div style="display:flex;gap:6px;align-items:center;flex-wrap:nowrap;overflow-x:auto">
-        <label style="display:flex;align-items:center;gap:4px;font-size:0.83rem;font-weight:400"><input type="radio" name="mColor" value="" checked> 기본</label>
-        <label style="display:flex;align-items:center;gap:4px;font-size:0.83rem;font-weight:400;color:#c00"><input type="radio" name="mColor" value="red"> 빨강</label>
-        <label style="display:flex;align-items:center;gap:4px;font-size:0.83rem;font-weight:400;color:#1a7a1a"><input type="radio" name="mColor" value="green"> 녹색</label>
-        <label style="display:flex;align-items:center;gap:4px;font-size:0.83rem;font-weight:400;color:#1a4d9e"><input type="radio" name="mColor" value="blue"> 파랑</label>
-        <span style="width:1px;background:#ddd;height:18px;display:inline-block"></span>
-        <label style="display:flex;align-items:center;gap:4px;font-size:0.83rem;font-weight:400"><input type="checkbox" id="mBold"> <b>굵게</b></label>
-        <label style="display:flex;align-items:center;gap:4px;font-size:0.83rem;font-weight:400;color:#d42020"><input type="checkbox" id="mImp"> ★중요</label>
+      <div style="display:flex;gap:5px;align-items:center;flex-wrap:nowrap">
+        <label style="display:flex;align-items:center;gap:2px;font-size:0.75rem"><input type="radio" name="mColor" value="" checked> 기본</label>
+        <label style="display:flex;align-items:center;gap:2px;font-size:0.75rem;color:#c00"><input type="radio" name="mColor" value="red"> 빨강</label>
+        <label style="display:flex;align-items:center;gap:2px;font-size:0.75rem;color:#1a7a1a"><input type="radio" name="mColor" value="green"> 녹색</label>
+        <label style="display:flex;align-items:center;gap:2px;font-size:0.75rem;color:#1a4d9e"><input type="radio" name="mColor" value="blue"> 파랑</label>
+        <span style="width:1px;background:#ddd;height:16px;display:inline-block"></span>
+        <label style="display:flex;align-items:center;gap:2px;font-size:0.75rem"><input type="checkbox" id="mBold"> <b>굵게</b></label>
+        <label style="display:flex;align-items:center;gap:2px;font-size:0.75rem;color:#d42020"><input type="checkbox" id="mImp"> ★중요</label>
       </div>
     </div>
     <div class="mbtns">
