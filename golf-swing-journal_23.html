@@ -194,17 +194,17 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
       <div id="mMediaPreview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px"></div>
     </div>
     <div class="fr" style="margin-top:6px">
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:nowrap">
-        <label style="display:flex;align-items:center;gap:1px;font-size:0.7rem"><input type="radio" name="mColor" value="" checked> 기본</label>
-        <label style="display:flex;align-items:center;gap:1px;font-size:0.7rem;color:#c00"><input type="radio" name="mColor" value="red"> 빨</label>
-        <label style="display:flex;align-items:center;gap:1px;font-size:0.7rem;color:#1a7a1a"><input type="radio" name="mColor" value="green"> 녹</label>
-        <label style="display:flex;align-items:center;gap:1px;font-size:0.7rem;color:#1a4d9e"><input type="radio" name="mColor" value="blue"> 파</label>
-        <label style="display:flex;align-items:center;gap:1px;font-size:0.7rem"><input type="checkbox" id="mBold"> <b>굵</b></label>
-        <label style="display:flex;align-items:center;gap:1px;font-size:0.7rem;color:#d42020"><input type="checkbox" id="mImp"> ★</label>
+      <div style="display:flex;flex-direction:row;align-items:center;gap:12px">
+        <label style="display:inline-flex;align-items:center;gap:2px;font-size:0.78rem;white-space:nowrap"><input type="radio" name="mColor" value="" checked> 기본</label>
+        <label style="display:inline-flex;align-items:center;gap:2px;font-size:0.78rem;color:#c00;white-space:nowrap"><input type="radio" name="mColor" value="red"> 빨강</label>
+        <label style="display:inline-flex;align-items:center;gap:2px;font-size:0.78rem;color:#1a7a1a;white-space:nowrap"><input type="radio" name="mColor" value="green"> 녹색</label>
+        <label style="display:inline-flex;align-items:center;gap:2px;font-size:0.78rem;color:#1a4d9e;white-space:nowrap"><input type="radio" name="mColor" value="blue"> 파랑</label>
+        <label style="display:inline-flex;align-items:center;gap:2px;font-size:0.78rem;white-space:nowrap"><input type="checkbox" id="mBold"> <b>굵게</b></label>
+        <label style="display:inline-flex;align-items:center;gap:2px;font-size:0.78rem;color:#d42020;white-space:nowrap"><input type="checkbox" id="mImp"> ★중요</label>
       </div>
     </div>
     <div class="mbtns">
-      <button class="bc" onclick="closeOv()">취소</button>
+      <button class="bc" onclick="if(confirm('취소할까요?'))closeOv()">취소</button>
       <button class="bs" onclick="saveMod()">저장</button>
     </div>
   </div>
@@ -764,7 +764,7 @@ function fltChange(type){
 }
 
 document.getElementById('q').addEventListener('input',render);
-document.getElementById('ov').addEventListener('click',function(e){if(e.target===this)closeOv();});
+document.getElementById('ov').addEventListener('click',function(e){if(e.target===this&&confirm('취소할까요?'))closeOv();});
 
 
 
