@@ -447,7 +447,7 @@ function renderCal(){
         } else if(r.vt==='S'){
           tagTxt='S '+esc(r.venue||'스크린');
         } else if(r.vt==='E') {
-          cls+=' screen'; tagTxt='E '+esc(r.venue||'영어');
+          tagTxt='E '+esc(r.venue||'영어');
         } else {
           tagTxt=esc((r.title||'').slice(0,10));
         }
