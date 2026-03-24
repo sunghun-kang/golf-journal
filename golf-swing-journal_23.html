@@ -47,7 +47,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .date.sat{color:#1a8a1a}
 
 .vt{font-size:0.71rem;font-weight:700;color:#fff;padding:2px 7px;border-radius:4px;flex-shrink:0}
-.vt-f{background:#2d7a2d}.vt-s{background:#1a4d9e}.vt-e{background:#8b4513}.vt-c{background:rgb(220,100,0)}
+.vt-f{background:#2d7a2d}.vt-s{background:#1a4d9e}.vt-l{background:#7b2fa8}.vt-e{background:#8b4513}.vt-c{background:rgb(220,100,0)}.vt-l{background:#7b2fa8}
 .venue{font-size:0.76rem;color:#555;background:#eee;padding:2px 7px;border-radius:4px;flex-shrink:0}
 
 .title{font-size:0.87rem;line-height:1.4;flex:1;min-width:0;word-break:keep-all}
@@ -77,7 +77,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .chk-row label{font-size:0.84rem;color:#c00;font-weight:600;margin:0}
 .mbtns{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
 .mbtns button{padding:8px 18px;border-radius:7px;border:none;cursor:pointer;font-size:0.87rem;font-family:inherit;font-weight:700}
-.bs{background:#2d7a2d;color:#fff}.bc{background:#eee;color:#444}
+.bs{background:#2d7a2d;color:#fff}.bc{background:#eee;color:#444}.bx{background:#1d6f42;color:#fff}
 
 /* 탭 */
 .tab-bar{display:flex;background:#fff;border-bottom:2px solid #ddd;}
@@ -90,10 +90,14 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .flt-s-lbl input{accent-color:#1a4d9e}
 .flt-e-lbl{color:#8b4513;font-weight:700}
 .flt-e-lbl input{accent-color:#8b4513}
+.flt-l-lbl{color:#7b2fa8;font-weight:700}
+.flt-l-lbl input{accent-color:#7b2fa8}
 .flt-star-lbl{color:#d42020;font-weight:700}
 .flt-star-lbl input{accent-color:#d42020}
 .flt-c-lbl{color:rgb(220,100,0);font-weight:700}
 .flt-c-lbl input{accent-color:rgb(220,100,0)}
+.flt-l-lbl{color:#7b2fa8;font-weight:700}
+.flt-l-lbl input{accent-color:#7b2fa8}
 /* 달력 */
 .cal-wrap{display:none;padding:10px 12px;}
 .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
@@ -162,6 +166,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
   <label><input type="checkbox" id="flt-all" checked onchange="fltChange('all')"> 전체</label>
   <label class="flt-f-lbl"><input type="checkbox" id="flt-f" checked onchange="fltChange('f')"> 필드</label>
   <label class="flt-s-lbl"><input type="checkbox" id="flt-s" checked onchange="fltChange('s')"> 스크린</label>
+  <label class="flt-l-lbl"><input type="checkbox" id="flt-l" checked onchange="fltChange('l')"> 人生</label>
   <label class="flt-e-lbl"><input type="checkbox" id="flt-e" checked onchange="fltChange('e')"> 영어</label>
   <label class="flt-c-lbl"><input type="checkbox" id="flt-c" checked onchange="fltChange('c')"> 회사</label>
   <label class="flt-star-lbl"><input type="checkbox" id="flt-star" checked onchange="fltChange('star')"> 중요</label>
@@ -185,6 +190,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
           <option value="">없음</option>
           <option value="F">F 필드</option>
           <option value="S">S 스크린</option>
+          <option value="L">L 人生</option>
           <option value="E">E 영어</option>
           <option value="C">C 회사</option>
         </select>
@@ -210,6 +216,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
     <div class="mbtns">
       <button class="bc" onclick="if(confirm('취소할까요?'))closeOv()">취소</button>
       <button class="bs" onclick="saveMod()">저장</button>
+      <button class="bx" onclick="exportExcel()">📊 Excel</button>
     </div>
   </div>
 </div>
@@ -413,6 +420,7 @@ function renderCal(){
 
   var fF=document.getElementById('flt-f').checked;
   var fS=document.getElementById('flt-s').checked;
+  var fL=document.getElementById('flt-l').checked;
   var fE=document.getElementById('flt-e').checked;
   var fC=document.getElementById('flt-c').checked;
   var fStar=document.getElementById('flt-star').checked;
@@ -422,10 +430,11 @@ function renderCal(){
     var show=false;
     if(fF && r.vt==='F') show=true;
     if(fS && r.vt==='S') show=true;
+    if(fL && r.vt==='L') show=true;
     if(fE && r.vt==='E') show=true;
     if(fC && r.vt==='C') show=true;
     if(fStar && r.important) show=true;
-    if(fN && r.vt!=='F' && r.vt!=='S' && r.vt!=='E' && r.vt!=='C' && !r.important) show=true;
+    if(fN && r.vt!=='F' && r.vt!=='S' && r.vt!=='L' && r.vt!=='E' && r.vt!=='C' && !r.important) show=true;
     if(!show) return;
     if(!dm[r.date])dm[r.date]=[];
     dm[r.date].push(r);
@@ -485,6 +494,7 @@ function showCpop(ds){
     var tags='';
     if(r.vt==='F') tags+='<span class="cpop-tag" style="background:#2d7a2d">F 필드</span>';
     if(r.vt==='S') tags+='<span class="cpop-tag" style="background:#1a4d9e">S 스크린</span>';
+    if(r.vt==='L') tags+='<span class="cpop-tag" style="background:#7b2fa8">人生</span>';
     if(r.vt==='E') tags+='<span class="cpop-tag" style="background:#8b4513">E 영어</span>';
     if(r.vt==='C') tags+='<span class="cpop-tag" style="background:rgb(220,100,0)">C 회사</span>';
     if(r.venue) tags+='<span class="cpop-tag" style="background:#888">'+esc(r.venue)+'</span>';
@@ -511,6 +521,7 @@ function render(){
   var q=document.getElementById('q').value.toLowerCase();
   var fF=document.getElementById('flt-f').checked;
   var fS=document.getElementById('flt-s').checked;
+  var fL=document.getElementById('flt-l').checked;
   var fE=document.getElementById('flt-e').checked;
   var fC=document.getElementById('flt-c').checked;
   var fStar=document.getElementById('flt-star').checked;
@@ -525,10 +536,11 @@ function render(){
     var show = false;
     if(fF && r.vt==='F') show=true;
     if(fS && r.vt==='S') show=true;
+    if(fL && r.vt==='L') show=true;
     if(fE && r.vt==='E') show=true;
     if(fC && r.vt==='C') show=true;
     if(fStar && r.important) show=true;
-    if(fN && r.vt!=='F' && r.vt!=='S' && r.vt!=='E' && r.vt!=='C' && !r.important) show=true;
+    if(fN && r.vt!=='F' && r.vt!=='S' && r.vt!=='L' && r.vt!=='E' && r.vt!=='C' && !r.important) show=true;
     if(!show) continue;
     shown++;
 
@@ -552,7 +564,7 @@ function render(){
     var dateStr=r.date+'('+dow(r.date)+(holName?', '+holName:'')+')'; 
 
     var cardCls='card'+(r.important?' important':r.vt==='F'?' field':r.vt==='S'?' screen':'');
-    var vtHtml=r.vt==='F'?'<span class="vt vt-f">F</span>':r.vt==='S'?'<span class="vt vt-s">S</span>':r.vt==='E'?'<span class="vt vt-e">E</span>':r.vt==='C'?'<span class="vt vt-c">C</span>':'';
+    var vtHtml=r.vt==='F'?'<span class="vt vt-f">F</span>':r.vt==='S'?'<span class="vt vt-s">S</span>':r.vt==='L'?'<span class="vt vt-l">人</span>':r.vt==='E'?'<span class="vt vt-e">E</span>':r.vt==='C'?'<span class="vt vt-c">C</span>':'';
     var venueHtml=r.venue?'<span class="venue">'+esc(r.venue)+'</span>':'';
     var member1=r.members?(r.members.split(/[,\s]+/).filter(Boolean)[0]||''):'';
     var memberHtml=member1?'<span class="venue" style="background:#e8f0e8;color:#2d6a2d">👤'+esc(member1)+'</span>':'';
@@ -753,11 +765,251 @@ function importFile(){
   input.click();
 }
 
+function exportExcel(){
+  // ── 색상 정의 ──────────────────────────────────────────
+  var VT_BG  ={'F':'2d7a2d','S':'1a4d9e','L':'7b2fa8','E':'8b4513','C':'dc6400'};
+  var VT_LBL ={'F':'필드','S':'스크린','L':'人生','E':'영어','C':'회사'};
+  var IMP_BG ='d42020';
+  var HDR_BG ='1f497d';
+
+  // ── 공유 문자열 테이블 ─────────────────────────────────
+  var sst=[], sstMap={};
+  function si(s){ s=String(s||''); if(sstMap[s]===undefined){sstMap[s]=sst.length;sst.push(s);} return sstMap[s]; }
+
+  // ── 스타일 인덱스 매핑 ────────────────────────────────
+  // styleIdx: 0=기본, 1=헤더, 2=중요행, 3~7=구분색(F/S/L/E/C), 8=중요+굵게(제목셀)
+  // numFmtId=0, fontId, fillId, borderId, xfId 순서로 정의
+  // fonts: 0=기본, 1=헤더(흰굵), 2=중요(빨굵), 3~7=vt색(흰굵), 8=중요제목(빨굵)
+  // fills: 0=없음, 1=없음(패턴 필수), 2=헤더, 3=중요, 4~8=vt색
+
+  var vtKeys=['F','S','L','E','C'];
+
+  function xmlEsc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  // ── 셀 빌더 ───────────────────────────────────────────
+  function sc(col,row,sIdx,strIdx){ return '<c r="'+col+row+'" t="s" s="'+sIdx+'"><v>'+strIdx+'</v></c>'; }
+
+  // ── 행 빌더 ───────────────────────────────────────────
+  var cols=['A','B','C','D','E','F','G'];
+  function buildRow(rowNum, vals, sIdxArr){
+    var cells='';
+    for(var i=0;i<vals.length;i++) cells+=sc(cols[i],rowNum,sIdxArr[i],si(vals[i]));
+    return '<row r="'+rowNum+'">'+cells+'</row>';
+  }
+
+  // ── 데이터 행 생성 ────────────────────────────────────
+  var sheetRows='';
+  sheetRows+=buildRow(1,['날짜','구분','중요','장소','동반자','제목','내용'],[1,1,1,1,1,1,1]);
+
+  data.forEach(function(r,i){
+    var rowNum=i+2;
+    var vt=r.vt||'';
+    var vtIdx=vtKeys.indexOf(vt);
+    var isImp=!!r.important;
+
+    // B열(구분): vt배경+흰굵(3~7)
+    // 나머지: 중요면 빨굵(8), vt있으면 vt컬러글자(9~13), 없으면 기본(0)
+    var vtBgSIdx  = vtIdx>=0 ? (3+vtIdx) : 0;
+    var vtTxtSIdx = vtIdx>=0 ? (9+vtIdx) : 0;
+    var otherSIdx = isImp ? 8 : (vtIdx>=0 ? vtTxtSIdx : 0);
+
+    sheetRows+=buildRow(rowNum,[
+      r.date||'',
+      VT_LBL[vt]||vt||'',
+      isImp?'★':'',
+      r.venue||'',
+      r.members||'',
+      r.title||'',
+      (r.memo||'').replace(/\r?\n/g,' ')
+    ],[otherSIdx, vtBgSIdx, isImp?8:0, otherSIdx, otherSIdx, otherSIdx, otherSIdx]);
+  });
+
+  // ── SST XML ───────────────────────────────────────────
+  var sstXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    +'<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="'+sst.length+'" uniqueCount="'+sst.length+'">'
+    +sst.map(function(s){ return '<si><t xml:space="preserve">'+xmlEsc(s)+'</t></si>'; }).join('')
+    +'</sst>';
+
+  // ── Styles XML ────────────────────────────────────────
+  function font(color,bold,sz){
+    return '<font>'+(bold?'<b/>':'')+'<sz val="'+(sz||11)+'"/><color rgb="FF'+color+'"/><name val="맑은 고딕"/></font>';
+  }
+  function fill(color){
+    if(!color) return '<fill><patternFill patternType="none"/></fill>';
+    return '<fill><patternFill patternType="solid"><fgColor rgb="FF'+color+'"/></patternFill></fill>';
+  }
+  function xf(fontId,fillId,borderId,wrap){
+    return '<xf numFmtId="0" fontId="'+fontId+'" fillId="'+fillId+'" borderId="'+borderId+'" xfId="0"'
+      +(wrap?' applyAlignment="1"><alignment wrapText="1"/></xf':'/>')+' ';
+  }
+
+  // fonts: 0=기본, 1=헤더(흰굵), 3~7=vt흰굵(B배경용), 8=중요빨굵, 9~13=vt컬러굵(나머지)
+  var fontsXml='<fonts count="14">'
+    +font('000000',false)   // 0 기본
+    +font('FFFFFF',true)    // 1 헤더
+    +font('000000',false)   // 2 미사용
+    +vtKeys.map(function(k){ return font('FFFFFF',true); }).join('') // 3~7 vt 흰굵(B열)
+    +font('d42020',true)    // 8 중요 빨굵
+    +vtKeys.map(function(k){ return font(VT_BG[k],true); }).join('') // 9~13 vt컬러굵
+    +'</fonts>';
+
+  // fills: 0=없음, 1=없음(필수), 2=헤더, 3~7=vt색
+  var fillsXml='<fills count="'+(3+vtKeys.length)+'">'
+    +fill('')+fill('')      // 0,1 필수
+    +fill(HDR_BG)           // 2 헤더
+    +vtKeys.map(function(k){ return fill(VT_BG[k]); }).join('') // 3~7
+    +'</fills>';
+
+  var bordersXml='<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>';
+
+  // xfs: 0=기본, 1=헤더, 3~7=vt배경, 8=중요빨굵글자, 9~13=vt컬러굵글자
+  var cellXfsXml='<cellXfs>'
+    +xf(0,0,0,false)   // 0 기본
+    +xf(1,2,0,false)   // 1 헤더
+    +xf(0,0,0,false)   // 2 미사용
+    +vtKeys.map(function(k,i){ return xf(3+i,3+i,0,false); }).join('') // 3~7 vt배경
+    +xf(8,0,0,false)   // 8 중요 빨굵글자
+    +vtKeys.map(function(k,i){ return xf(9+i,0,0,false); }).join('') // 9~13 vt컬러굵글자
+    +'</cellXfs>';
+
+  var stylesXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    +'<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+    +fontsXml+fillsXml+bordersXml
+    +'<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'
+    +cellXfsXml
+    +'</styleSheet>';
+
+  // ── Sheet XML ─────────────────────────────────────────
+  var sheetXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    +'<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+    +'<cols>'
+    +'<col min="1" max="1" width="12" customWidth="1"/>'
+    +'<col min="2" max="2" width="8" customWidth="1"/>'
+    +'<col min="3" max="3" width="5" customWidth="1"/>'
+    +'<col min="4" max="4" width="14" customWidth="1"/>'
+    +'<col min="5" max="5" width="14" customWidth="1"/>'
+    +'<col min="6" max="6" width="22" customWidth="1"/>'
+    +'<col min="7" max="7" width="40" customWidth="1"/>'
+    +'</cols>'
+    +'<sheetData>'+sheetRows+'</sheetData>'
+    +'</worksheet>';
+
+  // ── OOXML 파일 구조 (ZIP) ─────────────────────────────
+  // JSZip 없이 직접 ZIP 바이너리 생성
+  function strToU8(str){
+    var bytes=[];
+    for(var i=0;i<str.length;i++){
+      var c=str.charCodeAt(i);
+      if(c<0x80){bytes.push(c);}
+      else if(c<0x800){bytes.push(0xc0|(c>>6),0x80|(c&0x3f));}
+      else{bytes.push(0xe0|(c>>12),0x80|((c>>6)&0x3f),0x80|(c&0x3f));}
+    }
+    return new Uint8Array(bytes);
+  }
+
+  function crc32(buf){
+    var table=[];
+    for(var n=0;n<256;n++){var c=n;for(var k=0;k<8;k++)c=c&1?0xedb88320^(c>>>1):c>>>1;table[n]=c;}
+    var crc=0xffffffff;
+    for(var i=0;i<buf.length;i++)crc=table[(crc^buf[i])&0xff]^(crc>>>8);
+    return (crc^0xffffffff)>>>0;
+  }
+
+  function u32le(n){return [n&0xff,(n>>8)&0xff,(n>>16)&0xff,(n>>24)&0xff];}
+  function u16le(n){return [n&0xff,(n>>8)&0xff];}
+
+  function makeLocalFile(name,data){
+    var nameBytes=strToU8(name);
+    var crc=crc32(data);
+    var hdr=[0x50,0x4b,0x03,0x04,0x14,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00]
+      .concat(u32le(crc)).concat(u32le(data.length)).concat(u32le(data.length))
+      .concat(u16le(nameBytes.length)).concat(u16le(0));
+    return {local:new Uint8Array(hdr.concat(Array.from(nameBytes)).concat(Array.from(data))),
+            name:nameBytes,crc:crc,size:data.length};
+  }
+
+  function buildZip(files){
+    var parts=[], offsets=[], pos=0;
+    files.forEach(function(f){
+      offsets.push(pos);
+      parts.push(f.local);
+      pos+=f.local.length;
+    });
+    var cdEntries=[], cdSize=0;
+    files.forEach(function(f,i){
+      var cd=[0x50,0x4b,0x01,0x02,0x14,0x00,0x14,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00]
+        .concat(u32le(f.crc)).concat(u32le(f.size)).concat(u32le(f.size))
+        .concat(u16le(f.name.length)).concat(u16le(0)).concat(u16le(0))
+        .concat(u16le(0)).concat(u16le(0)).concat(u32le(0)).concat(u32le(offsets[i]))
+        .concat(Array.from(f.name));
+      cdEntries.push(new Uint8Array(cd));
+      cdSize+=cd.length;
+    });
+    var eocd=[0x50,0x4b,0x05,0x06,0x00,0x00,0x00,0x00]
+      .concat(u16le(files.length)).concat(u16le(files.length))
+      .concat(u32le(cdSize)).concat(u32le(pos)).concat(u16le(0));
+    var total=pos+cdSize+eocd.length;
+    var out=new Uint8Array(total), cur=0;
+    parts.forEach(function(p){out.set(p,cur);cur+=p.length;});
+    cdEntries.forEach(function(c){out.set(c,cur);cur+=c.length;});
+    out.set(new Uint8Array(eocd),cur);
+    return out;
+  }
+
+  var rels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    +'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+    +'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'
+    +'</Relationships>';
+
+  var wbRels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    +'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+    +'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'
+    +'<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/>'
+    +'<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'
+    +'</Relationships>';
+
+  var wbXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    +'<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+    +'<sheets><sheet name="골프일지" sheetId="1" r:id="rId1"/></sheets>'
+    +'</workbook>';
+
+  var ct='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    +'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+    +'<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+    +'<Default Extension="xml" ContentType="application/xml"/>'
+    +'<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
+    +'<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
+    +'<Override PartName="/xl/sharedStrings.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"/>'
+    +'<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'
+    +'</Types>';
+
+  var files=[
+    makeLocalFile('[Content_Types].xml',        strToU8(ct)),
+    makeLocalFile('_rels/.rels',                strToU8(rels)),
+    makeLocalFile('xl/workbook.xml',            strToU8(wbXml)),
+    makeLocalFile('xl/_rels/workbook.xml.rels', strToU8(wbRels)),
+    makeLocalFile('xl/worksheets/sheet1.xml',   strToU8(sheetXml)),
+    makeLocalFile('xl/sharedStrings.xml',       strToU8(sstXml)),
+    makeLocalFile('xl/styles.xml',              strToU8(stylesXml))
+  ];
+
+  var zipData=buildZip(files);
+  var blob=new Blob([zipData],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  var today=new Date();
+  var ds=today.getFullYear()+''+(today.getMonth()+1<10?'0':'')+(today.getMonth()+1)+''+(today.getDate()<10?'0':'')+today.getDate();
+  a.href=url; a.download='골프일지_'+ds+'.xlsx';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
 function fltChange(type){
   if(type==='all'){
     var all=document.getElementById('flt-all').checked;
     document.getElementById('flt-f').checked=all;
     document.getElementById('flt-s').checked=all;
+    document.getElementById('flt-l').checked=all;
     document.getElementById('flt-e').checked=all;
     document.getElementById('flt-c').checked=all;
     document.getElementById('flt-star').checked=all;
@@ -765,11 +1017,12 @@ function fltChange(type){
   } else {
     var f=document.getElementById('flt-f').checked;
     var s=document.getElementById('flt-s').checked;
+    var l=document.getElementById('flt-l').checked;
     var e=document.getElementById('flt-e').checked;
     var c=document.getElementById('flt-c').checked;
     var star=document.getElementById('flt-star').checked;
     var n=true;
-    document.getElementById('flt-all').checked=(f&&s&&e&&c&&star&&n);
+    document.getElementById('flt-all').checked=(f&&s&&l&&e&&c&&star&&n);
   }
   render(); renderCal();
 }
