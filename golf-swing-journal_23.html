@@ -250,10 +250,12 @@ function loadFromServer() {
     delete window[cbName];
     document.body.removeChild(script);
     if (Array.isArray(d) && d.length > 0) {
-      data = d;
+      var localData = data.slice(); // 로컬 백업
+      data = mergeData(localData, d);
       save();
+      saveToServer(); // merge 결과 서버에도 반영
       serverLoaded = true;
-      showSyncStatus('✅ 불러옴 ('+data.length+'개)');
+      showSyncStatus('✅ 동기화완료 ('+data.length+'개)');
     } else {
       serverLoaded = true;
       showSyncStatus('💾 로컬 데이터 사용중 ('+data.length+'개)');
