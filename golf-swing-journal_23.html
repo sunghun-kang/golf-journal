@@ -261,7 +261,6 @@ function loadFromServer() {
       var localData = data.slice();
       data = mergeData(localData, d);
       save();
-      saveToServer();
       serverLoaded = true;
       showSyncStatus('✅ 동기화완료 ('+data.length+'개)');
     } else {
