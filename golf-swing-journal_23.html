@@ -140,7 +140,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'방콕</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.23 · 26-3-26</div></div>
+    <div><h1>🏌️ 강'방콕</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.23 · 26-3-27</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">달력</button>
@@ -246,14 +246,22 @@ function loadFromServer() {
   showSyncStatus('불러오는중...');
   var cbName = 'gasCallback_' + Date.now();
   var script = document.createElement('script');
+  var timer = setTimeout(function() {
+    delete window[cbName];
+    if(document.body.contains(script)) document.body.removeChild(script);
+    serverLoaded = true;
+    render();
+    showSyncStatus('⚠️ 오프라인 모드 (로컬: '+data.length+'개)');
+  }, 10000); // 10초 타임아웃
   window[cbName] = function(d) {
+    clearTimeout(timer);
     delete window[cbName];
     document.body.removeChild(script);
     if (Array.isArray(d) && d.length > 0) {
-      var localData = data.slice(); // 로컬 백업
+      var localData = data.slice();
       data = mergeData(localData, d);
       save();
-      saveToServer(); // merge 결과 서버에도 반영
+      saveToServer();
       serverLoaded = true;
       showSyncStatus('✅ 동기화완료 ('+data.length+'개)');
     } else {
@@ -263,8 +271,10 @@ function loadFromServer() {
     render();
   };
   script.onerror = function() {
+    clearTimeout(timer);
     delete window[cbName];
     document.body.removeChild(script);
+    serverLoaded = true;
     render();
     showSyncStatus('⚠️ 오프라인 모드 (로컬: '+data.length+'개)');
   };
