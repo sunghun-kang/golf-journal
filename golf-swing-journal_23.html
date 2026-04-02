@@ -140,7 +140,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'방콕</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.23 · 26-3-27</div></div>
+    <div><h1>🏌️ 강'방콕</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.24 · 26-3-30</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">달력</button>
@@ -286,14 +286,24 @@ function saveToServer() {
   if (!GAS_URL) { showSyncStatus('💾 로컬 저장됨'); return; }
   showSyncStatus('저장중...');
   var dataNoMedia = data.map(function(r){var r2=Object.assign({},r);r2.media=[];return r2;});
-  fetch(GAS_URL, {
-    method: 'POST',
-    mode: 'no-cors',
-    body: JSON.stringify({data: dataNoMedia}),
-    headers: {'Content-Type': 'text/plain'}
-  })
-  .then(function(){ showSyncStatus('✅ 서버 저장완료 ('+data.length+'개)'); })
-  .catch(function(){ showSyncStatus('💾 로컬 저장됨 (오프라인)'); });
+  var cbName = 'gasSaveCb_' + Date.now();
+  var script = document.createElement('script');
+  window[cbName] = function(r) {
+    delete window[cbName];
+    if(document.body.contains(script)) document.body.removeChild(script);
+    if(r && r.status === 'ok') {
+      showSyncStatus('✅ 서버 저장완료 ('+data.length+'개)');
+    } else {
+      showSyncStatus('⚠️ 서버 저장 실패');
+    }
+  };
+  script.onerror = function() {
+    delete window[cbName];
+    if(document.body.contains(script)) document.body.removeChild(script);
+    showSyncStatus('💾 로컬 저장됨 (오프라인)');
+  };
+  script.src = GAS_URL + '?action=save&callback=' + cbName + '&data=' + encodeURIComponent(JSON.stringify(dataNoMedia));
+  document.body.appendChild(script);
 }
 
 function toggleMore(){
