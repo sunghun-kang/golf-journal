@@ -140,7 +140,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'방콕</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.25 · 26-4-7</div></div>
+    <div><h1>🏌️ 강'방콕</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.26 · 26-5-21</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">달력</button>
@@ -785,7 +785,12 @@ function exportExcel(){
 
   var vtKeys=['F','S','L','E','C'];
 
-  function xmlEsc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function xmlEsc(s){
+    // XML 1.0이 금지하는 제어문자 제거(0x00-0x08, 0x0B, 0x0C, 0x0E-0x1F)
+    return String(s||'')
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,'')
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
 
   // ── 셀 빌더 ───────────────────────────────────────────
   function sc(col,row,sIdx,strIdx){ return '<c r="'+col+row+'" t="s" s="'+sIdx+'"><v>'+strIdx+'</v></c>'; }
@@ -912,12 +917,24 @@ function exportExcel(){
   // ── OOXML 파일 구조 (ZIP) ─────────────────────────────
   // JSZip 없이 직접 ZIP 바이너리 생성
   function strToU8(str){
+    // TextEncoder는 이모지(surrogate pair, U+10000 이상)도 4바이트 UTF-8로 정상 인코딩
+    if(typeof TextEncoder!=='undefined') return new TextEncoder().encode(str);
+    // 폴백: surrogate pair 처리 포함한 수동 인코딩
     var bytes=[];
     for(var i=0;i<str.length;i++){
       var c=str.charCodeAt(i);
+      // surrogate pair 결합
+      if(c>=0xD800&&c<=0xDBFF&&i+1<str.length){
+        var c2=str.charCodeAt(i+1);
+        if(c2>=0xDC00&&c2<=0xDFFF){
+          c=0x10000+((c-0xD800)<<10)+(c2-0xDC00);
+          i++;
+        }
+      }
       if(c<0x80){bytes.push(c);}
       else if(c<0x800){bytes.push(0xc0|(c>>6),0x80|(c&0x3f));}
-      else{bytes.push(0xe0|(c>>12),0x80|((c>>6)&0x3f),0x80|(c&0x3f));}
+      else if(c<0x10000){bytes.push(0xe0|(c>>12),0x80|((c>>6)&0x3f),0x80|(c&0x3f));}
+      else{bytes.push(0xf0|(c>>18),0x80|((c>>12)&0x3f),0x80|((c>>6)&0x3f),0x80|(c&0x3f));}
     }
     return new Uint8Array(bytes);
   }
