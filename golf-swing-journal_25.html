@@ -140,7 +140,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'방콕</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.31 · 26-6-10</div></div>
+    <div><h1>🏌️ 강'방콕</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.32 · 26-6-10</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">달력</button>
@@ -340,10 +340,27 @@ function openPhoto(recIdx, mediaIdx){
   var modal=document.getElementById('photo-modal');
   document.getElementById('photo-modal-img').src=imgs[mediaIdx].data;
   modal.style.display='flex';
+  // 폰 뒤로가기/제스처로 탭이 닫히지 않게 가짜 히스토리 추가
+  if(!history.state || !history.state.photoOpen){
+    history.pushState({photoOpen:true}, '');
+  }
 }
 function closePhoto(){
-  document.getElementById('photo-modal').style.display='none';
+  var modal=document.getElementById('photo-modal');
+  if(modal.style.display==='none') return;
+  modal.style.display='none';
+  // 가짜 히스토리 제거(현재 모달 상태였을 때만)
+  if(history.state && history.state.photoOpen){
+    history.back();
+  }
 }
+// 폰 뒤로가기 버튼/스와이프 → 모달만 닫고 페이지는 유지
+window.addEventListener('popstate', function(){
+  var modal=document.getElementById('photo-modal');
+  if(modal && modal.style.display==='flex'){
+    modal.style.display='none';
+  }
+});
 
 function mergeData(local,server){
   var map={};
@@ -629,9 +646,11 @@ function render(){
     var mediaHtml='';
     if(r.media&&r.media.length){
       mediaHtml='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">';
+      var bodyImgIdx=0;
       r.media.forEach(function(m){
         if(m.type==='image'){
-          mediaHtml+='<img src="'+m.data+'" style="max-width:160px;max-height:120px;border-radius:6px;border:1px solid #ddd;cursor:pointer" onclick="this.style.maxWidth=this.style.maxWidth===\'100%\'?\'160px\':\'100%\'">';
+          mediaHtml+='<img src="'+m.data+'" style="max-width:160px;max-height:120px;border-radius:6px;border:1px solid #ddd;cursor:pointer" onclick="openPhoto('+i+','+bodyImgIdx+')">';
+          bodyImgIdx++;
         } else {
           mediaHtml+='<video src="'+m.data+'" controls style="max-width:240px;max-height:160px;border-radius:6px;border:1px solid #ddd"></video>';
         }
