@@ -140,7 +140,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'방콕</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.27 · 26-5-21</div></div>
+    <div><h1>🏌️ 강'방콕</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.30 · 26-6-10</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">달력</button>
@@ -199,7 +199,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
     <div class="fr"><label>구장명 (선택)</label><input type="text" id="mVenue" placeholder="스클, 오너스, BA..."></div>
     <div class="fr"><label>멤버 (쉼표로 구분)</label><input type="text" id="mMembers" placeholder="홍길동, 김철수..."></div>
     <div class="fr"><label>핵심 키워드 / 제목</label><input type="text" id="mTitle" placeholder="오늘의 핵심 키워드"></div>
-    <div class="fr"><label>상세 메모</label><textarea id="mMemo" placeholder="ㅡ 상세 내용&#10;ㅡ 느낀점"></textarea></div>
+    <div class="fr"><label>상세 메모 <span style="font-size:0.68rem;font-weight:400;color:#888">— 부분강조: <code style="background:#fee;padding:0 3px;border-radius:3px;color:#c00">''Rred''X''Rred''</code> · <code style="background:#eef;padding:0 3px;border-radius:3px;color:#1a4d9e">''BBlue''X''BBlue''</code> · <code style="background:#efe;padding:0 3px;border-radius:3px;color:#1a7a1a">''GGreen''X''GGreen''</code> · <code style="background:#eee;padding:0 3px;border-radius:3px">''BBold''X''BBold''</code></span></label><textarea id="mMemo" placeholder="ㅡ 상세 내용&#10;ㅡ 느낀점"></textarea></div>
     <div class="fr"><input type="file" id="mMedia" accept="image/*,video/*" multiple style="font-size:0.82rem;padding:6px 0">
       <div id="mMediaPreview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px"></div>
     </div>
@@ -272,7 +272,6 @@ function loadFromServer() {
 function saveToServer() {
   save();
   showSyncStatus('저장중...');
-  // 사진/영상 포함해서 동기화 (v27: 리사이즈 압축되어 들어옴)
   fetch(SUPABASE_URL + '/rest/v1/golf_log?id=eq.main', {
     method: 'PATCH',
     headers: {
@@ -283,8 +282,19 @@ function saveToServer() {
     },
     body: JSON.stringify({data: data, updated_at: new Date().toISOString()})
   })
-  .then(function(){ showSyncStatus('✅ 서버 저장완료 ('+data.length+'개)'); })
-  .catch(function(){ showSyncStatus('💾 로컬 저장됨 (오프라인)'); });
+  .then(function(response){
+    // HTTP 4xx/5xx 명시적 감지 - silent fail 방지
+    if(!response.ok){
+      alert('⚠️ 서버 저장 실패! (HTTP '+response.status+')\n\n로컬에만 저장됐어요. 사진이 너무 크거나 서버 용량 초과일 수 있습니다.\n잠시 후 🔄로 다시 시도해보세요.');
+      showSyncStatus('❌ 서버 저장실패 (HTTP '+response.status+')');
+      throw new Error('http_'+response.status);
+    }
+    showSyncStatus('✅ 서버 저장완료 ('+data.length+'개)');
+  })
+  .catch(function(err){
+    if(err && err.message && err.message.indexOf('http_')===0) return; // 이미 알림함
+    showSyncStatus('💾 로컬 저장됨 (오프라인)');
+  });
 }
 
 function toggleMore(){
@@ -340,17 +350,31 @@ function mergeData(local,server){
   function ensureId(r){
     if(!r.id) r.id=r.date+'_'+(r.title||'').substring(0,10).replace(/\s/g,'_')+'_x';
     if(!r.updatedAt) r.updatedAt=r.date+'T00:00:00.000Z';
+    if(!r.createdAt) r.createdAt=r.updatedAt;  // 기존 데이터 마이그레이션
     return r;
   }
   // 로컬 먼저 넣고
   local.forEach(function(r){r=ensureId(r); map[r.id]=r;});
-  // 서버가 같은 id면 updatedAt 비교, 서버에만 있으면 추가
+  // 서버: 더 최신이면 채택하되, 로컬 사진/영상은 손실 보호
   server.forEach(function(r){
     r=ensureId(r);
-    if(!map[r.id]||r.updatedAt>=map[r.id].updatedAt) map[r.id]=r;
+    var localR=map[r.id];
+    if(!localR){ map[r.id]=r; return; }
+    // 서버가 더 최신일 때만 덮어씀 (같은 시각이면 로컬 우선)
+    if(r.updatedAt > localR.updatedAt){
+      // 로컬에 미디어 있고 서버는 없으면 → 미디어 보존
+      if(localR.media && localR.media.length>0 && (!r.media || r.media.length===0)){
+        r.media = localR.media;
+      }
+      // createdAt도 더 오래된 것 우선 (최초 등록 시각 보호)
+      if(localR.createdAt && (!r.createdAt || localR.createdAt < r.createdAt)){
+        r.createdAt = localR.createdAt;
+      }
+      map[r.id]=r;
+    }
   });
   var merged=Object.values(map);
-  merged.sort(function(a,b){ var dc=b.date.localeCompare(a.date); if(dc!==0)return dc; return (b.updatedAt||'').localeCompare(a.updatedAt||''); });
+  merged.sort(function(a,b){ var dc=b.date.localeCompare(a.date); if(dc!==0)return dc; return (b.createdAt||b.updatedAt||'').localeCompare(a.createdAt||a.updatedAt||''); });
   return merged;
 }
 
@@ -396,12 +420,10 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 function hilite(s){
   var html=esc(s);
   // URL 자동 링크화 (유튜브는 썸네일 포함)
-  html=html.replace(/https?:\/\/[^\s\u3000<]+/g, function(url){
-    // URL 끝의 구두점 제거 (예: "보세요.https://x.com/abc." → 마침표 분리)
+  html=html.replace(/https?:\/\/[^\s\u3000<']+/g, function(url){
     var trail='';
     var m=url.match(/[.,;:!?)\]]+$/);
     if(m){ trail=m[0]; url=url.slice(0,-trail.length); }
-    // 유튜브 영상 ID 추출 (youtu.be, youtube.com/watch, /embed, /shorts)
     var ytMatch=url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
     if(ytMatch){
       var vid=ytMatch[1];
@@ -411,6 +433,11 @@ function hilite(s){
     }
     return '<a href="'+url+'" target="_blank" rel="noopener" style="color:#1a4d9e;text-decoration:underline;word-break:break-all">'+url+'</a>'+trail;
   });
+  // 부분 강조 마커 (안쪽부터 → 중첩 가능: ''Rred''''BBold''X''BBold''''Rred'')
+  html=html.replace(/''BBold''([\s\S]*?)''BBold''/g, '<b>$1</b>');
+  html=html.replace(/''Rred''([\s\S]*?)''Rred''/g, '<span style="color:#d42020;font-weight:600">$1</span>');
+  html=html.replace(/''BBlue''([\s\S]*?)''BBlue''/g, '<span style="color:#1a4d9e;font-weight:600">$1</span>');
+  html=html.replace(/''GGreen''([\s\S]*?)''GGreen''/g, '<span style="color:#1a7a1a;font-weight:600">$1</span>');
   // 유레카 강조
   html=html.replace(/유레카/g,'<span style="color:#d42020;font-weight:700">유레카</span>');
   return html;
@@ -763,13 +790,16 @@ function saveMod(){
     updatedAt: now
   };
   if(editIdx>=0){
-    rec.id = data[editIdx].id || (date+'_'+(title||'').substring(0,10).replace(/\s/g,'_')+'_'+Math.random().toString(36).substr(2,4));
+    var existing = data[editIdx];
+    rec.id = existing.id || (date+'_'+(title||'').substring(0,10).replace(/\s/g,'_')+'_'+Math.random().toString(36).substr(2,4));
+    rec.createdAt = existing.createdAt || existing.updatedAt || now;  // 최초 등록 시각 영구 보존
     data[editIdx]=rec;
   } else {
     rec.id = date+'_'+(title||'').substring(0,10).replace(/\s/g,'_')+'_'+Math.random().toString(36).substr(2,4);
+    rec.createdAt = now;  // 새 기록: 최초 등록 시각 = 지금
     data.push(rec);
   }
-  data.sort(function(a,b){ var dc=b.date.localeCompare(a.date); if(dc!==0)return dc; return (b.updatedAt||'').localeCompare(a.updatedAt||''); });
+  data.sort(function(a,b){ var dc=b.date.localeCompare(a.date); if(dc!==0)return dc; return (b.createdAt||b.updatedAt||'').localeCompare(a.createdAt||a.updatedAt||''); });
   saveToServer(); closeOv(); render();
 }
 function dl(i){data.splice(i,1);saveToServer();render();}
