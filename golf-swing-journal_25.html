@@ -140,7 +140,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'방콕</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.30 · 26-6-10</div></div>
+    <div><h1>🏌️ 강'방콕</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.31 · 26-6-10</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">달력</button>
@@ -199,7 +199,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
     <div class="fr"><label>구장명 (선택)</label><input type="text" id="mVenue" placeholder="스클, 오너스, BA..."></div>
     <div class="fr"><label>멤버 (쉼표로 구분)</label><input type="text" id="mMembers" placeholder="홍길동, 김철수..."></div>
     <div class="fr"><label>핵심 키워드 / 제목</label><input type="text" id="mTitle" placeholder="오늘의 핵심 키워드"></div>
-    <div class="fr"><label>상세 메모 <span style="font-size:0.68rem;font-weight:400;color:#888">— 부분강조: <code style="background:#fee;padding:0 3px;border-radius:3px;color:#c00">''Rred''X''Rred''</code> · <code style="background:#eef;padding:0 3px;border-radius:3px;color:#1a4d9e">''BBlue''X''BBlue''</code> · <code style="background:#efe;padding:0 3px;border-radius:3px;color:#1a7a1a">''GGreen''X''GGreen''</code> · <code style="background:#eee;padding:0 3px;border-radius:3px">''BBold''X''BBold''</code></span></label><textarea id="mMemo" placeholder="ㅡ 상세 내용&#10;ㅡ 느낀점"></textarea></div>
+    <div class="fr"><label>상세 메모 <span style="font-size:0.68rem;font-weight:400;color:#888">— 부분강조: <code style="background:#fee;padding:0 3px;border-radius:3px;color:#c00">ㅃ빨강ㅃ</code> · <code style="background:#eef;padding:0 3px;border-radius:3px;color:#1a4d9e">ㅍ파랑ㅍ</code> · <code style="background:#efe;padding:0 3px;border-radius:3px;color:#1a7a1a">ㄴ녹색ㄴ</code> · <code style="background:#eee;padding:0 3px;border-radius:3px">**굵게**</code></span></label><textarea id="mMemo" placeholder="ㅡ 상세 내용&#10;ㅡ 느낀점"></textarea></div>
     <div class="fr"><input type="file" id="mMedia" accept="image/*,video/*" multiple style="font-size:0.82rem;padding:6px 0">
       <div id="mMediaPreview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px"></div>
     </div>
@@ -433,7 +433,13 @@ function hilite(s){
     }
     return '<a href="'+url+'" target="_blank" rel="noopener" style="color:#1a4d9e;text-decoration:underline;word-break:break-all">'+url+'</a>'+trail;
   });
-  // 부분 강조 마커 (안쪽부터 → 중첩 가능: ''Rred''''BBold''X''BBold''''Rred'')
+  // 부분 강조 마커
+  // 짧은 형식: ㅃX ㅃ(빨강), ㅍX ㅍ(파랑), ㄴX ㄴ(녹색), **X**(굵게)
+  html=html.replace(/\*\*([^\*\n][^\*\n]*?)\*\*/g, '<b>$1</b>');
+  html=html.replace(/ㅃ([^ㅃ\n]+?)ㅃ/g, '<span style="color:#d42020;font-weight:600">$1</span>');
+  html=html.replace(/ㅍ([^ㅍ\n]+?)ㅍ/g, '<span style="color:#1a4d9e;font-weight:600">$1</span>');
+  html=html.replace(/ㄴ([^ㄴ\n]+?)ㄴ/g, '<span style="color:#1a7a1a;font-weight:600">$1</span>');
+  // 긴 형식(이전 호환): ''Rred''X''Rred'' 등 - 중첩 가능
   html=html.replace(/''BBold''([\s\S]*?)''BBold''/g, '<b>$1</b>');
   html=html.replace(/''Rred''([\s\S]*?)''Rred''/g, '<span style="color:#d42020;font-weight:600">$1</span>');
   html=html.replace(/''BBlue''([\s\S]*?)''BBlue''/g, '<span style="color:#1a4d9e;font-weight:600">$1</span>');
