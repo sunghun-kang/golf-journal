@@ -16,12 +16,10 @@
 
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#efefea;color:#222;font-size:14px}
-.top{background:#1b3a1b;color:#fff;padding:7px 12px;position:sticky;top:0;z-index:20;display:flex;flex-direction:column;gap:5px;align-items:stretch}
-.top h1{font-size:1rem;font-weight:700;white-space:nowrap}
-.top-right{display:flex;align-items:center;gap:10px}
-.top-r1,.top-r2{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.tr-left,.tr-left2{display:flex;align-items:center;gap:8px;min-width:0}
-.tr-right,.tr-right2{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.top{background:#1b3a1b;color:#fff;padding:6px 12px;position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.top h1{font-size:1rem;font-weight:700;white-space:nowrap;line-height:1.15}
+.top-right{display:flex;align-items:center;gap:9px;flex-shrink:0}
+.subline{display:flex;align-items:center;gap:6px;margin-top:1px}
 .ver{font-size:0.62rem;font-weight:400;color:#9fc;white-space:nowrap}
 .cnt{font-size:0.75rem;color:#9bc}
 .btn-add{background:#4a9a4a;color:#fff;border:none;border-radius:7px;padding:7px 15px;font-size:0.85rem;cursor:pointer;font-family:inherit;font-weight:700}
@@ -198,35 +196,30 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
   </div>
 </div>
 <div class="top">
-  <div class="top-r1">
-    <div class="tr-left">
+  <div style="display:flex;align-items:center;gap:10px;min-width:0">
+    <div style="min-width:0">
       <h1 id="app-title">🏌️ 랴쟈가족</h1>
+      <div class="subline"><span class="user-badge" id="user-badge"></span><span class="ver">v2.1 · 26-6-24</span></div>
     </div>
-    <div class="tr-right">
-      <div style="display:flex;gap:4px">
-        <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">목록</button>
-        <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">달력</button>
-      </div>
-      <span class="cnt" id="cnt"></span>
-      <span id="sync-status" style="font-size:0.72rem;color:#9fc;"></span>
-      <button class="btn-io" onclick="loadFromServer()" title="서버에서 불러오기">🔄</button><span id="conn-icon" title="서버 연결 상태" style="font-size:1rem">🔴</span>
-      <div class="more-menu">
-        <button class="btn-io" onclick="toggleMore()" title="더보기">⋮</button>
-        <div class="more-dropdown" id="more-dropdown">
-          <button onclick="openSettings();toggleMore()">⚙️ 연동</button>
-          <button onclick="importFile();toggleMore()">📂 가져오기</button>
-          <button onclick="exportFile();toggleMore()">💾 보냄</button>
-          <button onclick="logout();toggleMore()">🚪 로그아웃</button>
-        </div>
-      </div>
-      <button class="btn-add" onclick="openAdd()">+ 추가</button>
+    <div style="display:flex;gap:4px">
+      <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">목록</button>
+      <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">달력</button>
     </div>
   </div>
-  <div class="top-r2">
-    <div class="tr-left2">
-      <div class="user-badge" id="user-badge"></div>
-      <span class="ver">v2.0 · 26-6-24</span>
+  <div class="top-right">
+    <span class="cnt" id="cnt"></span>
+    <span id="sync-status" style="font-size:0.72rem;color:#9fc;"></span>
+    <button class="btn-io" onclick="loadFromServer()" title="서버에서 불러오기">🔄</button><span id="conn-icon" title="서버 연결 상태" style="font-size:1rem">🔴</span>
+    <div class="more-menu">
+      <button class="btn-io" onclick="toggleMore()" title="더보기">⋮</button>
+      <div class="more-dropdown" id="more-dropdown">
+        <button onclick="openSettings();toggleMore()">⚙️ 연동</button>
+        <button onclick="importFile();toggleMore()">📂 가져오기</button>
+        <button onclick="exportFile();toggleMore()">💾 보냄</button>
+        <button onclick="logout();toggleMore()">🚪 로그아웃</button>
+      </div>
     </div>
+    <button class="btn-add" onclick="openAdd()">+ 추가</button>
   </div>
 </div>
 
