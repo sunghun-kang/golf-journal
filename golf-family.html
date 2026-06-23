@@ -18,7 +18,9 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#efefea;color:#222;font-size:14px}
 .top{background:#1b3a1b;color:#fff;padding:6px 12px;position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;gap:8px}
-.top h1{font-size:1rem;font-weight:700;white-space:nowrap;line-height:1.15}
+.top h1{font-size:1rem;font-weight:700;white-space:nowrap;line-height:1.15;display:flex;align-items:center;gap:5px}
+.title-ic{width:22px;height:22px;border-radius:6px;object-fit:cover;flex-shrink:0;border:1px solid rgba(255,255,255,0.5)}
+.login-ic{width:60px;height:60px;border-radius:14px;object-fit:cover;display:block;margin:0 auto 8px;box-shadow:0 3px 10px rgba(0,0,0,0.25)}
 .top-right{display:flex;align-items:center;gap:9px;flex-shrink:0}
 .subline{display:flex;align-items:center;gap:6px;margin-top:1px}
 .ver{font-size:0.62rem;font-weight:400;color:#9fc;white-space:nowrap}
@@ -174,7 +176,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div id="auth-gate">
   <div class="auth-box">
-    <h2>🏌️ 랴쟈가족이야기</h2>
+    <img class="login-ic" src="icon-family.png" alt=""><h2>랴쟈가족이야기</h2>
     <!-- 1단계: 구글 로그인 -->
     <div id="step-login">
       <div class="sub">가족 구글 계정으로 로그인하세요</div>
@@ -199,8 +201,8 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px;min-width:0">
     <div style="min-width:0">
-      <h1 id="app-title">🏌️ 랴쟈가족</h1>
-      <div class="subline"><span class="user-badge" id="user-badge"></span><span class="ver">v0.12 · 26-6-24</span></div>
+      <h1 id="app-title"><img class="title-ic" src="icon-family.png" alt="">랴쟈가족</h1>
+      <div class="subline"><span class="user-badge" id="user-badge"></span><span class="ver">v0.13 · 26-6-24</span></div>
     </div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">목록</button>
