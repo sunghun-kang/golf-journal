@@ -5,11 +5,11 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="가족골프">
+<meta name="apple-mobile-web-app-title" content="가족이야기">
 <meta name="theme-color" content="#1b3a1b">
 <link rel="manifest" href="manifest-family.json">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>우리가족 골프일지</title>
+<title>우리가족이야기</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 
@@ -171,7 +171,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div id="auth-gate">
   <div class="auth-box">
-    <h2>🏌️ 우리가족 골프일지</h2>
+    <h2>🏌️ 우리가족이야기</h2>
     <!-- 1단계: 구글 로그인 -->
     <div id="step-login">
       <div class="sub">가족 구글 계정으로 로그인하세요</div>
@@ -195,7 +195,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 </div>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1 id="app-title">🏌️ 가족골프 <span style="font-size:0.6rem;font-weight:400;color:#9fc">v1.3 · 26-6-24</span></h1><div class="user-badge" id="user-badge" style="margin-top:2px"></div></div>
+    <div><h1 id="app-title">🏌️ 가족이야기 <span style="font-size:0.6rem;font-weight:400;color:#9fc">v1.4 · 26-6-24</span></h1><div class="user-badge" id="user-badge" style="margin-top:2px"></div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">달력</button>
@@ -1336,7 +1336,7 @@ function exportExcel(){
 
   var wbXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
     +'<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
-    +'<sheets><sheet name="골프일지" sheetId="1" r:id="rId1"/></sheets>'
+    +'<sheets><sheet name="가족이야기" sheetId="1" r:id="rId1"/></sheets>'
     +'</workbook>';
 
   var ct='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
@@ -1365,7 +1365,7 @@ function exportExcel(){
   var a=document.createElement('a');
   var today=new Date();
   var ds=today.getFullYear()+''+(today.getMonth()+1<10?'0':'')+(today.getMonth()+1)+''+(today.getDate()<10?'0':'')+today.getDate();
-  a.href=url; a.download='골프일지_'+ds+'.xlsx';
+  a.href=url; a.download='가족이야기_'+ds+'.xlsx';
   document.body.appendChild(a); a.click();
   document.body.removeChild(a); URL.revokeObjectURL(url);
 }

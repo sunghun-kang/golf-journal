@@ -1,6 +1,6 @@
 {
-  "name": "우리가족 골프일지",
-  "short_name": "가족골프",
+  "name": "우리가족이야기",
+  "short_name": "가족이야기",
   "start_url": "golf-family.html",
   "display": "standalone",
   "background_color": "#1b3a1b",
