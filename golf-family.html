@@ -155,6 +155,16 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .auth-msg.ok{color:#1a7a1a;}
 #dispname-field{display:none;}
 .user-badge{font-size:0.7rem;color:#cfe;display:flex;align-items:center;gap:4px;}
+.google-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:13px;border:1px solid #ccc;border-radius:9px;background:#fff;color:#333;font-size:0.98rem;font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px;}
+.google-btn:hover{background:#f7f7f7;}
+.google-btn:disabled{opacity:0.5;cursor:default;}
+.share-seg{display:flex;gap:8px;}
+.share-opt{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:9px 6px;border:1.5px solid #ccc;border-radius:9px;font-size:0.85rem;font-weight:700;color:#888;cursor:pointer;user-select:none;}
+.share-opt input{display:none;}
+.share-opt:has(input:checked){border-color:#1d6f42;background:#eaf6ea;color:#1d6f42;}
+.share-opt.fam:has(input:checked){border-color:#1a4d9e;background:#eaf0fb;color:#1a4d9e;}
+.author-tag{font-size:0.72rem;font-weight:700;color:#fff;background:#6a5acd;padding:2px 7px;border-radius:4px;flex-shrink:0;}
+.share-fam-tag{font-size:0.7rem;font-weight:700;color:#1a4d9e;background:#e3ecfb;padding:2px 6px;border-radius:4px;flex-shrink:0;}
 
 </style>
 </head>
@@ -162,22 +172,25 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <div id="auth-gate">
   <div class="auth-box">
     <h2>🏌️ 우리가족 골프일지</h2>
-    <div class="sub" id="auth-sub">로그인하고 나만의 기록을 시작하세요</div>
-    <div class="fld" id="dispname-field">
-      <label>이름 / 별명</label>
-      <input type="text" id="auth-name" placeholder="예: 아빠, 강현" autocomplete="name">
+    <!-- 1단계: 구글 로그인 -->
+    <div id="step-login">
+      <div class="sub">가족 구글 계정으로 로그인하세요</div>
+      <button class="google-btn" id="google-btn" onclick="googleLogin()">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        <span>Google로 로그인</span>
+      </button>
+      <div class="auth-msg" id="auth-msg"></div>
     </div>
-    <div class="fld">
-      <label>이메일</label>
-      <input type="email" id="auth-email" placeholder="you@example.com" autocomplete="email">
+    <!-- 2단계: 가족 코드 입력 (승인 전) -->
+    <div id="step-code" style="display:none">
+      <div class="sub" id="code-sub">가족 4자리 코드를 입력하세요</div>
+      <div class="fld">
+        <input type="tel" id="auth-code" inputmode="numeric" maxlength="4" placeholder="● ● ● ●" style="text-align:center;letter-spacing:0.5em;font-size:1.4rem;">
+      </div>
+      <button class="auth-btn" id="code-submit" onclick="redeemCode()">가족 인증</button>
+      <div class="auth-toggle"><a onclick="logout(true)">다른 계정으로 로그인</a></div>
+      <div class="auth-msg" id="code-msg"></div>
     </div>
-    <div class="fld">
-      <label>비밀번호</label>
-      <input type="password" id="auth-pw" placeholder="6자 이상" autocomplete="current-password">
-    </div>
-    <button class="auth-btn" id="auth-submit" onclick="authSubmit()">로그인</button>
-    <div class="auth-toggle" id="auth-toggle"></div>
-    <div class="auth-msg" id="auth-msg"></div>
   </div>
 </div>
 <div class="top">
@@ -239,6 +252,13 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
         </select>
       </div>
     </div>
+    <div class="fr" style="margin-top:2px">
+      <label>공개 범위</label>
+      <div class="share-seg">
+        <label class="share-opt"><input type="radio" name="mShare" value="private" checked><span>🔒 개인</span></label>
+        <label class="share-opt fam"><input type="radio" name="mShare" value="family"><span>👨‍👩‍👧‍👦 가족공통</span></label>
+      </div>
+    </div>
     <div class="fr"><label>구장/문제 (선택)</label><input type="text" id="mVenue" placeholder="스클, 오너스, BA / 슬라스, 뒷땅..."></div>
     <div class="fr"><label>멤버/원인 (쉼표로 구분)</label><input type="text" id="mMembers" placeholder="홍길동 / 손목방향, 엎어침..."></div>
     <div class="fr"><label>핵심 키워드 / 제목</label><input type="text" id="mTitle" placeholder="오늘의 핵심 키워드"></div>
@@ -278,141 +298,157 @@ function todayKST() {
 }
 
 // =============================================
-// Google Apps Script 연동
+// Supabase 인증(구글) + 가족 공유 데이터
 // =============================================
 var SUPABASE_URL = 'https://qnbpavvcpxjhccppiqav.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_OtaDk4iYFhZJs5GBUz7btw_mOtE5MJP';
-var TABLE = 'family_golf_log';
+var POSTS = 'family_posts';
 
-// 사용자별 인증 클라이언트
 var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: { persistSession: true, autoRefreshToken: true, storageKey: 'familyGolfAuth' }
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: 'familyGolfAuth' }
 });
-var currentUser = null;
-var authMode = 'login'; // 'login' | 'signup'
+var currentUser = null;   // Supabase auth user
+var currentName = '';
+var currentEmail = '';
 
-// 사용자별 로컬 캐시 키 (데이터가 섞이지 않도록 분리)
-function lsKey(){ return currentUser ? 'golfLog_' + currentUser.id : 'golfLog_guest'; }
-
-// ── 로그인/회원가입 화면 ─────────────────────────────
-function setAuthMode(m){
-  authMode = m;
-  var isSignup = m === 'signup';
-  document.getElementById('dispname-field').style.display = isSignup ? 'block' : 'none';
-  document.getElementById('auth-submit').textContent = isSignup ? '회원가입' : '로그인';
-  document.getElementById('auth-sub').textContent = isSignup ? '가족 각자 계정을 만들어 사용하세요' : '로그인하고 나만의 기록을 시작하세요';
-  document.getElementById('auth-toggle').innerHTML = isSignup
-    ? '이미 계정이 있나요? <a onclick="setAuthMode(\'login\')">로그인</a>'
-    : '처음이신가요? <a onclick="setAuthMode(\'signup\')">회원가입</a>';
-  document.getElementById('auth-msg').textContent = '';
-  document.getElementById('auth-pw').setAttribute('autocomplete', isSignup ? 'new-password' : 'current-password');
-}
+// 사용자별 로컬 캐시 키
+function lsKey(){ return currentUser ? 'familyGolf_' + currentUser.id : 'familyGolf_guest'; }
 
 function authMsg(text, ok){
   var el = document.getElementById('auth-msg');
-  el.textContent = text;
+  if(!el) return;
+  el.textContent = text || '';
+  el.className = 'auth-msg ' + (ok ? 'ok' : 'err');
+}
+function codeMsg(text, ok){
+  var el = document.getElementById('code-msg');
+  if(!el) return;
+  el.textContent = text || '';
   el.className = 'auth-msg ' + (ok ? 'ok' : 'err');
 }
 
-function translateAuthErr(m){
-  m = m || '';
-  if(/Invalid login/i.test(m)) return '이메일 또는 비밀번호가 올바르지 않습니다.';
-  if(/already registered|already been registered/i.test(m)) return '이미 가입된 이메일입니다. 로그인하세요.';
-  if(/Email not confirmed/i.test(m)) return '이메일 인증이 필요합니다. 메일함을 확인하세요.';
-  if(/Password should be/i.test(m)) return '비밀번호는 6자 이상이어야 합니다.';
-  if(/rate limit|too many/i.test(m)) return '시도가 너무 많습니다. 잠시 후 다시 해보세요.';
-  return m;
+// ── 1단계: 구글 로그인 ──────────────────────────────
+function googleLogin(){
+  document.getElementById('google-btn').disabled = true;
+  authMsg('구글 로그인 창으로 이동합니다...', true);
+  sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.href.split('#')[0].split('?')[0] }
+  }).then(function(res){
+    if(res.error){ authMsg('로그인 실패: '+res.error.message); document.getElementById('google-btn').disabled=false; }
+  });
 }
 
-function authSubmit(){
-  var email = document.getElementById('auth-email').value.trim();
-  var pw = document.getElementById('auth-pw').value;
-  if(!email || !pw){ authMsg('이메일과 비밀번호를 입력하세요.'); return; }
-  var btn = document.getElementById('auth-submit');
-  btn.disabled = true;
-  if(authMode === 'signup'){
-    var name = document.getElementById('auth-name').value.trim();
-    if(!name){ authMsg('이름/별명을 입력하세요.'); btn.disabled=false; return; }
-    if(pw.length < 6){ authMsg('비밀번호는 6자 이상이어야 합니다.'); btn.disabled=false; return; }
-    sb.auth.signUp({ email: email, password: pw, options:{ data:{ display_name: name } } })
-      .then(function(res){
-        btn.disabled = false;
-        if(res.error){ authMsg(translateAuthErr(res.error.message)); return; }
-        if(res.data.session){
-          onLoggedIn(res.data.user);   // 이메일 확인 꺼져 있으면 바로 로그인
-        } else {
-          authMsg('가입 완료! 이메일 인증 후 로그인하세요.', true);
-          setAuthMode('login');
-        }
-      });
-  } else {
-    sb.auth.signInWithPassword({ email: email, password: pw })
-      .then(function(res){
-        btn.disabled = false;
-        if(res.error){ authMsg(translateAuthErr(res.error.message)); return; }
-        onLoggedIn(res.data.user);
-      });
-  }
-}
-
+// 로그인 성공(또는 세션 복원) 후 가족 승인 여부 확인
 function onLoggedIn(user){
   currentUser = user;
-  var name = (user.user_metadata && user.user_metadata.display_name) || user.email.split('@')[0];
-  document.getElementById('user-badge').textContent = '👤 ' + name;
+  currentEmail = user.email || '';
+  currentName = (user.user_metadata && (user.user_metadata.full_name || user.user_metadata.name)) || currentEmail.split('@')[0];
+  sb.from('family_members').select('approved').eq('user_id', user.id).maybeSingle()
+  .then(function(res){
+    if(res.data && res.data.approved){ enterApp(); }
+    else { showCodeStep(); }
+  })
+  .catch(function(){ showCodeStep(); });
+}
+
+function showCodeStep(){
+  document.getElementById('step-login').style.display = 'none';
+  document.getElementById('step-code').style.display = 'block';
+  document.getElementById('auth-gate').classList.remove('hide');
+  document.getElementById('code-sub').textContent = currentName + '님, 가족 4자리 코드를 입력하세요';
+  var c = document.getElementById('auth-code'); c.value=''; setTimeout(function(){c.focus();},200);
+}
+
+// ── 2단계: 가족 코드 인증 ───────────────────────────
+function redeemCode(){
+  var code = (document.getElementById('auth-code').value || '').trim();
+  if(!/^\d{4}$/.test(code)){ codeMsg('4자리 숫자를 입력하세요.'); return; }
+  var btn = document.getElementById('code-submit'); btn.disabled = true;
+  codeMsg('확인중...', true);
+  sb.rpc('redeem_family_code', { p_code: code, p_name: currentName, p_email: currentEmail })
+  .then(function(res){
+    btn.disabled = false;
+    if(res.error){ codeMsg('오류: '+res.error.message); return; }
+    if(res.data === true){ enterApp(); }
+    else { codeMsg('코드가 올바르지 않습니다. 마스터에게 확인하세요.'); }
+  });
+}
+
+function enterApp(){
+  document.getElementById('user-badge').textContent = '👤 ' + currentName;
   document.getElementById('auth-gate').classList.add('hide');
-  // 이 사용자의 로컬 캐시만 로드 (다른 가족 데이터와 분리)
+  document.getElementById('step-login').style.display = 'block';
+  document.getElementById('step-code').style.display = 'none';
   data = [];
-  try{
-    var ls = localStorage.getItem(lsKey());
-    if(ls){ var p = JSON.parse(ls); if(Array.isArray(p)) data = p; }
-  }catch(e){}
+  try{ var ls=localStorage.getItem(lsKey()); if(ls){var p=JSON.parse(ls); if(Array.isArray(p)) data=p;} }catch(e){}
   render();
   loadFromServer();
 }
 
-function logout(){
-  if(!confirm('로그아웃 할까요?')) return;
+function logout(silent){
+  if(!silent && !confirm('로그아웃 할까요?')) return;
   sb.auth.signOut().then(function(){
-    currentUser = null;
-    serverLoaded = false;
-    data = [];
+    currentUser = null; currentName=''; currentEmail=''; serverLoaded=false; data=[];
     document.getElementById('user-badge').textContent = '';
-    document.getElementById('auth-pw').value = '';
     document.getElementById('list').innerHTML = '';
+    document.getElementById('step-code').style.display = 'none';
+    document.getElementById('step-login').style.display = 'block';
+    document.getElementById('google-btn').disabled = false;
+    authMsg(''); codeMsg('');
     document.getElementById('auth-gate').classList.remove('hide');
-    setAuthMode('login');
   });
 }
 
-// 새로고침/재방문 시 기존 세션 복원
+// 새로고침/구글 리디렉션 복귀 시 세션 복원
 function initAuth(){
-  setAuthMode('login');
   sb.auth.getSession().then(function(res){
     var session = res.data && res.data.session;
-    if(session && session.user){
-      onLoggedIn(session.user);
-    } else {
-      document.getElementById('auth-gate').classList.remove('hide');
-    }
+    if(session && session.user){ onLoggedIn(session.user); }
+    else { document.getElementById('auth-gate').classList.remove('hide'); }
+  });
+  sb.auth.onAuthStateChange(function(event, session){
+    if(event === 'SIGNED_IN' && session && session.user && !currentUser){ onLoggedIn(session.user); }
   });
 }
+
+// ── 서버 동기화 (글 1건 = 1행) ──────────────────────
+function rowToRec(row){
+  var r = Object.assign({}, row.rec || {});
+  r.id = row.id;
+  r.authorId = row.author_id;
+  r.authorName = row.author_name;
+  r.share = row.share;
+  r.createdAt = row.created_at;
+  r.updatedAt = row.updated_at;
+  return r;
+}
+function recToRow(r){
+  return {
+    id: r.id,
+    author_id: currentUser.id,
+    author_name: currentName,
+    share: r.share === 'family' ? 'family' : 'private',
+    rec: { date:r.date, vt:r.vt, venue:r.venue, members:r.members, title:r.title, memo:r.memo, important:r.important, color:r.color, bold:r.bold, media:r.media||[] },
+    updated_at: new Date().toISOString()
+  };
+}
+function sortData(){
+  data.sort(function(a,b){ var dc=(b.date||'').localeCompare(a.date||''); if(dc!==0)return dc; return (b.createdAt||b.updatedAt||'').localeCompare(a.createdAt||a.updatedAt||''); });
+}
+function isMine(r){ return currentUser && r.authorId === currentUser.id; }
 
 function loadFromServer() {
   if(!currentUser){ return; }
   showSyncStatus('불러오는중...');
-  sb.from(TABLE).select('data').eq('user_id', currentUser.id).maybeSingle()
+  sb.from(POSTS).select('*')
   .then(function(res){
     if(res.error){ throw res.error; }
-    var d = res.data && res.data.data;
-    if (Array.isArray(d) && d.length > 0) {
-      data = mergeData(data.slice(), d);
-      save();
-      serverLoaded = true;
-      showSyncStatus('✅ 동기화완료 ('+data.length+'개)');
-    } else {
-      serverLoaded = true;
-      showSyncStatus('💾 로컬 데이터 사용중 ('+data.length+'개)');
-    }
+    data = (res.data||[]).map(rowToRec);
+    sortData();
+    save();
+    serverLoaded = true;
+    showSyncStatus('✅ 동기화완료 ('+data.length+'개)');
     render();
   })
   .catch(function(){
@@ -422,20 +458,35 @@ function loadFromServer() {
   });
 }
 
-function saveToServer() {
+// 단일 글 저장(추가/수정)
+function pushRecord(r){
   save();
   if(!currentUser){ showSyncStatus('💾 로컬 저장됨'); return; }
   showSyncStatus('저장중...');
-  sb.from(TABLE).upsert({ user_id: currentUser.id, data: data, updated_at: new Date().toISOString() }, { onConflict: 'user_id' })
+  sb.from(POSTS).upsert(recToRow(r), { onConflict: 'id' })
   .then(function(res){
     if(res.error){
-      alert('⚠️ 서버 저장 실패!\n\n'+res.error.message+'\n\n로컬에만 저장됐어요. 사진이 너무 크거나 서버 용량 초과일 수 있습니다.\n잠시 후 🔄로 다시 시도해보세요.');
+      alert('⚠️ 서버 저장 실패!\n\n'+res.error.message+'\n\n사진이 너무 크거나 권한 문제일 수 있어요. 잠시 후 🔄로 다시 시도해보세요.');
       showSyncStatus('❌ 서버 저장실패');
       return;
     }
-    showSyncStatus('✅ 서버 저장완료 ('+data.length+'개)');
+    showSyncStatus('✅ 저장완료');
   });
 }
+
+// 단일 글 삭제
+function deleteRecord(id){
+  save();
+  if(!currentUser){ return; }
+  sb.from(POSTS).delete().eq('id', id)
+  .then(function(res){
+    if(res.error){ showSyncStatus('❌ 삭제 실패: '+res.error.message); loadFromServer(); return; }
+    showSyncStatus('🗑️ 삭제완료');
+  });
+}
+
+// 호환용(전체 재업로드는 하지 않음)
+function saveToServer(){ save(); }
 
 function toggleMore(){
   var d=document.getElementById('more-dropdown');
@@ -780,6 +831,9 @@ function render(){
     var venueHtml=r.venue?'<span class="venue" style="font-weight:700">'+esc(r.venue)+'</span>':'';
     var member1=r.members?(r.members.split(/[,\s]+/).filter(Boolean)[0]||''):'';
     var memberHtml=member1?'<span class="venue" style="background:#e8f0e8;color:#2d6a2d;font-weight:700">👤'+esc(member1)+'</span>':'';
+    var mine=isMine(r);
+    var shareHtml=r.share==='family'?'<span class="share-fam-tag">👨‍👩‍👧‍👦 가족</span>':'';
+    var authorHtml=(!mine && r.authorName)?'<span class="author-tag">'+esc(r.authorName)+'</span>':'';
     var memoHtml=r.memo?'<div class="memo">'+hilite(r.memo)+'</div>':'';
 
     // 미디어 표시
@@ -804,11 +858,10 @@ function render(){
       +'<div class="row-top">'
       +(r.important?'<span style="color:#d42020;font-weight:700">★</span>':'')
       +'<span class="date '+dateColor+'">'+dateStr+'</span>'
-      +vtHtml+venueHtml+memberHtml
+      +vtHtml+venueHtml+memberHtml+shareHtml+authorHtml
       +'<span class="acts" onclick="event.stopPropagation()">'
       +(hasBody?'<button class="btn-view" id="vb'+i+'" onclick="tog('+i+')">내용보기</button>':'')
-      +'<button onclick="ed('+i+')">수정</button>'
-      +'<button onclick="dlConfirm('+i+')">삭제</button>'
+      +(mine?'<button onclick="ed('+i+')">수정</button><button onclick="dlConfirm('+i+')">삭제</button>':'')
       +'</span></div>'
       +(function(){
       var s='';
@@ -868,6 +921,7 @@ function openAdd(){
   document.getElementById('mMemo').value='';
   document.getElementById('mImp').checked=false;
   document.querySelectorAll('input[name=mColor]').forEach(function(rd,i){rd.checked=(i===0);});
+  document.querySelectorAll('input[name=mShare]').forEach(function(rd){rd.checked=(rd.value==='private');});
   document.getElementById('mBold').checked=false;
   document.getElementById('mMedia').value='';
   document.getElementById('mMediaPreview').innerHTML='';
@@ -875,7 +929,9 @@ function openAdd(){
   document.getElementById('ov').classList.add('open');
 }
 function ed(i){
-  editIdx=i; var r=data[i];
+  var r=data[i];
+  if(!isMine(r)){ alert('다른 가족이 쓴 글은 수정할 수 없어요.'); return; }
+  editIdx=i;
   document.getElementById('mtitle').textContent='기록 수정';
   document.getElementById('mDate').value=r.date;
   document.getElementById('mVt').value=r.vt||'';
@@ -884,6 +940,8 @@ function ed(i){
   document.getElementById('mTitle').value=r.title||'';
   document.getElementById('mMemo').value=r.memo||'';
   document.getElementById('mImp').checked=!!r.important;
+  var shareVal=r.share==='family'?'family':'private';
+  document.querySelectorAll('input[name=mShare]').forEach(function(rd){rd.checked=(rd.value===shareVal);});
   var colorVal=r.color||'';
   document.querySelectorAll('input[name=mColor]').forEach(function(rd){rd.checked=(rd.value===colorVal);});
   document.getElementById('mBold').checked=!!r.bold;
@@ -952,12 +1010,17 @@ function save(){
 }
 
 function closeOv(){document.getElementById('ov').classList.remove('open');}
+function uuid(){
+  if(window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,function(c){var r=Math.random()*16|0,v=c==='x'?r:(r&0x3|0x8);return v.toString(16);});
+}
 function saveMod(){
   var date=document.getElementById('mDate').value;
   var title=document.getElementById('mTitle').value.trim();
   if(!date){alert('날짜는 필수!');return;}
   if(!title){alert('키워드는 필수!');return;}
   var now = nowKST();
+  var shareEl=document.querySelector('input[name=mShare]:checked');
   var rec={
     date:date,vt:document.getElementById('mVt').value,
     venue:document.getElementById('mVenue').value.trim(),
@@ -966,23 +1029,32 @@ function saveMod(){
     important:document.getElementById('mImp').checked,
     color:document.querySelector('input[name=mColor]:checked').value,
     bold:document.getElementById('mBold').checked,
+    share: shareEl? shareEl.value : 'private',
     media:pendingMedia.slice(),
+    authorId: currentUser?currentUser.id:null,
+    authorName: currentName,
     updatedAt: now
   };
   if(editIdx>=0){
     var existing = data[editIdx];
-    rec.id = existing.id || (date+'_'+(title||'').substring(0,10).replace(/\s/g,'_')+'_'+Math.random().toString(36).substr(2,4));
+    rec.id = existing.id || uuid();
     rec.createdAt = existing.createdAt || existing.updatedAt || now;  // 최초 등록 시각 영구 보존
     data[editIdx]=rec;
   } else {
-    rec.id = date+'_'+(title||'').substring(0,10).replace(/\s/g,'_')+'_'+Math.random().toString(36).substr(2,4);
+    rec.id = uuid();
     rec.createdAt = now;  // 새 기록: 최초 등록 시각 = 지금
     data.push(rec);
   }
-  data.sort(function(a,b){ var dc=b.date.localeCompare(a.date); if(dc!==0)return dc; return (b.createdAt||b.updatedAt||'').localeCompare(a.createdAt||a.updatedAt||''); });
-  saveToServer(); closeOv(); render();
+  sortData();
+  pushRecord(rec); closeOv(); render();
 }
-function dl(i){data.splice(i,1);saveToServer();render();}
+function dl(i){
+  var r=data[i]; if(!r) return;
+  if(!isMine(r)){ alert('다른 가족이 쓴 글은 삭제할 수 없어요.'); return; }
+  var id=r.id;
+  data.splice(i,1);
+  deleteRecord(id); render();
+}
 function dlConfirm(i){if(!confirm('삭제할까요?'))return;if(!confirm('정말 삭제합니다!'))return;dl(i);}
 
 // 파일로 내보내기
@@ -1004,10 +1076,23 @@ function importFile(){
       try{
         var imported=JSON.parse(ev.target.result);
         if(!Array.isArray(imported))throw new Error();
-        if(!confirm('불러온 데이터 '+imported.length+'개로 교체할까요?\n(현재 데이터는 사라집니다)'))return;
-        data=imported;
-        saveToServer(); render();
-        alert('불러오기 완료!');
+        if(!currentUser){alert('로그인 후 불러올 수 있어요.');return;}
+        if(!confirm('불러온 데이터 '+imported.length+'개를 내 글로 추가할까요?\n(공개범위는 기본 "개인"으로 들어갑니다)'))return;
+        var now=nowKST();
+        var rows=imported.map(function(r){
+          var rec=Object.assign({},r);
+          rec.id=uuid();
+          rec.authorId=currentUser.id; rec.authorName=currentName;
+          rec.share=rec.share==='family'?'family':'private';
+          rec.createdAt=rec.createdAt||now; rec.updatedAt=now;
+          return rec;
+        });
+        data=data.concat(rows); sortData(); save(); render();
+        showSyncStatus('업로드중... ('+rows.length+'개)');
+        sb.from(POSTS).upsert(rows.map(recToRow),{onConflict:'id'}).then(function(res){
+          if(res.error){alert('서버 업로드 실패: '+res.error.message);showSyncStatus('❌ 업로드 실패');}
+          else{showSyncStatus('✅ 불러오기 완료 ('+rows.length+'개)');alert('불러오기 완료!');}
+        });
       }catch(e){alert('파일 형식이 올바르지 않습니다.');}
     };
     reader.readAsText(file);
