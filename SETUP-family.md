@@ -24,7 +24,7 @@ create table if not exists public.family_config (
   family_code text not null
 );
 insert into public.family_config (id, family_code)
-values (1, '1234')          -- ← 원하는 4자리 코드로 변경
+values (1, '0829')          -- ← 우리가족 코드
 on conflict (id) do nothing;
 alter table public.family_config enable row level security;
 -- 정책 없음 = 앱이 코드를 직접 못 읽음(유출 방지). 아래 함수로만 검증.
