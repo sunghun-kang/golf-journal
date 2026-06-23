@@ -207,7 +207,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <div class="top">
   <div style="min-width:0">
     <h1 id="app-title"><img class="title-ic" src="icon-family.png" alt="">랴쟈가족</h1>
-    <div class="subline"><span class="user-badge" id="user-badge"></span><span class="ver">v0.15 · 26-6-24</span></div>
+    <div class="subline"><span class="user-badge" id="user-badge"></span><span class="ver">v0.16 · 26-6-24</span></div>
   </div>
   <div class="top-right">
     <div style="display:flex;gap:4px">
@@ -323,6 +323,10 @@ var currentUser = null;   // Supabase auth user
 var currentName = '';
 var currentEmail = '';
 
+// 작성자 이름 → 애칭 (글에 짧게 표시). 여기에 추가하면 됨.
+var NICK = { '강성훈상무':'할비', '김해숙':'할미' };
+function nick(name){ return (name && NICK[name]) || name || ''; }
+
 // 사용자별 로컬 캐시 키
 function lsKey(){ return currentUser ? 'familyGolf_' + currentUser.id : 'familyGolf_guest'; }
 
@@ -403,7 +407,7 @@ function redeemCode(){
 }
 
 function enterApp(){
-  document.getElementById('user-badge').textContent = '👤 ' + currentName;
+  document.getElementById('user-badge').textContent = '👤 ' + nick(currentName);
   document.getElementById('auth-gate').classList.add('hide');
   document.getElementById('step-login').style.display = 'block';
   document.getElementById('step-code').style.display = 'none';
@@ -863,7 +867,7 @@ function render(){
     var memberHtml=member1?'<span class="venue" style="background:#e8f0e8;color:#2d6a2d;font-weight:700">👤'+esc(member1)+'</span>':'';
     var mine=isMine(r);
     var shareHtml=r.share==='family'?'<span class="share-fam-tag">👨‍👩‍👧‍👦 가족</span>':'';
-    var authorHtml=(!mine && r.authorName)?'<span class="author-tag">'+esc(r.authorName)+'</span>':'';
+    var authorHtml=(!mine && r.authorName)?'<span class="author-tag">'+esc(nick(r.authorName))+'</span>':'';
     var memoHtml=r.memo?'<div class="memo">'+hilite(r.memo)+'</div>':'';
 
     // 미디어 표시
