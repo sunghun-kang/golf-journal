@@ -1,0 +1,20 @@
+{
+  "name": "우리가족 골프일지",
+  "short_name": "가족골프",
+  "start_url": "golf-family.html",
+  "display": "standalone",
+  "background_color": "#1b3a1b",
+  "theme_color": "#1b3a1b",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
