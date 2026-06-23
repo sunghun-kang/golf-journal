@@ -180,6 +180,12 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
     <!-- 1단계: 구글 로그인 -->
     <div id="step-login">
       <div class="sub">가족 구글 계정으로 로그인하세요</div>
+      <div id="webview-warn" style="display:none;background:#fff3cd;color:#664d03;border:1px solid #ffe69c;border-radius:9px;padding:11px 12px;font-size:0.83rem;line-height:1.55;margin-bottom:11px;text-align:left">
+        ⚠️ <b>지금은 '앱 속 브라우저'로 열렸어요.</b><br>여기선 구글 로그인이 막혀요. <b>크롬</b>에서 열어야 돼요.<br>
+        <span style="font-size:0.78rem;color:#8a7">• 오른쪽 위 <b>⋮</b> → "다른 브라우저로 열기"<br>• 또는 아래 버튼으로 주소 복사 → 크롬에 붙여넣기</span>
+        <button onclick="copyAppUrl()" style="margin-top:9px;width:100%;padding:10px;border:none;border-radius:8px;background:#2d7a2d;color:#fff;font-weight:700;font-size:0.86rem;cursor:pointer;font-family:inherit">📋 주소 복사하기</button>
+        <div id="copy-msg" style="font-size:0.78rem;color:#1a7a1a;margin-top:6px"></div>
+      </div>
       <button class="google-btn" id="google-btn" onclick="googleLogin()">
         <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
         <span>Google로 로그인</span>
@@ -202,7 +208,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
   <div style="display:flex;align-items:center;gap:10px;min-width:0">
     <div style="min-width:0">
       <h1 id="app-title"><img class="title-ic" src="icon-family.png" alt="">랴쟈가족</h1>
-      <div class="subline"><span class="user-badge" id="user-badge"></span><span class="ver">v0.13 · 26-6-24</span></div>
+      <div class="subline"><span class="user-badge" id="user-badge"></span><span class="ver">v0.14 · 26-6-24</span></div>
     </div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">목록</button>
@@ -347,6 +353,21 @@ function googleLogin(){
   });
 }
 
+// 카톡/메신저 등 '앱 속 브라우저(webview)' 감지 → 구글 로그인 차단되므로 안내
+function isInAppBrowser(){
+  var ua = navigator.userAgent || '';
+  if(/\bwv\b/.test(ua)) return true;                 // Android WebView
+  return /KAKAOTALK|KAKAOSTORY|FBAN|FBAV|FB_IAB|Instagram|Line\/|NAVER\(inapp|DaumApps|Snapchat|everytimeApp|; wv\)/i.test(ua);
+}
+function copyAppUrl(){
+  var url = 'https://sunghun-kang.github.io/golf-journal/golf-family.html';
+  var msg = document.getElementById('copy-msg');
+  function done(){ if(msg) msg.textContent = '✅ 복사됨! 크롬을 열고 주소창에 붙여넣으세요.'; }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(done, function(){ window.prompt('이 주소를 복사하세요:', url); });
+  } else { window.prompt('이 주소를 복사하세요:', url); }
+}
+
 // 로그인 성공(또는 세션 복원) 후 가족 승인 여부 확인
 function onLoggedIn(user){
   currentUser = user;
@@ -410,6 +431,9 @@ function logout(silent){
 
 // 새로고침/구글 리디렉션 복귀 시 세션 복원
 function initAuth(){
+  if(isInAppBrowser()){
+    var w=document.getElementById('webview-warn'); if(w) w.style.display='block';
+  }
   sb.auth.getSession().then(function(res){
     var session = res.data && res.data.session;
     if(session && session.user){ onLoggedIn(session.user); }
