@@ -195,7 +195,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 </div>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1 id="app-title">🏌️ 가족골프</h1><div class="user-badge" id="user-badge" style="margin-top:2px"></div></div>
+    <div><h1 id="app-title">🏌️ 가족골프 <span style="font-size:0.6rem;font-weight:400;color:#9fc">v1.1 · 26-6-24</span></h1><div class="user-badge" id="user-badge" style="margin-top:2px"></div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">달력</button>
@@ -220,8 +220,8 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 
 <div class="vt-filter">
   <label><input type="checkbox" id="flt-all" checked onchange="fltChange('all')"> 전체</label>
-  <label class="flt-f-lbl"><input type="checkbox" id="flt-f" checked onchange="fltChange('f')"> 필드</label>
-  <label class="flt-s-lbl"><input type="checkbox" id="flt-s" checked onchange="fltChange('s')"> 스크린</label>
+  <label class="flt-f-lbl"><input type="checkbox" id="flt-f" checked onchange="fltChange('f')"> 재테크</label>
+  <label class="flt-s-lbl"><input type="checkbox" id="flt-s" checked onchange="fltChange('s')"> 건강·취미</label>
   <label class="flt-l-lbl"><input type="checkbox" id="flt-l" checked onchange="fltChange('l')"> 人生</label>
   <label class="flt-e-lbl"><input type="checkbox" id="flt-e" checked onchange="fltChange('e')"> 영어</label>
   <label class="flt-c-lbl"><input type="checkbox" id="flt-c" checked onchange="fltChange('c')"> 회사</label>
@@ -244,8 +244,8 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
       <div><label>구분</label>
         <select id="mVt">
           <option value="">없음</option>
-          <option value="F">F 필드</option>
-          <option value="S">S 스크린</option>
+          <option value="M">M 재테크</option>
+          <option value="H">H 건강·취미</option>
           <option value="L">L 人生</option>
           <option value="E">E 영어</option>
           <option value="C">C 회사</option>
@@ -691,13 +691,13 @@ function renderCal(){
   var dm={};
   data.forEach(function(r){
     var show=false;
-    if(fF && r.vt==='F') show=true;
-    if(fS && r.vt==='S') show=true;
+    if(fF && r.vt==='M') show=true;
+    if(fS && r.vt==='H') show=true;
     if(fL && r.vt==='L') show=true;
     if(fE && r.vt==='E') show=true;
     if(fC && r.vt==='C') show=true;
     if(fStar && r.important) show=true;
-    if(fN && r.vt!=='F' && r.vt!=='S' && r.vt!=='L' && r.vt!=='E' && r.vt!=='C' && !r.important) show=true;
+    if(fN && r.vt!=='M' && r.vt!=='H' && r.vt!=='L' && r.vt!=='E' && r.vt!=='C' && !r.important) show=true;
     if(!show) return;
     if(!dm[r.date])dm[r.date]=[];
     dm[r.date].push(r);
@@ -717,13 +717,13 @@ function renderCal(){
       var recs=dm[ds];
       recs.forEach(function(r,i){
         if(i>=3){ if(i===3) h+='<span style="font-size:0.65rem;color:#999;padding:0 2px">+'+(recs.length-3)+'개</span>'; return; }
-        var tc=r.vt==='F'?'tf':r.important?'ti':r.vt==='S'?'ts':'tn';
+        var tc=r.vt==='M'?'tf':r.important?'ti':r.vt==='H'?'ts':'tn';
         var member1=r.members?(r.members.split(/[,\s]+/).filter(Boolean)[0]||''):'';
         var tagTxt;
-        if(r.vt==='F'){
-          tagTxt=esc(r.venue||'필드');
-        } else if(r.vt==='S'){
-          tagTxt='S '+esc(r.venue||'스크린');
+        if(r.vt==='M'){
+          tagTxt=esc(r.venue||'재테크');
+        } else if(r.vt==='H'){
+          tagTxt='H '+esc(r.venue||'건강·취미');
         } else if(r.vt==='E') {
           tagTxt='E '+esc(r.venue||'영어');
         } else {
@@ -753,10 +753,10 @@ function showCpop(ds){
   document.getElementById('cpop-dt').textContent=ds+' ('+dows[new Date(ds).getDay()]+')';
   var b='';
   recs.forEach(function(r){
-    var cc=r.important?'ci':r.vt==='F'?'cf':r.vt==='S'?'cs':'';
+    var cc=r.important?'ci':r.vt==='M'?'cf':r.vt==='H'?'cs':'';
     var tags='';
-    if(r.vt==='F') tags+='<span class="cpop-tag" style="background:#2d7a2d">F 필드</span>';
-    if(r.vt==='S') tags+='<span class="cpop-tag" style="background:#1a4d9e">S 스크린</span>';
+    if(r.vt==='M') tags+='<span class="cpop-tag" style="background:#2d7a2d">M 재테크</span>';
+    if(r.vt==='H') tags+='<span class="cpop-tag" style="background:#1a4d9e">H 건강·취미</span>';
     if(r.vt==='L') tags+='<span class="cpop-tag" style="background:#7b2fa8">人生</span>';
     if(r.vt==='E') tags+='<span class="cpop-tag" style="background:#8b4513">E 영어</span>';
     if(r.vt==='C') tags+='<span class="cpop-tag" style="background:rgb(220,100,0)">C 회사</span>';
@@ -797,13 +797,13 @@ function render(){
     if(q && text.indexOf(q)<0) continue;
     // vt/중요 필터 (OR 방식)
     var show = false;
-    if(fF && r.vt==='F') show=true;
-    if(fS && r.vt==='S') show=true;
+    if(fF && r.vt==='M') show=true;
+    if(fS && r.vt==='H') show=true;
     if(fL && r.vt==='L') show=true;
     if(fE && r.vt==='E') show=true;
     if(fC && r.vt==='C') show=true;
     if(fStar && r.important) show=true;
-    if(fN && r.vt!=='F' && r.vt!=='S' && r.vt!=='L' && r.vt!=='E' && r.vt!=='C' && !r.important) show=true;
+    if(fN && r.vt!=='M' && r.vt!=='H' && r.vt!=='L' && r.vt!=='E' && r.vt!=='C' && !r.important) show=true;
     if(!show) continue;
     shown++;
 
@@ -826,8 +826,8 @@ function render(){
     var dateColor=(dw===0||isHol)?'sun':(dw===6?'sat':'');
     var dateStr=r.date+'('+dow(r.date)+(holName?', '+holName:'')+')'; 
 
-    var cardCls='card'+(r.important?' important':r.vt==='F'?' field':r.vt==='S'?' screen':'');
-    var vtHtml=r.vt==='F'?'<span class="vt vt-f">F</span>':r.vt==='S'?'<span class="vt vt-s">S</span>':r.vt==='L'?'<span class="vt vt-l">人</span>':r.vt==='E'?'<span class="vt vt-e">E</span>':r.vt==='C'?'<span class="vt vt-c">C</span>':'';
+    var cardCls='card'+(r.important?' important':r.vt==='M'?' field':r.vt==='H'?' screen':'');
+    var vtHtml=r.vt==='M'?'<span class="vt vt-f">M</span>':r.vt==='H'?'<span class="vt vt-s">H</span>':r.vt==='L'?'<span class="vt vt-l">人</span>':r.vt==='E'?'<span class="vt vt-e">E</span>':r.vt==='C'?'<span class="vt vt-c">C</span>':'';
     var venueHtml=r.venue?'<span class="venue" style="font-weight:700">'+esc(r.venue)+'</span>':'';
     var member1=r.members?(r.members.split(/[,\s]+/).filter(Boolean)[0]||''):'';
     var memberHtml=member1?'<span class="venue" style="background:#e8f0e8;color:#2d6a2d;font-weight:700">👤'+esc(member1)+'</span>':'';
@@ -1102,8 +1102,8 @@ function importFile(){
 
 function exportExcel(){
   // ── 색상 정의 ──────────────────────────────────────────
-  var VT_BG  ={'F':'2d7a2d','S':'1a4d9e','L':'7b2fa8','E':'8b4513','C':'dc6400'};
-  var VT_LBL ={'F':'필드','S':'스크린','L':'人生','E':'영어','C':'회사'};
+  var VT_BG  ={'M':'2d7a2d','H':'1a4d9e','L':'7b2fa8','E':'8b4513','C':'dc6400'};
+  var VT_LBL ={'M':'재테크','H':'건강·취미','L':'人生','E':'영어','C':'회사'};
   var IMP_BG ='d42020';
   var HDR_BG ='1f497d';
 
@@ -1117,7 +1117,7 @@ function exportExcel(){
   // fonts: 0=기본, 1=헤더(흰굵), 2=중요(빨굵), 3~7=vt색(흰굵), 8=중요제목(빨굵)
   // fills: 0=없음, 1=없음(패턴 필수), 2=헤더, 3=중요, 4~8=vt색
 
-  var vtKeys=['F','S','L','E','C'];
+  var vtKeys=['M','H','L','E','C'];
 
   function xmlEsc(s){
     // XML 1.0이 금지하는 제어문자 제거(0x00-0x08, 0x0B, 0x0C, 0x0E-0x1F)
