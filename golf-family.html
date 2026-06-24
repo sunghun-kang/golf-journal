@@ -217,7 +217,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <div class="top">
   <div style="min-width:0">
     <h1 id="app-title"><img class="title-ic" src="icon-family.png" alt="">랴쟈가족</h1>
-    <div class="subline"><span class="user-badge" id="user-badge"></span><span class="ver">v0.29 · 26-6-24</span></div>
+    <div class="subline"><span class="user-badge" id="user-badge"></span><span class="ver">v0.30 · 26-6-24</span></div>
   </div>
   <div class="top-right">
     <div style="display:flex;gap:4px">
@@ -242,8 +242,8 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 
 <div class="vt-filter">
   <label><input type="checkbox" id="flt-all" checked onchange="fltChange('all')"> 전체</label>
-  <label class="flt-f-lbl"><input type="checkbox" id="flt-f" checked onchange="fltChange('f')"> 재테크</label>
-  <label class="flt-s-lbl"><input type="checkbox" id="flt-s" checked onchange="fltChange('s')"> 건강·취미</label>
+  <label class="flt-f-lbl"><input type="checkbox" id="flt-f" checked onchange="fltChange('f')"> 💰</label>
+  <label class="flt-s-lbl"><input type="checkbox" id="flt-s" checked onchange="fltChange('s')"> 🏃</label>
   <label class="flt-l-lbl"><input type="checkbox" id="flt-l" checked onchange="fltChange('l')"> 💌</label>
   <label class="flt-e-lbl"><input type="checkbox" id="flt-e" checked onchange="fltChange('e')"> 😲</label>
   <label class="flt-star-lbl"><input type="checkbox" id="flt-star" checked onchange="fltChange('star')"> ★</label>
@@ -266,8 +266,8 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
       <div><label>구분</label>
         <select id="mVt">
           <option value="">없음</option>
-          <option value="M">M 재테크</option>
-          <option value="H">H 건강·취미</option>
+          <option value="M">💰 재테크</option>
+          <option value="H">🏃 건강·취미</option>
           <option value="L">💌 마음·편지</option>
           <option value="E">😲 웃김</option>
         </select>
@@ -774,13 +774,13 @@ function renderCal(){
       var recs=dm[ds];
       recs.forEach(function(r,i){
         if(i>=3){ if(i===3) h+='<span style="font-size:0.65rem;color:#999;padding:0 2px">+'+(recs.length-3)+'개</span>'; return; }
-        var tc=r.vt==='M'?'tf':r.important?'ti':r.vt==='H'?'ts':r.vt==='E'||r.vt==='L'?'te':'tn';
+        var tc=r.important?'ti':'te';
         var member1=r.members?(r.members.split(/[,\s]+/).filter(Boolean)[0]||''):'';
         var tagTxt;
         if(r.vt==='M'){
-          tagTxt=esc(r.venue||'재테크');
+          tagTxt='💰 '+esc(r.venue||'재테크');
         } else if(r.vt==='H'){
-          tagTxt='H '+esc(r.venue||'건강·취미');
+          tagTxt='🏃 '+esc(r.venue||'건강·취미');
         } else if(r.vt==='E') {
           tagTxt='😲 '+esc(r.venue||'웃김');
         } else if(r.vt==='L') {
@@ -814,8 +814,8 @@ function showCpop(ds){
   recs.forEach(function(r){
     var cc=r.important?'ci':r.vt==='M'?'cf':r.vt==='H'?'cs':'';
     var tags='';
-    if(r.vt==='M') tags+='<span class="cpop-tag" style="background:#2d7a2d">M 재테크</span>';
-    if(r.vt==='H') tags+='<span class="cpop-tag" style="background:#1a4d9e">H 건강·취미</span>';
+    if(r.vt==='M') tags+='<span class="cpop-tag" style="background:none;color:#333;padding:0 2px">💰 재테크</span>';
+    if(r.vt==='H') tags+='<span class="cpop-tag" style="background:none;color:#333;padding:0 2px">🏃 건강·취미</span>';
     if(r.vt==='L') tags+='<span class="cpop-tag" style="background:none;color:#333;padding:0 2px">💌 마음·편지</span>';
     if(r.vt==='E') tags+='<span class="cpop-tag" style="background:none;color:#333;padding:0 2px">😲 웃김</span>';
     if(r.venue) tags+='<span class="cpop-tag" style="background:#888;font-weight:700">'+esc(r.venue)+'</span>';
@@ -846,7 +846,7 @@ function cardHtml(r, i){
   var dateStr=r.date+'('+dow(r.date)+(holName?', '+holName:'')+')';
 
   var cardCls='card'+(r.important?' important':r.vt==='M'?' field':r.vt==='H'?' screen':'');
-  var vtHtml=r.vt==='M'?'<span class="vt vt-f">M</span>':r.vt==='H'?'<span class="vt vt-s">H</span>':r.vt==='L'?'<span style="font-size:1rem;vertical-align:middle">💌</span>':r.vt==='E'?'<span style="font-size:1rem;vertical-align:middle">😲</span>':'';
+  var vtHtml=r.vt==='M'?'<span style="font-size:1rem;vertical-align:middle">💰</span>':r.vt==='H'?'<span style="font-size:1rem;vertical-align:middle">🏃</span>':r.vt==='L'?'<span style="font-size:1rem;vertical-align:middle">💌</span>':r.vt==='E'?'<span style="font-size:1rem;vertical-align:middle">😲</span>':'';
   var venueHtml=r.venue?'<span class="venue" style="font-weight:700">'+esc(r.venue)+'</span>':'';
   var member1=r.members?(r.members.split(/[,\s]+/).filter(Boolean)[0]||''):'';
   var memberHtml=member1?'<span class="venue" style="background:#e8f0e8;color:#2d6a2d;font-weight:700">👤'+esc(member1)+'</span>':'';
