@@ -57,7 +57,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .date.sat{color:#1a8a1a}
 
 .vt{font-size:0.71rem;font-weight:700;color:#fff;padding:2px 7px;border-radius:4px;flex-shrink:0}
-.vt-f{background:#2d7a2d}.vt-s{background:#1a4d9e}.vt-l{background:#7b2fa8}.vt-e{background:none;color:inherit;padding:0 2px;font-size:0.95rem}.vt-c{background:rgb(220,100,0)}.vt-l{background:#7b2fa8}
+.vt-f{background:#2d7a2d}.vt-s{background:#1a4d9e}.vt-l{background:none;color:inherit;padding:0 2px;font-size:0.95rem}.vt-e{background:none;color:inherit;padding:0 2px;font-size:0.95rem}.vt-c{background:rgb(220,100,0)}.vt-l{background:none;color:inherit;padding:0 2px;font-size:0.95rem}
 .venue{font-size:0.76rem;color:#555;background:#eee;padding:2px 7px;border-radius:4px;flex-shrink:0}
 
 .title{font-size:0.87rem;line-height:1.4;flex:1;min-width:0;word-break:keep-all}
@@ -214,7 +214,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <div class="top">
   <div style="min-width:0">
     <h1 id="app-title"><img class="title-ic" src="icon-family.png" alt="">랴쟈가족</h1>
-    <div class="subline"><span class="user-badge" id="user-badge"></span><span class="ver">v0.24 · 26-6-24</span></div>
+    <div class="subline"><span class="user-badge" id="user-badge"></span><span class="ver">v0.25 · 26-6-24</span></div>
   </div>
   <div class="top-right">
     <div style="display:flex;gap:4px">
@@ -758,7 +758,7 @@ function renderCal(){
       var recs=dm[ds];
       recs.forEach(function(r,i){
         if(i>=3){ if(i===3) h+='<span style="font-size:0.65rem;color:#999;padding:0 2px">+'+(recs.length-3)+'개</span>'; return; }
-        var tc=r.vt==='M'?'tf':r.important?'ti':r.vt==='H'?'ts':r.vt==='E'?'te':'tn';
+        var tc=r.vt==='M'?'tf':r.important?'ti':r.vt==='H'?'ts':r.vt==='E'||r.vt==='L'?'te':'tn';
         var member1=r.members?(r.members.split(/[,\s]+/).filter(Boolean)[0]||''):'';
         var tagTxt;
         if(r.vt==='M'){
@@ -798,7 +798,7 @@ function showCpop(ds){
     var tags='';
     if(r.vt==='M') tags+='<span class="cpop-tag" style="background:#2d7a2d">M 재테크</span>';
     if(r.vt==='H') tags+='<span class="cpop-tag" style="background:#1a4d9e">H 건강·취미</span>';
-    if(r.vt==='L') tags+='<span class="cpop-tag" style="background:#7b2fa8">💌 마음·편지</span>';
+    if(r.vt==='L') tags+='<span class="cpop-tag" style="background:none;color:#333;padding:0 2px">💌 마음·편지</span>';
     if(r.vt==='E') tags+='<span class="cpop-tag" style="background:none;color:#333;padding:0 2px">😲 웃김</span>';
     if(r.venue) tags+='<span class="cpop-tag" style="background:#888;font-weight:700">'+esc(r.venue)+'</span>';
     if(r.members) tags+='<span class="cpop-tag" style="background:#4a7a4a;font-weight:700">👤'+esc(r.members)+'</span>';
