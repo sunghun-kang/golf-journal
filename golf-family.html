@@ -217,7 +217,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <div class="top">
   <div style="min-width:0">
     <h1 id="app-title"><img class="title-ic" src="icon-family.png" alt="">랴쟈가족</h1>
-    <div class="subline"><span class="user-badge" id="user-badge"></span><span class="ver">v0.28 · 26-6-24</span></div>
+    <div class="subline"><span class="user-badge" id="user-badge"></span><span class="ver">v0.29 · 26-6-24</span></div>
   </div>
   <div class="top-right">
     <div style="display:flex;gap:4px">
@@ -846,7 +846,7 @@ function cardHtml(r, i){
   var dateStr=r.date+'('+dow(r.date)+(holName?', '+holName:'')+')';
 
   var cardCls='card'+(r.important?' important':r.vt==='M'?' field':r.vt==='H'?' screen':'');
-  var vtHtml=r.vt==='M'?'<span class="vt vt-f">M</span>':r.vt==='H'?'<span class="vt vt-s">H</span>':r.vt==='L'?'<span class="vt vt-l">💌</span>':r.vt==='E'?'<span class="vt vt-e">😲</span>':'';
+  var vtHtml=r.vt==='M'?'<span class="vt vt-f">M</span>':r.vt==='H'?'<span class="vt vt-s">H</span>':r.vt==='L'?'<span style="font-size:1rem;vertical-align:middle">💌</span>':r.vt==='E'?'<span style="font-size:1rem;vertical-align:middle">😲</span>':'';
   var venueHtml=r.venue?'<span class="venue" style="font-weight:700">'+esc(r.venue)+'</span>':'';
   var member1=r.members?(r.members.split(/[,\s]+/).filter(Boolean)[0]||''):'';
   var memberHtml=member1?'<span class="venue" style="background:#e8f0e8;color:#2d6a2d;font-weight:700">👤'+esc(member1)+'</span>':'';
