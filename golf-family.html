@@ -214,7 +214,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <div class="top">
   <div style="min-width:0">
     <h1 id="app-title"><img class="title-ic" src="icon-family.png" alt="">랴쟈가족</h1>
-    <div class="subline"><span class="user-badge" id="user-badge"></span><span class="ver">v0.23 · 26-6-24</span></div>
+    <div class="subline"><span class="user-badge" id="user-badge"></span><span class="ver">v0.24 · 26-6-24</span></div>
   </div>
   <div class="top-right">
     <div style="display:flex;gap:4px">
@@ -241,7 +241,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
   <label><input type="checkbox" id="flt-all" checked onchange="fltChange('all')"> 전체</label>
   <label class="flt-f-lbl"><input type="checkbox" id="flt-f" checked onchange="fltChange('f')"> 재테크</label>
   <label class="flt-s-lbl"><input type="checkbox" id="flt-s" checked onchange="fltChange('s')"> 건강·취미</label>
-  <label class="flt-l-lbl"><input type="checkbox" id="flt-l" checked onchange="fltChange('l')"> 가족·일정</label>
+  <label class="flt-l-lbl"><input type="checkbox" id="flt-l" checked onchange="fltChange('l')"> 마음·편지</label>
   <label class="flt-e-lbl"><input type="checkbox" id="flt-e" checked onchange="fltChange('e')"> 😲</label>
   <label class="flt-star-lbl"><input type="checkbox" id="flt-star" checked onchange="fltChange('star')"> ★</label>
   <label class="flt-pin-lbl"><input type="checkbox" id="flt-pin" checked onchange="fltChange('pin')"> 📌</label>
@@ -265,7 +265,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
           <option value="">없음</option>
           <option value="M">M 재테크</option>
           <option value="H">H 건강·취미</option>
-          <option value="L">👪 가족·일정</option>
+          <option value="L">💌 마음·편지</option>
           <option value="E">😲 웃김</option>
         </select>
       </div>
@@ -798,7 +798,7 @@ function showCpop(ds){
     var tags='';
     if(r.vt==='M') tags+='<span class="cpop-tag" style="background:#2d7a2d">M 재테크</span>';
     if(r.vt==='H') tags+='<span class="cpop-tag" style="background:#1a4d9e">H 건강·취미</span>';
-    if(r.vt==='L') tags+='<span class="cpop-tag" style="background:#7b2fa8">👪 가족·일정</span>';
+    if(r.vt==='L') tags+='<span class="cpop-tag" style="background:#7b2fa8">💌 마음·편지</span>';
     if(r.vt==='E') tags+='<span class="cpop-tag" style="background:none;color:#333;padding:0 2px">😲 웃김</span>';
     if(r.venue) tags+='<span class="cpop-tag" style="background:#888;font-weight:700">'+esc(r.venue)+'</span>';
     if(r.members) tags+='<span class="cpop-tag" style="background:#4a7a4a;font-weight:700">👤'+esc(r.members)+'</span>';
@@ -828,7 +828,7 @@ function cardHtml(r, i){
   var dateStr=r.date+'('+dow(r.date)+(holName?', '+holName:'')+')';
 
   var cardCls='card'+(r.important?' important':r.vt==='M'?' field':r.vt==='H'?' screen':'');
-  var vtHtml=r.vt==='M'?'<span class="vt vt-f">M</span>':r.vt==='H'?'<span class="vt vt-s">H</span>':r.vt==='L'?'<span class="vt vt-l">가족</span>':r.vt==='E'?'<span class="vt vt-e">😲</span>':'';
+  var vtHtml=r.vt==='M'?'<span class="vt vt-f">M</span>':r.vt==='H'?'<span class="vt vt-s">H</span>':r.vt==='L'?'<span class="vt vt-l">💌</span>':r.vt==='E'?'<span class="vt vt-e">😲</span>':'';
   var venueHtml=r.venue?'<span class="venue" style="font-weight:700">'+esc(r.venue)+'</span>':'';
   var member1=r.members?(r.members.split(/[,\s]+/).filter(Boolean)[0]||''):'';
   var memberHtml=member1?'<span class="venue" style="background:#e8f0e8;color:#2d6a2d;font-weight:700">👤'+esc(member1)+'</span>':'';
@@ -1154,7 +1154,7 @@ function importFile(){
 function exportExcel(){
   // ── 색상 정의 ──────────────────────────────────────────
   var VT_BG  ={'M':'2d7a2d','H':'1a4d9e','L':'7b2fa8','E':'e0a800'};
-  var VT_LBL ={'M':'재테크','H':'건강·취미','L':'가족·일정','E':'웃김'};
+  var VT_LBL ={'M':'재테크','H':'건강·취미','L':'마음·편지','E':'웃김'};
   var IMP_BG ='d42020';
   var HDR_BG ='1f497d';
 
