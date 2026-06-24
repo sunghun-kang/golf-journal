@@ -146,7 +146,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'방콕</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.39 · 26-6-24</div></div>
+    <div><h1>🏌️ 강'방콕</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.40 · 26-6-24</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">달력</button>
@@ -710,7 +710,6 @@ function render(){
   var topPin=-1;
   for(var mk=0; mk<matched.length; mk++){ if(data[matched[mk]].pinned){ topPin=matched[mk]; break; } }
   if(topPin>=0){
-    html+='<div class="div-pin">📌 게시</div>';
     html+=cardHtml(data[topPin], topPin);
   }
   // 일반 목록 (연/월 구분)

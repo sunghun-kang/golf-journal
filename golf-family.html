@@ -213,7 +213,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <div class="top">
   <div style="min-width:0">
     <h1 id="app-title"><img class="title-ic" src="icon-family.png" alt="">랴쟈가족</h1>
-    <div class="subline"><span class="user-badge" id="user-badge"></span><span class="ver">v0.18 · 26-6-24</span></div>
+    <div class="subline"><span class="user-badge" id="user-badge"></span><span class="ver">v0.19 · 26-6-24</span></div>
   </div>
   <div class="top-right">
     <div style="display:flex;gap:4px">
@@ -937,7 +937,6 @@ function render(){
   var topPin=-1;
   for(var mk=0; mk<matched.length; mk++){ if(data[matched[mk]].pinned){ topPin=matched[mk]; break; } }
   if(topPin>=0){
-    html+='<div class="div-pin">📌 게시</div>';
     html+=cardHtml(data[topPin], topPin);
   }
   // 일반 목록 (연/월 구분)
