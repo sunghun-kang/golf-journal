@@ -57,7 +57,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .date.sat{color:#1a8a1a}
 
 .vt{font-size:0.71rem;font-weight:700;color:#fff;padding:2px 7px;border-radius:4px;flex-shrink:0}
-.vt-f{background:#2d7a2d}.vt-s{background:#1a4d9e}.vt-l{background:#7b2fa8}.vt-e{background:#8b4513}.vt-c{background:rgb(220,100,0)}.vt-l{background:#7b2fa8}
+.vt-f{background:#2d7a2d}.vt-s{background:#1a4d9e}.vt-l{background:#7b2fa8}.vt-e{background:none;color:inherit;padding:0 2px;font-size:0.95rem}.vt-c{background:rgb(220,100,0)}.vt-l{background:#7b2fa8}
 .venue{font-size:0.76rem;color:#555;background:#eee;padding:2px 7px;border-radius:4px;flex-shrink:0}
 
 .title{font-size:0.87rem;line-height:1.4;flex:1;min-width:0;word-break:keep-all}
@@ -98,8 +98,8 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .flt-f-lbl input{accent-color:#2d7a2d}
 .flt-s-lbl{color:#1a4d9e;font-weight:700}
 .flt-s-lbl input{accent-color:#1a4d9e}
-.flt-e-lbl{color:#8b4513;font-weight:700}
-.flt-e-lbl input{accent-color:#8b4513}
+.flt-e-lbl{color:#c79100;font-weight:700}
+.flt-e-lbl input{accent-color:#c79100}
 .flt-l-lbl{color:#7b2fa8;font-weight:700}
 .flt-l-lbl input{accent-color:#7b2fa8}
 .flt-star-lbl{color:#d42020;font-weight:700}
@@ -129,6 +129,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .ctag.ts{background:#1a4d9e;}
 .ctag.tn{background:#777;}
 .ctag.ti{background:#d42020;}
+.ctag.te{background:none;color:#333;padding:1px 0;}
 /* 팝업 */
 .cpop{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);z-index:999;align-items:flex-start;justify-content:center;padding-top:70px;}
 .cpop.on{display:flex;}
@@ -213,7 +214,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <div class="top">
   <div style="min-width:0">
     <h1 id="app-title"><img class="title-ic" src="icon-family.png" alt="">랴쟈가족</h1>
-    <div class="subline"><span class="user-badge" id="user-badge"></span><span class="ver">v0.20 · 26-6-24</span></div>
+    <div class="subline"><span class="user-badge" id="user-badge"></span><span class="ver">v0.21 · 26-6-24</span></div>
   </div>
   <div class="top-right">
     <div style="display:flex;gap:4px">
@@ -265,7 +266,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
           <option value="M">M 재테크</option>
           <option value="H">H 건강·취미</option>
           <option value="L">L 人生</option>
-          <option value="E">😆 웃김</option>
+          <option value="E">😲 웃김</option>
         </select>
       </div>
     </div>
@@ -757,7 +758,7 @@ function renderCal(){
       var recs=dm[ds];
       recs.forEach(function(r,i){
         if(i>=3){ if(i===3) h+='<span style="font-size:0.65rem;color:#999;padding:0 2px">+'+(recs.length-3)+'개</span>'; return; }
-        var tc=r.vt==='M'?'tf':r.important?'ti':r.vt==='H'?'ts':'tn';
+        var tc=r.vt==='M'?'tf':r.important?'ti':r.vt==='H'?'ts':r.vt==='E'?'te':'tn';
         var member1=r.members?(r.members.split(/[,\s]+/).filter(Boolean)[0]||''):'';
         var tagTxt;
         if(r.vt==='M'){
@@ -765,7 +766,7 @@ function renderCal(){
         } else if(r.vt==='H'){
           tagTxt='H '+esc(r.venue||'건강·취미');
         } else if(r.vt==='E') {
-          tagTxt='😆 '+esc(r.venue||'웃김');
+          tagTxt='😲 '+esc(r.venue||'웃김');
         } else {
           tagTxt=esc((r.title||'').slice(0,10));
         }
@@ -798,7 +799,7 @@ function showCpop(ds){
     if(r.vt==='M') tags+='<span class="cpop-tag" style="background:#2d7a2d">M 재테크</span>';
     if(r.vt==='H') tags+='<span class="cpop-tag" style="background:#1a4d9e">H 건강·취미</span>';
     if(r.vt==='L') tags+='<span class="cpop-tag" style="background:#7b2fa8">人生</span>';
-    if(r.vt==='E') tags+='<span class="cpop-tag" style="background:#8b4513">😆 웃김</span>';
+    if(r.vt==='E') tags+='<span class="cpop-tag" style="background:none;color:#333;padding:0 2px">😲 웃김</span>';
     if(r.venue) tags+='<span class="cpop-tag" style="background:#888;font-weight:700">'+esc(r.venue)+'</span>';
     if(r.members) tags+='<span class="cpop-tag" style="background:#4a7a4a;font-weight:700">👤'+esc(r.members)+'</span>';
     if(r.important) tags+='<span class="cpop-tag" style="background:#d42020">🔴 중요</span>';
@@ -827,7 +828,7 @@ function cardHtml(r, i){
   var dateStr=r.date+'('+dow(r.date)+(holName?', '+holName:'')+')';
 
   var cardCls='card'+(r.important?' important':r.vt==='M'?' field':r.vt==='H'?' screen':'');
-  var vtHtml=r.vt==='M'?'<span class="vt vt-f">M</span>':r.vt==='H'?'<span class="vt vt-s">H</span>':r.vt==='L'?'<span class="vt vt-l">人</span>':r.vt==='E'?'<span class="vt vt-e">😆</span>':'';
+  var vtHtml=r.vt==='M'?'<span class="vt vt-f">M</span>':r.vt==='H'?'<span class="vt vt-s">H</span>':r.vt==='L'?'<span class="vt vt-l">人</span>':r.vt==='E'?'<span class="vt vt-e">😲</span>':'';
   var venueHtml=r.venue?'<span class="venue" style="font-weight:700">'+esc(r.venue)+'</span>':'';
   var member1=r.members?(r.members.split(/[,\s]+/).filter(Boolean)[0]||''):'';
   var memberHtml=member1?'<span class="venue" style="background:#e8f0e8;color:#2d6a2d;font-weight:700">👤'+esc(member1)+'</span>':'';
@@ -1152,7 +1153,7 @@ function importFile(){
 
 function exportExcel(){
   // ── 색상 정의 ──────────────────────────────────────────
-  var VT_BG  ={'M':'2d7a2d','H':'1a4d9e','L':'7b2fa8','E':'8b4513'};
+  var VT_BG  ={'M':'2d7a2d','H':'1a4d9e','L':'7b2fa8','E':'e0a800'};
   var VT_LBL ={'M':'재테크','H':'건강·취미','L':'人生','E':'웃김'};
   var IMP_BG ='d42020';
   var HDR_BG ='1f497d';
