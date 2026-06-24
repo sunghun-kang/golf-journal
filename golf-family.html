@@ -214,7 +214,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <div class="top">
   <div style="min-width:0">
     <h1 id="app-title"><img class="title-ic" src="icon-family.png" alt="">랴쟈가족</h1>
-    <div class="subline"><span class="user-badge" id="user-badge"></span><span class="ver">v0.25 · 26-6-24</span></div>
+    <div class="subline"><span class="user-badge" id="user-badge"></span><span class="ver">v0.26 · 26-6-24</span></div>
   </div>
   <div class="top-right">
     <div style="display:flex;gap:4px">
@@ -297,8 +297,22 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
     </div>
     <div class="mbtns">
       <button class="bc" onclick="if(confirm('취소할까요?'))closeOv()">취소</button>
+      <button class="bx" id="btnPolish" onclick="polishMemo()" style="background:#7b2fa8">✨ 꾸미기</button>
       <button class="bs" onclick="saveMod()">저장</button>
       <button class="bx" onclick="exportExcel()">📊 Excel</button>
+    </div>
+  </div>
+</div>
+<div class="ov" id="polish-ov">
+  <div class="modal" style="max-width:560px">
+    <h2>✨ AI 꾸미기 제안</h2>
+    <div style="font-size:0.76rem;color:#888;margin:2px 0 3px">원문</div>
+    <div id="polish-orig" style="background:#f5f5f3;border-radius:8px;padding:8px;font-size:0.84rem;line-height:1.6;white-space:pre-wrap;max-height:110px;overflow:auto"></div>
+    <div style="font-size:0.78rem;color:#1a7a1a;font-weight:700;margin:11px 0 3px">다듬은 글 ✨</div>
+    <div id="polish-new" style="background:#eef7ee;border:1px solid #cfe6cf;border-radius:8px;padding:8px;font-size:0.9rem;line-height:1.7;white-space:pre-wrap;max-height:220px;overflow:auto"></div>
+    <div class="mbtns">
+      <button class="bc" onclick="closePolish()">취소(원문유지)</button>
+      <button class="bs" onclick="applyPolish()">✅ 이걸로 적용</button>
     </div>
   </div>
 </div>
@@ -1060,6 +1074,31 @@ function save(){
 }
 
 function closeOv(){document.getElementById('ov').classList.remove('open');}
+
+// ── ✨ AI 꾸미기 (Supabase Edge Function 'polish' 경유) ──
+var polishText='';
+function polishMemo(){
+  var ta=document.getElementById('mMemo');
+  var text=(ta.value||'').trim();
+  if(!text){ alert('먼저 내용을 작성해 주세요.'); return; }
+  if(!currentUser){ alert('로그인 후 사용할 수 있어요.'); return; }
+  var btn=document.getElementById('btnPolish'); var ot=btn.textContent;
+  btn.disabled=true; btn.textContent='✨ 다듬는중...';
+  sb.functions.invoke('polish', { body:{ text:text } })
+  .then(function(res){
+    btn.disabled=false; btn.textContent=ot;
+    if(res.error){ alert('꾸미기 실패 ㅠㅠ\n\n'+(res.error.message||res.error)+'\n\n(아직 AI 중계함수 배포/키 설정 전이면 이 오류가 나요)'); return; }
+    if(res.data && res.data.error){ alert('꾸미기 오류: '+res.data.error); return; }
+    var out=res.data && res.data.result;
+    if(!out){ alert('결과가 비었어요. 잠시 후 다시 시도해 주세요.'); return; }
+    polishText=out;
+    document.getElementById('polish-orig').textContent=text;
+    document.getElementById('polish-new').textContent=out;
+    document.getElementById('polish-ov').classList.add('open');
+  });
+}
+function closePolish(){ document.getElementById('polish-ov').classList.remove('open'); }
+function applyPolish(){ document.getElementById('mMemo').value=polishText; closePolish(); }
 function uuid(){
   if(window.crypto && crypto.randomUUID) return crypto.randomUUID();
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,function(c){var r=Math.random()*16|0,v=c==='x'?r:(r&0x3|0x8);return v.toString(16);});
