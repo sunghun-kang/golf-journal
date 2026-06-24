@@ -95,6 +95,8 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .flt-l-lbl input{accent-color:#7b2fa8}
 .flt-star-lbl{color:#d42020;font-weight:700}
 .flt-star-lbl input{accent-color:#d42020}
+.flt-pin-lbl{color:#1a4d9e;font-weight:700}
+.flt-pin-lbl input{accent-color:#1a4d9e}
 .flt-c-lbl{color:rgb(220,100,0);font-weight:700}
 .flt-c-lbl input{accent-color:rgb(220,100,0)}
 .flt-l-lbl{color:#7b2fa8;font-weight:700}
@@ -141,7 +143,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'방콕</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.37 · 26-6-24</div></div>
+    <div><h1>🏌️ 강'방콕</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.38 · 26-6-24</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">달력</button>
@@ -171,6 +173,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
   <label class="flt-e-lbl"><input type="checkbox" id="flt-e" checked onchange="fltChange('e')"> 영어</label>
   <label class="flt-c-lbl"><input type="checkbox" id="flt-c" checked onchange="fltChange('c')"> 회사</label>
   <label class="flt-star-lbl"><input type="checkbox" id="flt-star" checked onchange="fltChange('star')"> 중요</label>
+  <label class="flt-pin-lbl"><input type="checkbox" id="flt-pin" checked onchange="fltChange('pin')"> 📌게시</label>
   <input id="q" type="text" placeholder="검색..." style="flex:1;min-width:80px;padding:4px 8px;border-radius:6px;border:1px solid #ccc;font-size:0.82rem;font-family:inherit">
 </div>
 <div id="list-sec">
@@ -499,6 +502,7 @@ function renderCal(){
   var fC=document.getElementById('flt-c').checked;
   var fStar=document.getElementById('flt-star').checked;
   var fN=document.getElementById('flt-all').checked;
+  var fPin=document.getElementById('flt-pin').checked;
   var dm={};
   data.forEach(function(r){
     var show=false;
@@ -508,6 +512,7 @@ function renderCal(){
     if(fE && r.vt==='E') show=true;
     if(fC && r.vt==='C') show=true;
     if(fStar && r.important) show=true;
+    if(fPin && r.pinned) show=true;
     if(fN && r.vt!=='F' && r.vt!=='S' && r.vt!=='L' && r.vt!=='E' && r.vt!=='C' && !r.important) show=true;
     if(!show) return;
     if(!dm[r.date])dm[r.date]=[];
@@ -678,6 +683,7 @@ function render(){
   var fC=document.getElementById('flt-c').checked;
   var fStar=document.getElementById('flt-star').checked;
   var fN=document.getElementById('flt-all').checked;
+  var fPin=document.getElementById('flt-pin').checked;
   var matched=[];
   for(var i=0;i<data.length;i++){
     var r=data[i];
@@ -691,22 +697,24 @@ function render(){
     if(fE && r.vt==='E') show=true;
     if(fC && r.vt==='C') show=true;
     if(fStar && r.important) show=true;
+    if(fPin && r.pinned) show=true;
     if(fN && r.vt!=='F' && r.vt!=='S' && r.vt!=='L' && r.vt!=='E' && r.vt!=='C' && !r.important) show=true;
     if(!show) continue;
     matched.push(i);
   }
   var html='';
-  // 📌 게시 — 맨 위 고정
-  var pinned=matched.filter(function(i){return data[i].pinned;});
-  if(pinned.length){
+  // 📌 게시 — 맨 위에 최신 1개만 표시
+  var topPin=-1;
+  for(var mk=0; mk<matched.length; mk++){ if(data[matched[mk]].pinned){ topPin=matched[mk]; break; } }
+  if(topPin>=0){
     html+='<div class="div-pin">📌 게시</div>';
-    pinned.forEach(function(i){ html+=cardHtml(data[i], i); });
+    html+=cardHtml(data[topPin], topPin);
   }
   // 일반 목록 (연/월 구분)
   var lastYear='', lastMonth='';
   matched.forEach(function(i){
     var r=data[i];
-    if(r.pinned) return;
+    if(i===topPin) return;
     var yr=r.date.slice(0,4), mo=r.date.slice(0,7);
     if(!q){
       if(yr!==lastYear){ html+='<div class="div-year">'+yr+'년</div>'; lastYear=yr; lastMonth=''; }
@@ -830,11 +838,6 @@ function saveMod(){
   if(!date){alert('날짜는 필수!');return;}
   if(!title){alert('키워드는 필수!');return;}
   var wantPin=document.getElementById('mPin').checked;
-  if(wantPin){
-    var pinCnt=0;
-    for(var pi=0;pi<data.length;pi++){ if(pi!==editIdx && data[pi].pinned) pinCnt++; }
-    if(pinCnt>=3){ alert('📌 게시는 최대 3개까지예요.\n다른 게시글을 먼저 해제하세요.'); return; }
-  }
   var now = nowKST();
   var rec={
     date:date,vt:document.getElementById('mVt').value,
@@ -1173,7 +1176,7 @@ function fltChange(type){
     document.getElementById('flt-e').checked=all;
     document.getElementById('flt-c').checked=all;
     document.getElementById('flt-star').checked=all;
-    
+    document.getElementById('flt-pin').checked=all;
   } else {
     var f=document.getElementById('flt-f').checked;
     var s=document.getElementById('flt-s').checked;
@@ -1181,8 +1184,8 @@ function fltChange(type){
     var e=document.getElementById('flt-e').checked;
     var c=document.getElementById('flt-c').checked;
     var star=document.getElementById('flt-star').checked;
-    var n=true;
-    document.getElementById('flt-all').checked=(f&&s&&l&&e&&c&&star&&n);
+    var pin=document.getElementById('flt-pin').checked;
+    document.getElementById('flt-all').checked=(f&&s&&l&&e&&c&&star&&pin);
   }
   render(); renderCal();
 }

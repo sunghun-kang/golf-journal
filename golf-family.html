@@ -39,6 +39,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .list{padding:10px 12px}
 .div-month{margin-top:5px;margin-bottom:1px;padding:1px 6px;font-size:0.78rem;font-weight:700;color:#557;letter-spacing:0.05em;border-bottom:1px solid #ccc}
 .div-year{margin-top:5px;margin-bottom:1px;padding:1px 6px;font-size:0.83rem;font-weight:700;color:#1b3a1b;border-bottom:2px solid #1b3a1b;letter-spacing:0.08em}
+.div-pin{margin-top:4px;margin-bottom:2px;padding:2px 6px;font-size:0.8rem;font-weight:700;color:#1a4d9e;border-bottom:2px solid #1a4d9e;letter-spacing:0.05em}
 
 .card{background:#fff;border-left:4px solid #ddd;border-radius:0 9px 9px 0;margin:3px 0;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
 .card.field{border-left-color:#2d7a2d}
@@ -100,6 +101,8 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .flt-l-lbl input{accent-color:#7b2fa8}
 .flt-star-lbl{color:#d42020;font-weight:700}
 .flt-star-lbl input{accent-color:#d42020}
+.flt-pin-lbl{color:#1a4d9e;font-weight:700}
+.flt-pin-lbl input{accent-color:#1a4d9e}
 .flt-c-lbl{color:rgb(220,100,0);font-weight:700}
 .flt-c-lbl input{accent-color:rgb(220,100,0)}
 .flt-l-lbl{color:#7b2fa8;font-weight:700}
@@ -207,7 +210,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <div class="top">
   <div style="min-width:0">
     <h1 id="app-title"><img class="title-ic" src="icon-family.png" alt="">랴쟈가족</h1>
-    <div class="subline"><span class="user-badge" id="user-badge"></span><span class="ver">v0.16 · 26-6-24</span></div>
+    <div class="subline"><span class="user-badge" id="user-badge"></span><span class="ver">v0.17 · 26-6-24</span></div>
   </div>
   <div class="top-right">
     <div style="display:flex;gap:4px">
@@ -238,6 +241,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
   <label class="flt-e-lbl"><input type="checkbox" id="flt-e" checked onchange="fltChange('e')"> 영어</label>
   <label class="flt-c-lbl"><input type="checkbox" id="flt-c" checked onchange="fltChange('c')"> 회사</label>
   <label class="flt-star-lbl"><input type="checkbox" id="flt-star" checked onchange="fltChange('star')"> 중요</label>
+  <label class="flt-pin-lbl"><input type="checkbox" id="flt-pin" checked onchange="fltChange('pin')"> 📌게시</label>
   <input id="q" type="text" placeholder="검색..." style="flex:1;min-width:80px;padding:4px 8px;border-radius:6px;border:1px solid #ccc;font-size:0.82rem;font-family:inherit">
 </div>
 <div id="list-sec">
@@ -286,6 +290,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
         <label style="display:inline-flex;align-items:center;gap:2px;font-size:0.78rem;color:#1a4d9e;white-space:nowrap"><input type="radio" name="mColor" value="blue"> 파랑</label>
         <label style="display:inline-flex;align-items:center;gap:2px;font-size:0.78rem;white-space:nowrap"><input type="checkbox" id="mBold"> <b>굵게</b></label>
         <label style="display:inline-flex;align-items:center;gap:2px;font-size:0.78rem;color:#d42020;white-space:nowrap"><input type="checkbox" id="mImp"> ★중요</label>
+        <label style="display:inline-flex;align-items:center;gap:2px;font-size:0.78rem;color:#1a4d9e;white-space:nowrap"><input type="checkbox" id="mPin"> 📌게시</label>
       </div>
     </div>
     <div class="mbtns">
@@ -463,7 +468,7 @@ function recToRow(r){
     author_id: currentUser.id,
     author_name: currentName,
     share: r.share === 'family' ? 'family' : 'private',
-    rec: { date:r.date, vt:r.vt, venue:r.venue, members:r.members, title:r.title, memo:r.memo, important:r.important, color:r.color, bold:r.bold, media:r.media||[] },
+    rec: { date:r.date, vt:r.vt, venue:r.venue, members:r.members, title:r.title, memo:r.memo, important:r.important, pinned:!!r.pinned, color:r.color, bold:r.bold, media:r.media||[] },
     updated_at: new Date().toISOString()
   };
 }
@@ -722,6 +727,7 @@ function renderCal(){
   var fC=document.getElementById('flt-c').checked;
   var fStar=document.getElementById('flt-star').checked;
   var fN=document.getElementById('flt-all').checked;
+  var fPin=document.getElementById('flt-pin').checked;
   var dm={};
   data.forEach(function(r){
     var show=false;
@@ -731,6 +737,7 @@ function renderCal(){
     if(fE && r.vt==='E') show=true;
     if(fC && r.vt==='C') show=true;
     if(fStar && r.important) show=true;
+    if(fPin && r.pinned) show=true;
     if(fN && r.vt!=='M' && r.vt!=='H' && r.vt!=='L' && r.vt!=='E' && r.vt!=='C' && !r.important) show=true;
     if(!show) return;
     if(!dm[r.date])dm[r.date]=[];
@@ -814,6 +821,86 @@ document.addEventListener('click',function(e){
 });
 
 
+function cardHtml(r, i){
+  var dw=dowN(r.date);
+  var isHol=HOLIDAYS.has(r.date);
+  var holName=isHol?HOLIDAYS.get(r.date):'';
+  var dateColor=(dw===0||isHol)?'sun':(dw===6?'sat':'');
+  var dateStr=r.date+'('+dow(r.date)+(holName?', '+holName:'')+')';
+
+  var cardCls='card'+(r.important?' important':r.vt==='M'?' field':r.vt==='H'?' screen':'');
+  var vtHtml=r.vt==='M'?'<span class="vt vt-f">M</span>':r.vt==='H'?'<span class="vt vt-s">H</span>':r.vt==='L'?'<span class="vt vt-l">人</span>':r.vt==='E'?'<span class="vt vt-e">E</span>':r.vt==='C'?'<span class="vt vt-c">C</span>':'';
+  var venueHtml=r.venue?'<span class="venue" style="font-weight:700">'+esc(r.venue)+'</span>':'';
+  var member1=r.members?(r.members.split(/[,\s]+/).filter(Boolean)[0]||''):'';
+  var memberHtml=member1?'<span class="venue" style="background:#e8f0e8;color:#2d6a2d;font-weight:700">👤'+esc(member1)+'</span>':'';
+  var mine=isMine(r);
+  var shareHtml=r.share==='family'?'<span class="share-fam-tag">👨‍👩‍👧‍👦 가족</span>':'';
+  var authorHtml=(!mine && r.authorName)?'<span class="author-tag">'+esc(nick(r.authorName))+'</span>':'';
+  var memoHtml=r.memo?'<div class="memo">'+hilite(r.memo)+'</div>':'';
+
+  // 미디어 표시
+  var mediaHtml='';
+  if(r.media&&r.media.length){
+    mediaHtml='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">';
+    var bodyImgIdx=0;
+    r.media.forEach(function(m){
+      if(m.type==='image'){
+        mediaHtml+='<img src="'+m.data+'" style="max-width:160px;max-height:120px;border-radius:6px;border:1px solid #ddd;cursor:pointer" onclick="openPhoto('+i+','+bodyImgIdx+')">';
+        bodyImgIdx++;
+      } else {
+        mediaHtml+='<video src="'+m.data+'" controls style="max-width:240px;max-height:160px;border-radius:6px;border:1px solid #ddd"></video>';
+      }
+    });
+    mediaHtml+='</div>';
+  }
+
+  var hasBody=r.memo||mediaHtml;
+  return '<div class="'+cardCls+'" id="c'+i+'">'
+    +'<div class="row" onclick="tog('+i+')">'
+    +'<div class="row-top">'
+    +(r.pinned?'<span title="게시" style="font-weight:700">📌</span>':'')
+    +(r.important?'<span style="color:#d42020;font-weight:700">★</span>':'')
+    +'<span class="date '+dateColor+'">'+dateStr+'</span>'
+    +vtHtml+venueHtml+memberHtml+shareHtml+authorHtml
+    +'<span class="acts" onclick="event.stopPropagation()">'
+    +(hasBody?'<button class="btn-view" id="vb'+i+'" onclick="tog('+i+')">내용보기</button>':'')
+    +(mine?'<button onclick="ed('+i+')">수정</button><button onclick="dlConfirm('+i+')">삭제</button>':'')
+    +'</span></div>'
+    +(function(){
+    var s='';
+    if(r.bold)s+='font-weight:700;';
+    if(r.color==='red')s+='color:#c00;';
+    else if(r.color==='green')s+='color:#1a7a1a;';
+    else if(r.color==='blue')s+='color:#1a4d9e;';
+    var thumbs='';
+    // 메모에서 유튜브 vid 먼저 추출 (이미지 개수 결정에 필요)
+    var ytVid=null;
+    if(r.memo){
+      var ytMatch=r.memo.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
+      if(ytMatch) ytVid=ytMatch[1];
+    }
+    // 이미지: 유튜브 있으면 1개, 없으면 최대 3개
+    if(r.media&&r.media.length){
+      var maxImg=ytVid?1:3;
+      var imgs=r.media.filter(function(m){return m.type==='image';}).slice(0,maxImg);
+      imgs.forEach(function(m,idx){
+        thumbs+='<img src="'+m.data+'" data-idx="'+i+'" data-midx="'+idx+'" class="thumb-img" style="width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid #ccc;cursor:pointer;flex-shrink:0" onclick="event.stopPropagation();openPhoto('+i+','+idx+')">';
+      });
+    }
+    // 유튜브 썸네일 1개 추가
+    if(ytVid){
+      thumbs+='<a href="https://youtu.be/'+ytVid+'" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="position:relative;display:inline-block;flex-shrink:0;text-decoration:none;line-height:0">'
+        +'<img src="https://img.youtube.com/vi/'+ytVid+'/default.jpg" style="width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid #ccc" onerror="this.style.display=\'none\'">'
+        +'<span style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:13px;text-shadow:0 1px 3px rgba(0,0,0,0.9);pointer-events:none">▶</span>'
+        +'</a>';
+    }
+    return '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:4px"><div class="title" style="'+s+'">'+hilite(r.title)+'</div>'+(thumbs?'<div style="display:flex;gap:3px;flex-shrink:0">'+thumbs+'</div>':'')+'</div>';
+  })()
+    +'</div>'
+    +'<div class="body" id="b'+i+'">'+(memoHtml)+(mediaHtml)+'</div>'
+    +'</div>';
+}
+
 function render(){
   var q=document.getElementById('q').value.toLowerCase();
   var fF=document.getElementById('flt-f').checked;
@@ -823,8 +910,8 @@ function render(){
   var fC=document.getElementById('flt-c').checked;
   var fStar=document.getElementById('flt-star').checked;
   var fN=document.getElementById('flt-all').checked;
-  var html=''; var shown=0;
-  var lastYear=''; var lastMonth='';
+  var fPin=document.getElementById('flt-pin').checked;
+  var matched=[];
   for(var i=0;i<data.length;i++){
     var r=data[i];
     var text=(r.title+' '+(r.memo||'')+' '+(r.venue||'')).toLowerCase();
@@ -837,102 +924,33 @@ function render(){
     if(fE && r.vt==='E') show=true;
     if(fC && r.vt==='C') show=true;
     if(fStar && r.important) show=true;
+    if(fPin && r.pinned) show=true;
     if(fN && r.vt!=='M' && r.vt!=='H' && r.vt!=='L' && r.vt!=='E' && r.vt!=='C' && !r.important) show=true;
     if(!show) continue;
-    shown++;
-
-    var yr=r.date.slice(0,4); var mo=r.date.slice(0,7);
-    if(!q){
-      if(yr!==lastYear){
-        html+='<div class="div-year">'+yr+'년</div>';
-        lastYear=yr; lastMonth='';
-      }
-      if(mo!==lastMonth){
-        var mNum=parseInt(r.date.slice(5,7));
-        html+='<div class="div-month">'+mNum+'월</div>';
-        lastMonth=mo;
-      }
-    }
-
-    var dw=dowN(r.date);
-    var isHol=HOLIDAYS.has(r.date);
-    var holName=isHol?HOLIDAYS.get(r.date):'';
-    var dateColor=(dw===0||isHol)?'sun':(dw===6?'sat':'');
-    var dateStr=r.date+'('+dow(r.date)+(holName?', '+holName:'')+')'; 
-
-    var cardCls='card'+(r.important?' important':r.vt==='M'?' field':r.vt==='H'?' screen':'');
-    var vtHtml=r.vt==='M'?'<span class="vt vt-f">M</span>':r.vt==='H'?'<span class="vt vt-s">H</span>':r.vt==='L'?'<span class="vt vt-l">人</span>':r.vt==='E'?'<span class="vt vt-e">E</span>':r.vt==='C'?'<span class="vt vt-c">C</span>':'';
-    var venueHtml=r.venue?'<span class="venue" style="font-weight:700">'+esc(r.venue)+'</span>':'';
-    var member1=r.members?(r.members.split(/[,\s]+/).filter(Boolean)[0]||''):'';
-    var memberHtml=member1?'<span class="venue" style="background:#e8f0e8;color:#2d6a2d;font-weight:700">👤'+esc(member1)+'</span>':'';
-    var mine=isMine(r);
-    var shareHtml=r.share==='family'?'<span class="share-fam-tag">👨‍👩‍👧‍👦 가족</span>':'';
-    var authorHtml=(!mine && r.authorName)?'<span class="author-tag">'+esc(nick(r.authorName))+'</span>':'';
-    var memoHtml=r.memo?'<div class="memo">'+hilite(r.memo)+'</div>':'';
-
-    // 미디어 표시
-    var mediaHtml='';
-    if(r.media&&r.media.length){
-      mediaHtml='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">';
-      var bodyImgIdx=0;
-      r.media.forEach(function(m){
-        if(m.type==='image'){
-          mediaHtml+='<img src="'+m.data+'" style="max-width:160px;max-height:120px;border-radius:6px;border:1px solid #ddd;cursor:pointer" onclick="openPhoto('+i+','+bodyImgIdx+')">';
-          bodyImgIdx++;
-        } else {
-          mediaHtml+='<video src="'+m.data+'" controls style="max-width:240px;max-height:160px;border-radius:6px;border:1px solid #ddd"></video>';
-        }
-      });
-      mediaHtml+='</div>';
-    }
-
-    var hasBody=r.memo||mediaHtml;
-    html+='<div class="'+cardCls+'" id="c'+i+'">'
-      +'<div class="row" onclick="tog('+i+')">'
-      +'<div class="row-top">'
-      +(r.important?'<span style="color:#d42020;font-weight:700">★</span>':'')
-      +'<span class="date '+dateColor+'">'+dateStr+'</span>'
-      +vtHtml+venueHtml+memberHtml+shareHtml+authorHtml
-      +'<span class="acts" onclick="event.stopPropagation()">'
-      +(hasBody?'<button class="btn-view" id="vb'+i+'" onclick="tog('+i+')">내용보기</button>':'')
-      +(mine?'<button onclick="ed('+i+')">수정</button><button onclick="dlConfirm('+i+')">삭제</button>':'')
-      +'</span></div>'
-      +(function(){
-      var s='';
-      if(r.bold)s+='font-weight:700;';
-      if(r.color==='red')s+='color:#c00;';
-      else if(r.color==='green')s+='color:#1a7a1a;';
-      else if(r.color==='blue')s+='color:#1a4d9e;';
-      var thumbs='';
-      // 메모에서 유튜브 vid 먼저 추출 (이미지 개수 결정에 필요)
-      var ytVid=null;
-      if(r.memo){
-        var ytMatch=r.memo.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
-        if(ytMatch) ytVid=ytMatch[1];
-      }
-      // 이미지: 유튜브 있으면 1개, 없으면 최대 3개
-      if(r.media&&r.media.length){
-        var maxImg=ytVid?1:3;
-        var imgs=r.media.filter(function(m){return m.type==='image';}).slice(0,maxImg);
-        imgs.forEach(function(m,idx){
-          thumbs+='<img src="'+m.data+'" data-idx="'+i+'" data-midx="'+idx+'" class="thumb-img" style="width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid #ccc;cursor:pointer;flex-shrink:0" onclick="event.stopPropagation();openPhoto('+i+','+idx+')">';
-        });
-      }
-      // 유튜브 썸네일 1개 추가
-      if(ytVid){
-        thumbs+='<a href="https://youtu.be/'+ytVid+'" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="position:relative;display:inline-block;flex-shrink:0;text-decoration:none;line-height:0">'
-          +'<img src="https://img.youtube.com/vi/'+ytVid+'/default.jpg" style="width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid #ccc" onerror="this.style.display=\'none\'">'
-          +'<span style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:13px;text-shadow:0 1px 3px rgba(0,0,0,0.9);pointer-events:none">▶</span>'
-          +'</a>';
-      }
-      return '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:4px"><div class="title" style="'+s+'">'+hilite(r.title)+'</div>'+(thumbs?'<div style="display:flex;gap:3px;flex-shrink:0">'+thumbs+'</div>':'')+'</div>';
-    })()
-      +'</div>'
-      +'<div class="body" id="b'+i+'">'+(memoHtml)+(mediaHtml)+'</div>'
-      +'</div>';
+    matched.push(i);
   }
+  var html='';
+  // 📌 게시 — 맨 위에 최신 1개만 표시
+  var topPin=-1;
+  for(var mk=0; mk<matched.length; mk++){ if(data[matched[mk]].pinned){ topPin=matched[mk]; break; } }
+  if(topPin>=0){
+    html+='<div class="div-pin">📌 게시</div>';
+    html+=cardHtml(data[topPin], topPin);
+  }
+  // 일반 목록 (연/월 구분)
+  var lastYear='', lastMonth='';
+  matched.forEach(function(i){
+    var r=data[i];
+    if(i===topPin) return;
+    var yr=r.date.slice(0,4), mo=r.date.slice(0,7);
+    if(!q){
+      if(yr!==lastYear){ html+='<div class="div-year">'+yr+'년</div>'; lastYear=yr; lastMonth=''; }
+      if(mo!==lastMonth){ var mNum=parseInt(r.date.slice(5,7)); html+='<div class="div-month">'+mNum+'월</div>'; lastMonth=mo; }
+    }
+    html+=cardHtml(r, i);
+  });
   document.getElementById('list').innerHTML=html||'<div style="padding:40px;color:#aaa">검색 결과 없음</div>';
-  document.getElementById('cnt').textContent='총 '+shown+'개';
+  document.getElementById('cnt').textContent='총 '+matched.length+'개';
 }
 
 function tog(i){
@@ -954,6 +972,7 @@ function openAdd(){
   document.getElementById('mTitle').value='';
   document.getElementById('mMemo').value='';
   document.getElementById('mImp').checked=false;
+  document.getElementById('mPin').checked=false;
   document.querySelectorAll('input[name=mColor]').forEach(function(rd,i){rd.checked=(i===0);});
   document.querySelectorAll('input[name=mShare]').forEach(function(rd){rd.checked=(rd.value==='private');});
   document.getElementById('mBold').checked=false;
@@ -974,6 +993,7 @@ function ed(i){
   document.getElementById('mTitle').value=r.title||'';
   document.getElementById('mMemo').value=r.memo||'';
   document.getElementById('mImp').checked=!!r.important;
+  document.getElementById('mPin').checked=!!r.pinned;
   var shareVal=r.share==='family'?'family':'private';
   document.querySelectorAll('input[name=mShare]').forEach(function(rd){rd.checked=(rd.value===shareVal);});
   var colorVal=r.color||'';
@@ -1061,6 +1081,7 @@ function saveMod(){
     members:document.getElementById('mMembers').value.trim(),
     title:title,memo:document.getElementById('mMemo').value.trim(),
     important:document.getElementById('mImp').checked,
+    pinned:document.getElementById('mPin').checked,
     color:document.querySelector('input[name=mColor]:checked').value,
     bold:document.getElementById('mBold').checked,
     share: shareEl? shareEl.value : 'private',
@@ -1413,7 +1434,7 @@ function fltChange(type){
     document.getElementById('flt-e').checked=all;
     document.getElementById('flt-c').checked=all;
     document.getElementById('flt-star').checked=all;
-    
+    document.getElementById('flt-pin').checked=all;
   } else {
     var f=document.getElementById('flt-f').checked;
     var s=document.getElementById('flt-s').checked;
@@ -1421,8 +1442,8 @@ function fltChange(type){
     var e=document.getElementById('flt-e').checked;
     var c=document.getElementById('flt-c').checked;
     var star=document.getElementById('flt-star').checked;
-    var n=true;
-    document.getElementById('flt-all').checked=(f&&s&&l&&e&&c&&star&&n);
+    var pin=document.getElementById('flt-pin').checked;
+    document.getElementById('flt-all').checked=(f&&s&&l&&e&&c&&star&&pin);
   }
   render(); renderCal();
 }
