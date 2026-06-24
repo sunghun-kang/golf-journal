@@ -88,6 +88,9 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .mbtns{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
 .mbtns button{padding:8px 18px;border-radius:7px;border:none;cursor:pointer;font-size:0.87rem;font-family:inherit;font-weight:700}
 .bs{background:#2d7a2d;color:#fff}.bc{background:#eee;color:#444}.bx{background:#1d6f42;color:#fff}
+.memo-tools{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.mtool{background:#ede7f6;color:#5e35b1;border:1px solid #d1c4e9;border-radius:7px;padding:7px 13px;font-size:0.83rem;font-weight:700;cursor:pointer;font-family:inherit}
+.mtool.on{background:#d42020;color:#fff;border-color:#d42020}
 
 /* 탭 */
 .tab-bar{display:flex;background:#fff;border-bottom:2px solid #ddd;}
@@ -214,7 +217,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <div class="top">
   <div style="min-width:0">
     <h1 id="app-title"><img class="title-ic" src="icon-family.png" alt="">랴쟈가족</h1>
-    <div class="subline"><span class="user-badge" id="user-badge"></span><span class="ver">v0.26 · 26-6-24</span></div>
+    <div class="subline"><span class="user-badge" id="user-badge"></span><span class="ver">v0.27 · 26-6-24</span></div>
   </div>
   <div class="top-right">
     <div style="display:flex;gap:4px">
@@ -280,7 +283,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
     <div class="fr"><label>What · 무엇을 (선택)</label><input type="text" id="mVenue" placeholder="무엇을 / 주식, 부동산..."></div>
     <div class="fr"><label>How · 어떻게</label><input type="text" id="mMembers" placeholder="어떻게 할까, 했나"></div>
     <div class="fr"><label>핵심 키워드 / 제목</label><input type="text" id="mTitle" placeholder="오늘의 핵심 키워드"></div>
-    <div class="fr"><label>상세 메모 <span style="font-size:0.68rem;font-weight:400;color:#888">— 부분강조: <code style="background:#fee;padding:0 3px;border-radius:3px;color:#c00">ㅃ빨강ㅃ</code> · <code style="background:#eef;padding:0 3px;border-radius:3px;color:#1a4d9e">ㅍ파랑ㅍ</code> · <code style="background:#efe;padding:0 3px;border-radius:3px;color:#1a7a1a">ㄴ녹색ㄴ</code> · <code style="background:#eee;padding:0 3px;border-radius:3px">**굵게**</code></span></label><textarea id="mMemo" placeholder="ㅡ 상세 내용&#10;ㅡ 느낀점"></textarea></div>
+    <div class="fr"><label>상세 메모 <span style="font-size:0.68rem;font-weight:400;color:#888">— 부분강조: <code style="background:#fee;padding:0 3px;border-radius:3px;color:#c00">ㅃ빨강ㅃ</code> · <code style="background:#eef;padding:0 3px;border-radius:3px;color:#1a4d9e">ㅍ파랑ㅍ</code> · <code style="background:#efe;padding:0 3px;border-radius:3px;color:#1a7a1a">ㄴ녹색ㄴ</code> · <code style="background:#eee;padding:0 3px;border-radius:3px">**굵게**</code></span></label><textarea id="mMemo" placeholder="ㅡ 상세 내용&#10;ㅡ 느낀점"></textarea><div class="memo-tools"><button type="button" class="mtool" id="btnMic" onclick="toggleMic()">🎤 말하기</button><button type="button" class="mtool" id="btnTTS" onclick="toggleTTS()">🔊 듣기</button><button type="button" class="mtool" id="btnPolish" onclick="polishMemo()">✨ 꾸미기</button></div></div>
     <div class="fr"><input type="file" id="mMedia" accept="image/*,video/*" multiple style="font-size:0.82rem;padding:6px 0">
       <div id="mMediaPreview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px"></div>
     </div>
@@ -297,7 +300,6 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
     </div>
     <div class="mbtns">
       <button class="bc" onclick="if(confirm('취소할까요?'))closeOv()">취소</button>
-      <button class="bx" id="btnPolish" onclick="polishMemo()" style="background:#7b2fa8">✨ 꾸미기</button>
       <button class="bs" onclick="saveMod()">저장</button>
       <button class="bx" onclick="exportExcel()">📊 Excel</button>
     </div>
@@ -1073,7 +1075,7 @@ function save(){
   try{localStorage.setItem(lsKey(),JSON.stringify(data));}catch(e){}
 }
 
-function closeOv(){document.getElementById('ov').classList.remove('open');}
+function closeOv(){document.getElementById('ov').classList.remove('open');stopSpeech();}
 
 // ── ✨ AI 꾸미기 (Supabase Edge Function 'polish' 경유) ──
 var polishText='';
@@ -1099,6 +1101,44 @@ function polishMemo(){
 }
 function closePolish(){ document.getElementById('polish-ov').classList.remove('open'); }
 function applyPolish(){ document.getElementById('mMemo').value=polishText; closePolish(); }
+
+// ── 🎤 말하기 (음성→텍스트, 브라우저 내장 / 무료) ──
+var recog=null, recOn=false;
+function setMicBtn(on){ var b=document.getElementById('btnMic'); if(!b)return; b.classList.toggle('on',on); b.textContent= on?'🔴 듣는중(누르면끝)':'🎤 말하기'; }
+function stopMic(){ recOn=false; setMicBtn(false); if(recog){ try{recog.stop();}catch(e){} } }
+function toggleMic(){
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){ alert('이 브라우저는 음성인식을 지원하지 않아요.\n안드로이드/PC 크롬에서 사용해 주세요. (아이폰은 미지원)'); return; }
+  if(recOn){ stopMic(); return; }
+  try{
+    recog=new SR(); recog.lang='ko-KR'; recog.interimResults=false; recog.continuous=true;
+    recog.onresult=function(e){
+      var ta=document.getElementById('mMemo');
+      for(var i=e.resultIndex;i<e.results.length;i++){
+        if(e.results[i].isFinal){
+          var t=(e.results[i][0].transcript||'').trim();
+          if(t){ ta.value += (ta.value && !/\s$/.test(ta.value) ? ' ' : '') + t; }
+        }
+      }
+    };
+    recog.onerror=function(ev){ var er=ev.error; stopMic(); if(er!=='no-speech'&&er!=='aborted') alert('음성인식 오류: '+er+'\n(마이크 권한 허용을 확인하세요)'); };
+    recog.onend=function(){ if(recOn){ try{recog.start();}catch(e){} } };
+    recog.start(); recOn=true; setMicBtn(true);
+  }catch(e){ stopMic(); alert('마이크를 시작할 수 없어요: '+e); }
+}
+
+// ── 🔊 듣기 (텍스트→음성, 브라우저 내장 / 무료) ──
+function setTTSBtn(on){ var b=document.getElementById('btnTTS'); if(!b)return; b.classList.toggle('on',on); b.textContent= on?'⏹ 멈춤':'🔊 듣기'; }
+function toggleTTS(){
+  if(!window.speechSynthesis){ alert('이 브라우저는 읽어주기를 지원하지 않아요.'); return; }
+  if(speechSynthesis.speaking||speechSynthesis.pending){ speechSynthesis.cancel(); setTTSBtn(false); return; }
+  var text=(document.getElementById('mMemo').value||'').trim();
+  if(!text){ alert('읽을 내용이 없어요.'); return; }
+  var u=new SpeechSynthesisUtterance(text); u.lang='ko-KR'; u.rate=1;
+  u.onend=function(){ setTTSBtn(false); }; u.onerror=function(){ setTTSBtn(false); };
+  speechSynthesis.cancel(); speechSynthesis.speak(u); setTTSBtn(true);
+}
+function stopSpeech(){ stopMic(); if(window.speechSynthesis){ try{speechSynthesis.cancel();}catch(e){} setTTSBtn(false); } }
 function uuid(){
   if(window.crypto && crypto.randomUUID) return crypto.randomUUID();
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,function(c){var r=Math.random()*16|0,v=c==='x'?r:(r&0x3|0x8);return v.toString(16);});
