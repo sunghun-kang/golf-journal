@@ -217,7 +217,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <div class="top">
   <div style="min-width:0">
     <h1 id="app-title"><img class="title-ic" src="icon-family.png" alt="">랴쟈가족</h1>
-    <div class="subline"><span class="user-badge" id="user-badge"></span><span class="ver">v0.31 · 26-6-24</span></div>
+    <div class="subline"><span class="user-badge" id="user-badge"></span><span class="ver">v0.32 · 26-6-24</span></div>
   </div>
   <div class="top-right">
     <div style="display:flex;gap:4px">
@@ -1502,6 +1502,24 @@ function exportExcel(){
   document.body.removeChild(a); URL.revokeObjectURL(url);
 }
 
+var FLT_IDS=['flt-f','flt-s','flt-l','flt-e','flt-star','flt-pin'];
+function saveFilters(){
+  try{
+    var st={};
+    FLT_IDS.forEach(function(id){var el=document.getElementById(id); if(el) st[id]=el.checked;});
+    localStorage.setItem('famFilters', JSON.stringify(st));
+  }catch(e){}
+}
+function loadFilters(){
+  try{
+    var raw=localStorage.getItem('famFilters');
+    if(!raw) return;
+    var st=JSON.parse(raw);
+    FLT_IDS.forEach(function(id){var el=document.getElementById(id); if(el&&typeof st[id]==='boolean') el.checked=st[id];});
+    var allOn=FLT_IDS.every(function(id){var el=document.getElementById(id); return el&&el.checked;});
+    var allEl=document.getElementById('flt-all'); if(allEl) allEl.checked=allOn;
+  }catch(e){}
+}
 function fltChange(type){
   if(type==='all'){
     var all=document.getElementById('flt-all').checked;
@@ -1520,7 +1538,7 @@ function fltChange(type){
     var pin=document.getElementById('flt-pin').checked;
     document.getElementById('flt-all').checked=(f&&s&&l&&e&&star&&pin);
   }
-  render(); renderCal();
+  saveFilters(); render(); renderCal();
 }
 
 document.getElementById('q').addEventListener('input',render);
@@ -1532,6 +1550,7 @@ document.getElementById('ov').addEventListener('click',function(e){if(e.target==
 // GAS URL 복원
 
 // 로그인 상태 확인 후 시작 (로그인 전에는 데이터를 불러오지 않음)
+loadFilters();
 render();
 initAuth();
 
