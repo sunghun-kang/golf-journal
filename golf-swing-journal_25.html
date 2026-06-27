@@ -146,7 +146,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.45 · 26-6-24</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.46 · 26-6-24</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">달력</button>
@@ -1169,6 +1169,24 @@ function exportExcel(){
   document.body.removeChild(a); URL.revokeObjectURL(url);
 }
 
+var FLT_IDS=['flt-f','flt-s','flt-l','flt-e','flt-c','flt-star','flt-pin'];
+function saveFilters(){
+  try{
+    var st={};
+    FLT_IDS.forEach(function(id){var el=document.getElementById(id); if(el) st[id]=el.checked;});
+    localStorage.setItem('golfFilters', JSON.stringify(st));
+  }catch(e){}
+}
+function loadFilters(){
+  try{
+    var raw=localStorage.getItem('golfFilters');
+    if(!raw) return;
+    var st=JSON.parse(raw);
+    FLT_IDS.forEach(function(id){var el=document.getElementById(id); if(el&&typeof st[id]==='boolean') el.checked=st[id];});
+    var allOn=FLT_IDS.every(function(id){var el=document.getElementById(id); return el&&el.checked;});
+    var allEl=document.getElementById('flt-all'); if(allEl) allEl.checked=allOn;
+  }catch(e){}
+}
 function fltChange(type){
   if(type==='all'){
     var all=document.getElementById('flt-all').checked;
@@ -1189,7 +1207,7 @@ function fltChange(type){
     var pin=document.getElementById('flt-pin').checked;
     document.getElementById('flt-all').checked=(f&&s&&l&&e&&c&&star&&pin);
   }
-  render(); renderCal();
+  saveFilters(); render(); renderCal();
 }
 
 document.getElementById('q').addEventListener('input',render);
@@ -1208,6 +1226,7 @@ try{
     if(Array.isArray(parsed)&&parsed.length>0) data=parsed;
   }
 }catch(e){}
+loadFilters();
 render();
 loadFromServer();
 
