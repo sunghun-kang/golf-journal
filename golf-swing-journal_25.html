@@ -148,7 +148,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.50 · 26-6-24</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.51 · 26-6-24</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">달력</button>
@@ -197,10 +197,10 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
       <div><label>날짜</label><input type="date" id="mDate"></div>
       <div><label>구분</label>
         <select id="mVt">
-          <option value="N">없음</option>
+          <option value="">없음</option>
           <option value="F">⛳ 필드</option>
           <option value="S">🏌️ 스크린</option>
-          <option value="">🔍 분석</option>
+          <option value="A">🔍 분석</option>
           <option value="L">L 人生</option>
           <option value="E">E 영어</option>
           <option value="C">C 회사</option>
@@ -549,10 +549,10 @@ function renderCal(){
           tagTxt='🏌️ '+esc(r.venue||'스크린');
         } else if(r.vt==='E') {
           tagTxt='E '+esc(r.venue||'영어');
-        } else if(r.vt==='N') {
-          tagTxt=esc((r.title||'').slice(0,10));
-        } else {
+        } else if(r.vt==='A') {
           tagTxt='🔍 '+esc((r.title||'').slice(0,10));
+        } else {
+          tagTxt=esc((r.title||'').slice(0,10));
         }
         if(member1) tagTxt+=' '+esc(member1);
         h+='<span class="ctag '+tc+'" data-date="'+ds+'">'+tagTxt+'</span>';
@@ -585,7 +585,7 @@ function showCpop(ds){
     if(r.vt==='L') tags+='<span class="cpop-tag" style="background:#7b2fa8">人生</span>';
     if(r.vt==='E') tags+='<span class="cpop-tag" style="background:#8b4513">E 영어</span>';
     if(r.vt==='C') tags+='<span class="cpop-tag" style="background:rgb(220,100,0)">C 회사</span>';
-    if(!r.vt) tags+='<span class="cpop-tag" style="background:#0a7d7d">🔍 분석</span>';
+    if(r.vt==='A') tags+='<span class="cpop-tag" style="background:#0a7d7d">🔍 분석</span>';
     if(r.venue) tags+='<span class="cpop-tag" style="background:#888;font-weight:700">'+esc(r.venue)+'</span>';
     if(r.members) tags+='<span class="cpop-tag" style="background:#4a7a4a;font-weight:700">👤'+esc(r.members)+'</span>';
     if(r.important) tags+='<span class="cpop-tag" style="background:#d42020">🔴 중요</span>';
@@ -614,7 +614,7 @@ function cardHtml(r, i){
   var dateStr=r.date+'('+dow(r.date)+(holName?', '+holName:'')+')';
 
   var cardCls='card'+(r.important?' important':r.vt==='F'?' field':r.vt==='S'?' screen':'');
-  var vtHtml=r.vt==='F'?'<span style="font-size:1.3rem;vertical-align:middle">⛳</span>':r.vt==='S'?'<span style="font-size:1.3rem;vertical-align:middle">🏌️</span>':r.vt==='L'?'<span class="vt vt-l">人</span>':r.vt==='E'?'<span class="vt vt-e">E</span>':r.vt==='C'?'<span class="vt vt-c">C</span>':r.vt==='N'?'':'<span style="font-size:1.3rem;vertical-align:middle">🔍</span>';
+  var vtHtml=r.vt==='F'?'<span style="font-size:1.3rem;vertical-align:middle">⛳</span>':r.vt==='S'?'<span style="font-size:1.3rem;vertical-align:middle">🏌️</span>':r.vt==='L'?'<span class="vt vt-l">人</span>':r.vt==='E'?'<span class="vt vt-e">E</span>':r.vt==='C'?'<span class="vt vt-c">C</span>':r.vt==='A'?'<span style="font-size:1.3rem;vertical-align:middle">🔍</span>':'';
   var venueHtml=r.venue?'<span class="venue" style="font-weight:700">'+esc(r.venue)+'</span>':'';
   var member1=r.members?r.members.trim():'';
   var memberHtml=member1?'<span class="venue" style="background:#e8f0e8;color:#2d6a2d;font-weight:700">👤'+esc(member1)+'</span>':'';
