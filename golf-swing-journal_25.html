@@ -152,7 +152,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.66 · 26-6-24</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.67 · 26-6-24</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">달력</button>
@@ -177,7 +177,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <div class="vt-filter">
   <label><input type="checkbox" id="flt-all" checked onchange="fltChange('all')"> 전체</label>
   <label class="flt-f-lbl"><input type="checkbox" id="flt-f" checked onchange="fltChange('f')"> <span style="font-size:0.9rem;letter-spacing:-4px;white-space:nowrap;display:inline-block;vertical-align:middle">⛳🏌️</span></label>
-  <label class="flt-s-lbl"><input type="checkbox" id="flt-s" checked onchange="fltChange('s')"> <span style="font-size:1rem;vertical-align:middle">🎯</span></label>
+  <label class="flt-s-lbl"><input type="checkbox" id="flt-s" checked onchange="fltChange('s')"> <span style="font-size:1rem;vertical-align:middle">🏌️</span></label>
   <label class="flt-n-lbl"><input type="checkbox" id="flt-n" checked onchange="fltChange('n')"> <span style="font-size:0.95rem;vertical-align:middle">🔍</span></label>
   <label class="flt-l-lbl"><input type="checkbox" id="flt-l" checked onchange="fltChange('l')"> 人生</label>
   <label class="flt-e-lbl"><input type="checkbox" id="flt-e" checked onchange="fltChange('e')"> 영어</label>
@@ -203,7 +203,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
         <select id="mVt">
           <option value="">없음</option>
           <option value="F">⛳🏌️ 필드</option>
-          <option value="S">🎯 스크린</option>
+          <option value="S">🏌️ 스크린</option>
           <option value="A">🔍 분석</option>
           <option value="L">L 人生</option>
           <option value="E">E 영어</option>
@@ -550,7 +550,7 @@ function renderCal(){
         if(r.vt==='F'){
           tagTxt='⛳🏌️ '+esc(r.venue||'필드');
         } else if(r.vt==='S'){
-          tagTxt='🎯 '+esc(r.venue||'스크린');
+          tagTxt='🏌️ '+esc(r.venue||'스크린');
         } else if(r.vt==='E') {
           tagTxt='E '+esc(r.venue||'영어');
         } else if(r.vt==='A') {
@@ -585,7 +585,7 @@ function showCpop(ds){
     var cc=r.important?'ci':r.vt==='F'?'cf':r.vt==='S'?'cs':'';
     var tags='';
     if(r.vt==='F') tags+='<span class="cpop-tag" style="background:#2d7a2d">⛳🏌️ 필드</span>';
-    if(r.vt==='S') tags+='<span class="cpop-tag" style="background:#1a4d9e">🎯 스크린</span>';
+    if(r.vt==='S') tags+='<span class="cpop-tag" style="background:#1a4d9e">🏌️ 스크린</span>';
     if(r.vt==='L') tags+='<span class="cpop-tag" style="background:#7b2fa8">人生</span>';
     if(r.vt==='E') tags+='<span class="cpop-tag" style="background:#8b4513">E 영어</span>';
     if(r.vt==='C') tags+='<span class="cpop-tag" style="background:rgb(220,100,0)">C 회사</span>';
@@ -618,7 +618,7 @@ function cardHtml(r, i){
   var dateStr=r.date+'('+dow(r.date)+(holName?', '+holName:'')+')';
 
   var cardCls='card'+(r.important?' important':r.vt==='F'?' field':r.vt==='S'?' screen':'');
-  var vtHtml=r.vt==='F'?'<span style="font-size:0.95rem;letter-spacing:-4px;white-space:nowrap;display:inline-block;flex-shrink:0;vertical-align:middle">⛳🏌️</span>':r.vt==='S'?'<span style="font-size:1.05rem;vertical-align:middle">🎯</span>':r.vt==='L'?'<span class="vt vt-l">人</span>':r.vt==='E'?'<span class="vt vt-e">E</span>':r.vt==='C'?'<span class="vt vt-c">C</span>':r.vt==='A'?'<span style="font-size:1.05rem;vertical-align:middle">🔍</span>':'';
+  var vtHtml=r.vt==='F'?'<span style="font-size:0.95rem;letter-spacing:-4px;white-space:nowrap;display:inline-block;flex-shrink:0;vertical-align:middle">⛳🏌️</span>':r.vt==='S'?'<span style="font-size:1.05rem;vertical-align:middle">🏌️</span>':r.vt==='L'?'<span class="vt vt-l">人</span>':r.vt==='E'?'<span class="vt vt-e">E</span>':r.vt==='C'?'<span class="vt vt-c">C</span>':r.vt==='A'?'<span style="font-size:1.05rem;vertical-align:middle">🔍</span>':'';
   var venueHtml=r.venue?'<span class="venue" style="font-weight:700">'+esc(r.venue)+'</span>':'';
   var member1=r.members?r.members.trim():'';
   var memberHtml=member1?'<span class="venue" style="background:#e8f0e8;color:#2d6a2d;font-weight:700">👤'+esc(member1)+'</span>':'';
