@@ -88,7 +88,9 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .tab-btn{flex:1;padding:9px 0;border:none;background:none;font-size:0.85rem;font-weight:700;color:#888;cursor:pointer;font-family:inherit;border-bottom:3px solid transparent;margin-bottom:-2px;}
 .vt-filter{display:flex;gap:3px;padding:4px 8px;background:#f5f5f0;border-bottom:1px solid #ddd;font-size:0.76rem;flex-wrap:wrap;align-items:center}
 .vt-filter label{display:inline-flex;align-items:center;gap:1px}
-.vt-filter input[type=checkbox]{margin:0 1px 0 0}
+.vt-filter input[type=checkbox]{appearance:none;-webkit-appearance:none;width:15px;height:15px;border:1.5px solid #aaa;border-radius:3px;background:#fff;position:relative;cursor:pointer;margin:0 1px 0 0;flex-shrink:0}
+.vt-filter input[type=checkbox]:checked{border-color:#666}
+.vt-filter input[type=checkbox]:checked::after{content:'\2713';position:absolute;top:50%;left:50%;transform:translate(-50%,-54%);font-size:12px;line-height:1;color:#333;font-weight:900}
 .vt-filter label{display:flex;align-items:center;gap:3px;cursor:pointer;user-select:none}
 .flt-f-lbl{color:#2d7a2d;font-weight:700}
 .flt-f-lbl input{accent-color:#2d7a2d}
@@ -150,7 +152,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.61 · 26-6-24</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.62 · 26-6-24</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">달력</button>
