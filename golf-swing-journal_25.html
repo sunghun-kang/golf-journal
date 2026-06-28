@@ -152,7 +152,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.72 · 26-6-24</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.73 · 26-6-24</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">달력</button>
@@ -230,6 +230,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
       </div>
     </div>
     <div class="mbtns">
+      <button class="bc" id="mDelBtn" onclick="delModal()" style="display:none;background:#d42020;color:#fff;border-color:#d42020">삭제</button>
       <button class="bc" onclick="if(confirm('취소할까요?'))closeOv()">취소</button>
       <button class="bs" onclick="saveMod()">저장</button>
       <button class="bx" onclick="exportExcel()">📊 Excel</button>
@@ -649,9 +650,8 @@ function cardHtml(r, i){
     +'<span class="date '+dateColor+'">'+dateStr+'</span>'
     +vtHtml+venueHtml+memberHtml
     +'<span class="acts" onclick="event.stopPropagation()">'
-    +(hasBody?'<button class="btn-view" id="vb'+i+'" onclick="tog('+i+')">내용보기</button>':'')
+    +(hasBody?'<button class="btn-view" id="vb'+i+'" onclick="tog('+i+')">보기</button>':'')
     +'<button onclick="ed('+i+')">수정</button>'
-    +'<button onclick="dlConfirm('+i+')">삭제</button>'
     +'</span></div>'
     +(function(){
     var s='';
@@ -745,7 +745,7 @@ function tog(i){
   if(!b)return;
   var open=b.style.display==='block';
   b.style.display=open?'none':'block';
-  if(vb)vb.textContent=open?'내용보기':'닫기';
+  if(vb)vb.textContent=open?'보기':'닫기';
 }
 
 function openAdd(){
@@ -764,6 +764,7 @@ function openAdd(){
   document.getElementById('mMedia').value='';
   document.getElementById('mMediaPreview').innerHTML='';
   pendingMedia=[];
+  document.getElementById('mDelBtn').style.display='none';
   document.getElementById('ov').classList.add('open');
 }
 function ed(i){
@@ -783,8 +784,10 @@ function ed(i){
   document.getElementById('mMedia').value='';
   pendingMedia=r.media?r.media.slice():[];
   renderMediaPreview();
+  document.getElementById('mDelBtn').style.display='';
   document.getElementById('ov').classList.add('open');
 }
+function delModal(){if(editIdx<0)return;if(!confirm('삭제할까요?'))return;if(!confirm('정말 삭제합니다!'))return;var i=editIdx;closeOv();dl(i);}
 var pendingMedia=[];
 
 function renderMediaPreview(){
