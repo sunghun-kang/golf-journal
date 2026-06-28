@@ -221,7 +221,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <div class="top">
   <div style="min-width:0">
     <h1 id="app-title"><img class="title-ic" src="icon-family.png" alt="">랴쟈가족</h1>
-    <div class="subline"><span class="user-badge" id="user-badge"></span><span class="ver">v0.43 · 26-6-24</span></div>
+    <div class="subline"><span class="user-badge" id="user-badge"></span><span class="ver">v0.44 · 26-6-24</span></div>
   </div>
   <div class="top-right">
     <div style="display:flex;gap:4px">
@@ -303,6 +303,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
       </div>
     </div>
     <div class="mbtns">
+      <button class="bc" id="mDelBtn" onclick="delModal()" style="display:none;background:#d42020;color:#fff;border-color:#d42020">삭제</button>
       <button class="bc" onclick="if(confirm('취소할까요?'))closeOv()">취소</button>
       <button class="bs" onclick="saveMod()">저장</button>
       <button class="bx" onclick="exportExcel()">📊 Excel</button>
@@ -884,8 +885,8 @@ function cardHtml(r, i){
     +'<span class="date '+dateColor+'">'+dateStr+'</span>'
     +vtHtml+venueHtml+memberHtml+shareHtml+authorHtml
     +'<span class="acts" onclick="event.stopPropagation()">'
-    +(hasBody?'<button class="btn-view" id="vb'+i+'" onclick="tog('+i+')">내용보기</button>':'')
-    +(mine?'<button onclick="ed('+i+')">수정</button><button onclick="dlConfirm('+i+')">삭제</button>':'')
+    +(hasBody?'<button class="btn-view" id="vb'+i+'" onclick="tog('+i+')">보기</button>':'')
+    +(mine?'<button onclick="ed('+i+')">수정</button>':'')
     +'</span></div>'
     +(function(){
     var s='';
@@ -977,7 +978,7 @@ function tog(i){
   if(!b)return;
   var open=b.style.display==='block';
   b.style.display=open?'none':'block';
-  if(vb)vb.textContent=open?'내용보기':'닫기';
+  if(vb)vb.textContent=open?'보기':'닫기';
 }
 
 function openAdd(){
@@ -997,6 +998,7 @@ function openAdd(){
   document.getElementById('mMedia').value='';
   document.getElementById('mMediaPreview').innerHTML='';
   pendingMedia=[];
+  document.getElementById('mDelBtn').style.display='none';
   document.getElementById('ov').classList.add('open');
 }
 function ed(i){
@@ -1020,8 +1022,10 @@ function ed(i){
   document.getElementById('mMedia').value='';
   pendingMedia=r.media?r.media.slice():[];
   renderMediaPreview();
+  document.getElementById('mDelBtn').style.display='';
   document.getElementById('ov').classList.add('open');
 }
+function delModal(){if(editIdx<0)return;if(!confirm('삭제할까요?'))return;if(!confirm('정말 삭제합니다!'))return;var i=editIdx;closeOv();dl(i);}
 var pendingMedia=[];
 
 function renderMediaPreview(){
