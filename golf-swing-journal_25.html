@@ -152,7 +152,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.86 · 26-6-24</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.87 · 26-6-24</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">달력</button>
@@ -271,10 +271,10 @@ function loadFromServer() {
       var localData = data.slice();
       data = mergeData(localData, d);
       save();
-      serverLoaded = true;
+      serverLoaded = true; serverSynced = true;
       showSyncStatus('✅ 동기화완료 ('+data.length+'개)');
     } else {
-      serverLoaded = true;
+      serverLoaded = true; serverSynced = true;
       showSyncStatus('💾 로컬 데이터 사용중 ('+data.length+'개)');
     }
     render();
@@ -288,6 +288,10 @@ function loadFromServer() {
 
 function saveToServer() {
   save();
+  if(!serverSynced){
+    showSyncStatus('💾 로컬만 저장 (서버 미연결 → 덮어쓰기 방지). 🔴이면 잠시 후 🔄');
+    return;
+  }
   showSyncStatus('저장중...');
   fetch(SUPABASE_URL + '/rest/v1/golf_log?id=eq.main', {
     method: 'PATCH',
@@ -441,6 +445,7 @@ var HOLIDAYS = new Map([
 ]);
 var editIdx = -1;
 var serverLoaded = false;
+var serverSynced = false; // 서버에서 실제로 데이터를 받아온 적 있는지 (옛 로컬로 서버 덮어쓰기 방지)
 
 function dow(ds){
   var d=new Date(ds+'T00:00:00');
