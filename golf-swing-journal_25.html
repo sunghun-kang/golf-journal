@@ -152,7 +152,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.87 · 26-6-24</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.88 · 26-6-24</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">달력</button>
@@ -293,27 +293,44 @@ function saveToServer() {
     return;
   }
   showSyncStatus('저장중...');
-  fetch(SUPABASE_URL + '/rest/v1/golf_log?id=eq.main', {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      'apikey': SUPABASE_KEY,
-      'Authorization': 'Bearer ' + SUPABASE_KEY,
-      'Prefer': 'return=minimal'
-    },
-    body: JSON.stringify({data: data, updated_at: new Date().toISOString()})
+  // 1) 서버 최신을 먼저 읽어서 병합 (다른 기기 변경 보존, 항목별 updatedAt 최신 우선)
+  fetch(SUPABASE_URL + '/rest/v1/golf_log?id=eq.main&select=data', {
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+  })
+  .then(function(r){ if(!r.ok) throw new Error('read_'+r.status); return r.json(); })
+  .then(function(j){
+    var srv = j && j[0] && j[0].data;
+    if(Array.isArray(srv)){
+      data = mergeData(data, srv);  // 내 최신편집은 유지 + 다른 기기 최신도 반영
+      save();
+    }
+    // 2) 병합 결과를 저장
+    return fetch(SUPABASE_URL + '/rest/v1/golf_log?id=eq.main', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({data: data, updated_at: new Date().toISOString()})
+    });
   })
   .then(function(response){
-    // HTTP 4xx/5xx 명시적 감지 - silent fail 방지
     if(!response.ok){
       alert('⚠️ 서버 저장 실패! (HTTP '+response.status+')\n\n로컬에만 저장됐어요. 사진이 너무 크거나 서버 용량 초과일 수 있습니다.\n잠시 후 🔄로 다시 시도해보세요.');
       showSyncStatus('❌ 서버 저장실패 (HTTP '+response.status+')');
       throw new Error('http_'+response.status);
     }
     showSyncStatus('✅ 서버 저장완료 ('+data.length+'개)');
+    render();  // 병합으로 다른 기기 변경이 들어왔을 수 있어 갱신
   })
   .catch(function(err){
     if(err && err.message && err.message.indexOf('http_')===0) return; // 이미 알림함
+    if(err && err.message && err.message.indexOf('read_')===0){
+      showSyncStatus('💾 로컬만 저장 (서버읽기 실패 → 덮어쓰기 방지). 🔄 재시도');
+      return;
+    }
     showSyncStatus('💾 로컬 저장됨 (오프라인)');
   });
 }
