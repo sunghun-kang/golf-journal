@@ -152,7 +152,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.89 · 26-6-24</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.90 · 26-6-24</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">달력</button>
@@ -269,13 +269,18 @@ function loadFromServer() {
     var d = j[0] && j[0].data;
     if (Array.isArray(d) && d.length > 0) {
       var localData = data.slice();
+      var srvCount = d.length;
       data = mergeData(localData, d);
       save();
       serverLoaded = true; serverSynced = true;
-      showSyncStatus('✅ 동기화완료 ('+data.length+'개)');
       render();
       // 병합 결과 이 기기에만 있던 글이 있으면 → 서버로 밀어올려 모든 기기가 같은 총량으로 수렴
-      if(data.length > d.length){ saveToServer(); }
+      if(data.length > srvCount){
+        showSyncStatus('⬆️ 서버('+srvCount+') + 이기기 = '+data.length+'개 → 서버로 올리는중...');
+        saveToServer();
+      } else {
+        showSyncStatus('✅ 동기화완료 (서버 '+srvCount+' = '+data.length+'개)');
+      }
       return;
     } else {
       serverLoaded = true; serverSynced = true;
