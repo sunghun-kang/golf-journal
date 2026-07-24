@@ -152,7 +152,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.94 · 26-6-24</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.95 · 26-6-24</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">달력</button>
@@ -1002,7 +1002,30 @@ document.getElementById('mMedia').addEventListener('change',function(e){
 });
 
 function save(){
-  try{localStorage.setItem('golfLog',JSON.stringify(data));}catch(e){}
+  idbSave(data);                                                   // 사진 포함 전체 저장(용량 큼)
+  try{localStorage.setItem('golfLog',JSON.stringify(data));}catch(e){} // 백업(용량 넘으면 조용히 실패)
+}
+// ===== IndexedDB (사진 포함 전체 저장 → localStorage 5MB 한계 해결) =====
+var IDB=null;
+function idbOpen(cb){
+  try{
+    var req=indexedDB.open('golfDB',1);
+    req.onupgradeneeded=function(e){ try{e.target.result.createObjectStore('kv');}catch(_){} };
+    req.onsuccess=function(e){ IDB=e.target.result; cb(); };
+    req.onerror=function(){ cb(); };
+  }catch(e){ cb(); }
+}
+function idbSave(arr){
+  if(!IDB) return;
+  try{ var tx=IDB.transaction('kv','readwrite'); tx.objectStore('kv').put(JSON.stringify(arr),'golfLog'); }catch(e){}
+}
+function idbLoad(cb){
+  if(!IDB){ cb(null); return; }
+  try{
+    var tx=IDB.transaction('kv','readonly'); var rq=tx.objectStore('kv').get('golfLog');
+    rq.onsuccess=function(){ try{ cb(rq.result?JSON.parse(rq.result):null); }catch(e){ cb(null); } };
+    rq.onerror=function(){ cb(null); };
+  }catch(e){ cb(null); }
 }
 
 function closeOv(){document.getElementById('ov').classList.remove('open');}
@@ -1393,17 +1416,21 @@ document.getElementById('ov').addEventListener('click',function(e){if(e.target==
 
 // GAS URL 복원
 
-// localStorage에 저장된 데이터가 있으면 로드
-try{
-  var lsData=localStorage.getItem('golfLog');
-  if(lsData){
-    var parsed=JSON.parse(lsData);
-    if(Array.isArray(parsed)&&parsed.length>0) data=parsed;
-  }
-}catch(e){}
-loadFilters();
-render();
-loadFromServer();
+// 저장 데이터 로드: IndexedDB 우선(사진 포함 전체) → 없으면 localStorage에서 자동 이전
+idbOpen(function(){
+  idbLoad(function(d){
+    if(Array.isArray(d)&&d.length>0){ data=d; }
+    else {
+      try{
+        var lsData=localStorage.getItem('golfLog');
+        if(lsData){ var parsed=JSON.parse(lsData); if(Array.isArray(parsed)&&parsed.length>0){ data=parsed; idbSave(data); } }
+      }catch(e){}
+    }
+    loadFilters();
+    render();
+    loadFromServer();
+  });
+});
 
 </script>
 
