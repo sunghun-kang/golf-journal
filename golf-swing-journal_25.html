@@ -152,7 +152,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.90 · 26-6-24</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.91 · 26-6-24</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">달력</button>
@@ -168,6 +168,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
         <button onclick="openSettings();toggleMore()">⚙️ 연동</button>
         <button onclick="importFile();toggleMore()">📂 가져오기</button>
         <button onclick="exportFile();toggleMore()">💾 보냄</button>
+        <button onclick="migrateToPosts();toggleMore()">🔁 새 동기화로 이전</button>
       </div>
     </div>
     <button class="btn-add" onclick="openAdd()">+ 추가</button>
@@ -259,42 +260,143 @@ var SUPABASE_KEY = 'sb_publishable_OtaDk4iYFhZJs5GBUz7btw_mOtE5MJP';
 
 
 
+var _syncMax='';
 function loadFromServer() {
   showSyncStatus('불러오는중...');
-  fetch(SUPABASE_URL + '/rest/v1/golf_log?id=eq.main&select=data', {
-    headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
-  })
-  .then(function(r){ return r.json(); })
-  .then(function(j){
-    var d = j[0] && j[0].data;
-    if (Array.isArray(d) && d.length > 0) {
-      var localData = data.slice();
-      var srvCount = d.length;
-      data = mergeData(localData, d);
-      save();
-      serverLoaded = true; serverSynced = true;
-      render();
-      // 병합 결과 이 기기에만 있던 글이 있으면 → 서버로 밀어올려 모든 기기가 같은 총량으로 수렴
-      if(data.length > srvCount){
-        showSyncStatus('⬆️ 서버('+srvCount+') + 이기기 = '+data.length+'개 → 서버로 올리는중...');
-        saveToServer();
-      } else {
-        showSyncStatus('✅ 동기화완료 (서버 '+srvCount+' = '+data.length+'개)');
-      }
-      return;
-    } else {
-      serverLoaded = true; serverSynced = true;
-      showSyncStatus('💾 로컬 데이터 사용중 ('+data.length+'개)');
-      render();
-      if(data.length > 0){ saveToServer(); }  // 서버가 비었으면 이 기기 데이터로 채움(병합 저장이라 안전)
-      return;
-    }
+  _syncMax = localStorage.getItem('golfSyncAt2') || '';
+  var base = SUPABASE_URL + '/rest/v1/golf_posts?select=id,data,updated_at&order=updated_at.asc';
+  if(_syncMax){
+    var since = new Date(new Date(_syncMax).getTime() - 5*60*1000).toISOString(); // 5분 버퍼
+    base += '&updated_at=gt.' + encodeURIComponent(since);
+  }
+  var PAGE=50, offset=0, total=0;
+  function loadPage(){
+    return fetch(base+'&limit='+PAGE+'&offset='+offset, { headers: sbH() })
+      .then(function(r){ if(!r.ok) throw new Error('http_'+r.status); return r.json(); })
+      .then(function(rows){
+        if(!Array.isArray(rows)) rows=[];
+        applyServerRows(rows);
+        total+=rows.length;
+        showSyncStatus('불러오는중... '+total+'개');
+        render();
+        if(rows.length===PAGE){ offset+=PAGE; return loadPage(); }
+      });
+  }
+  loadPage()
+  .then(function(){
+    serverLoaded = true; serverSynced = true;
+    if(_syncMax) localStorage.setItem('golfSyncAt2', _syncMax);
+    showSyncStatus('✅ 동기화완료 (받음 '+total+' · 총 '+data.length+'개)');
     render();
+    retryPending();
   })
   .catch(function(){
     serverLoaded = true;
     render();
     showSyncStatus('⚠️ 오프라인 모드 (로컬: '+data.length+'개)');
+  });
+}
+
+// ===== per-record(글 하나=행 하나) + 델타 동기화 (golf_posts) =====
+function sbH(extra){ var h={'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}; if(extra){for(var k in extra)h[k]=extra[k];} return h; }
+function sortData(){ data.sort(function(a,b){ var dc=(b.date||'').localeCompare(a.date||''); if(dc!==0)return dc; return (b.createdAt||b.updatedAt||'').localeCompare(a.createdAt||a.updatedAt||''); }); }
+function getPend(){ try{ return JSON.parse(localStorage.getItem('golfPend2')||'{"up":[],"del":[]}'); }catch(e){ return {up:[],del:[]}; } }
+function setPend(p){ try{ localStorage.setItem('golfPend2', JSON.stringify(p)); }catch(e){} }
+function pendUp(id){ var p=getPend(); if(p.up.indexOf(id)<0)p.up.push(id); var di=p.del.indexOf(id); if(di>=0)p.del.splice(di,1); setPend(p); }
+function pendDel(id){ var p=getPend(); if(p.del.indexOf(id)<0)p.del.push(id); var ui=p.up.indexOf(id); if(ui>=0)p.up.splice(ui,1); setPend(p); }
+function pendClear(id){ var p=getPend(); var ui=p.up.indexOf(id); if(ui>=0)p.up.splice(ui,1); var di=p.del.indexOf(id); if(di>=0)p.del.splice(di,1); setPend(p); }
+
+function postRows(rows){
+  return fetch(SUPABASE_URL+'/rest/v1/golf_posts', {method:'POST', headers:sbH({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}), body:JSON.stringify(rows)})
+    .then(function(res){ if(!res.ok){ return res.text().then(function(t){ throw new Error('HTTP '+res.status+' '+String(t).slice(0,120)); }); } });
+}
+
+function pushRecord(rec){
+  save();
+  showSyncStatus('저장중...');
+  postRows([{id:rec.id, data:rec, updated_at:new Date().toISOString()}])
+  .then(function(){ pendClear(rec.id); showSyncStatus('✅ 저장완료'); })
+  .catch(function(){ pendUp(rec.id); showSyncStatus('💾 로컬 저장 (서버 실패 → 나중에 자동 재시도)'); });
+}
+
+function deleteRecord(id){
+  save();
+  showSyncStatus('삭제중...');
+  postRows([{id:id, data:{id:id, deleted:true, updatedAt:nowKST()}, updated_at:new Date().toISOString()}])
+  .then(function(){ pendClear(id); showSyncStatus('✅ 삭제완료'); })
+  .catch(function(){ pendDel(id); showSyncStatus('💾 삭제 대기 (서버 실패 → 나중에 재시도)'); });
+}
+
+function retryPending(){
+  var p=getPend(); if(!p.up.length && !p.del.length) return;
+  var rows=[];
+  p.up.forEach(function(id){ var r=data.filter(function(x){return x.id===id;})[0]; if(r) rows.push({id:id,data:r,updated_at:new Date().toISOString()}); });
+  p.del.forEach(function(id){ rows.push({id:id,data:{id:id,deleted:true,updatedAt:nowKST()},updated_at:new Date().toISOString()}); });
+  if(!rows.length){ setPend({up:[],del:[]}); return; }
+  postRows(rows).then(function(){ setPend({up:[],del:[]}); showSyncStatus('✅ 밀린 변경 저장완료'); }).catch(function(){});
+}
+
+function applyServerRows(rows){
+  var byId={}; data.forEach(function(r){ if(r&&r.id) byId[r.id]=r; });
+  rows.forEach(function(row){
+    var id=row.id; var rec=row.data;
+    if(row.updated_at && row.updated_at>_syncMax) _syncMax=row.updated_at;
+    if(!id && rec) id=rec.id;
+    if(!id) return;
+    if(rec && rec.deleted){ delete byId[id]; return; }
+    if(!rec) return;
+    var cur=byId[id];
+    if(!cur){ byId[id]=rec; return; }
+    if((rec.updatedAt||'') > (cur.updatedAt||'')){
+      if(cur.media&&cur.media.length&&(!rec.media||!rec.media.length)) rec.media=cur.media;
+      byId[id]=rec;
+    }
+  });
+  data=Object.keys(byId).map(function(k){return byId[k];});
+  sortData(); save();
+}
+
+function bulkPushAll(){
+  var rows=data.map(function(r){ return {id:r.id, data:r, updated_at:new Date().toISOString()}; });
+  var chunks=[]; for(var i=0;i<rows.length;i+=40) chunks.push(rows.slice(i,i+40));
+  var done=0;
+  return chunks.reduce(function(pr,ch){ return pr.then(function(){ showSyncStatus('올리는중... '+done+'/'+rows.length); return postRows(ch).then(function(){ done+=ch.length; }); }); }, Promise.resolve())
+    .then(function(){ localStorage.setItem('golfSyncAt2', new Date().toISOString()); });
+}
+
+function pullAllPosts(){
+  _syncMax = localStorage.getItem('golfSyncAt2')||'';
+  var base=SUPABASE_URL+'/rest/v1/golf_posts?select=id,data,updated_at&order=updated_at.asc';
+  var PAGE=50, offset=0;
+  function pg(){ return fetch(base+'&limit='+PAGE+'&offset='+offset,{headers:sbH()})
+    .then(function(r){ if(!r.ok) throw new Error('http_'+r.status); return r.json(); })
+    .then(function(rows){ if(!Array.isArray(rows))rows=[]; applyServerRows(rows); if(rows.length===PAGE){offset+=PAGE;return pg();} }); }
+  return pg();
+}
+function migrateToPosts(){
+  if(!confirm('이 기기의 '+data.length+'개 + 서버 기존데이터를 합쳐 새 저장방식(golf_posts)에 올립니다.\n(기존 데이터는 그대로, 복사만)\n\n※ 데이터가 가장 많은 기기(폰)에서 먼저 하면 제일 안전해요.\n계속할까요?'))return;
+  showSyncStatus('이전: 서버 병합중...');
+  pullAllPosts()                        // 1) 이미 올라온 golf_posts 먼저 병합(최신 우선)
+  .catch(function(){})                  //    (비었거나 실패해도 계속)
+  .then(function(){                     // 2) 옛 blob도 병합
+    return fetch(SUPABASE_URL+'/rest/v1/golf_log?id=eq.main&select=data',{headers:sbH()})
+      .then(function(r){ return r.ok?r.json():null; }).catch(function(){ return null; });
+  })
+  .then(function(j){
+    var old=j&&j[0]&&j[0].data;
+    if(Array.isArray(old)&&old.length){ data=mergeData(data.slice(), old); save(); render(); }
+    return bulkPushAll();               // 3) 병합된 전체를 올림
+  })
+  .then(function(){
+    if(_syncMax) localStorage.setItem('golfSyncAt2', _syncMax);
+    serverSynced=true;
+    showSyncStatus('✅ 이전 완료 ('+data.length+'개)');
+    alert('✅ 이전 완료!\n'+data.length+'개를 새 방식으로 올렸어요.\n\n이제 "바뀐 글만" 빠르게 주고받아요.\n다른 기기는 새로고침하면 받아갑니다.');
+    render();
+  })
+  .catch(function(e){
+    alert('❌ 이전 중 오류:\n'+(e&&e.message||e)+'\n\n다시 시도해보세요. (기존 데이터는 안전)');
+    showSyncStatus('❌ 이전 실패');
   });
 }
 
@@ -916,9 +1018,9 @@ function saveMod(){
     data.push(rec);
   }
   data.sort(function(a,b){ var dc=b.date.localeCompare(a.date); if(dc!==0)return dc; return (b.createdAt||b.updatedAt||'').localeCompare(a.createdAt||a.updatedAt||''); });
-  saveToServer(); closeOv(); render();
+  pushRecord(rec); closeOv(); render();
 }
-function dl(i){data.splice(i,1);saveToServer();render();}
+function dl(i){var id=data[i]&&data[i].id;data.splice(i,1);save();if(id)deleteRecord(id);render();}
 function dlConfirm(i){if(!confirm('삭제할까요?'))return;if(!confirm('정말 삭제합니다!'))return;dl(i);}
 
 // 파일로 내보내기
@@ -942,7 +1044,7 @@ function importFile(){
         if(!Array.isArray(imported))throw new Error();
         if(!confirm('불러온 데이터 '+imported.length+'개로 교체할까요?\n(현재 데이터는 사라집니다)'))return;
         data=imported;
-        saveToServer(); render();
+        save(); render(); bulkPushAll();
         alert('불러오기 완료!');
       }catch(e){alert('파일 형식이 올바르지 않습니다.');}
     };
