@@ -152,7 +152,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.93 · 26-6-24</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.94 · 26-6-24</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">달력</button>
@@ -359,10 +359,22 @@ function applyServerRows(rows){
 
 function bulkPushAll(){
   var rows=data.map(function(r){ return {id:r.id, data:r, updated_at:new Date().toISOString()}; });
-  var chunks=[]; for(var i=0;i<rows.length;i+=10) chunks.push(rows.slice(i,i+10));
-  var done=0;
-  return chunks.reduce(function(pr,ch){ return pr.then(function(){ showSyncStatus('올리는중... '+done+'/'+rows.length); return postRows(ch).then(function(){ done+=ch.length; }); }); }, Promise.resolve())
-    .then(function(){ localStorage.setItem('golfSyncAt2', new Date().toISOString()); });
+  var chunks=[]; for(var i=0;i<rows.length;i+=5) chunks.push(rows.slice(i,i+5));
+  var done=0, fail=0;
+  return chunks.reduce(function(pr,ch){ return pr.then(function(){
+    showSyncStatus('올리는중... '+done+'/'+rows.length+(fail?(' (큰것 '+fail+')'):''));
+    return postRows(ch).then(function(){ done+=ch.length; })
+      .catch(function(){
+        // 청크 실패 → 1개씩 재시도 (진짜 큰 것만 걸러짐, 나머지는 다 올림)
+        return ch.reduce(function(p2,one){ return p2.then(function(){
+          return postRows([one]).then(function(){ done++; }).catch(function(){ fail++; });
+        }); }, Promise.resolve());
+      });
+  }); }, Promise.resolve())
+    .then(function(){
+      localStorage.setItem('golfSyncAt2', new Date().toISOString());
+      if(fail){ alert('참고: '+fail+'개는 사진/영상이 너무 커서 서버에 못 올렸어요.\n(그 글들은 PC와 백업파일에 안전히 있어요. 나머지는 다 올라갔어요.)'); }
+    });
 }
 
 function pullAllPosts(){
