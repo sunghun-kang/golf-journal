@@ -152,7 +152,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.92 · 26-6-24</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.93 · 26-6-24</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">달력</button>
@@ -1048,10 +1048,11 @@ function importFile(){
       try{
         var imported=JSON.parse(ev.target.result);
         if(!Array.isArray(imported))throw new Error();
-        if(!confirm('불러온 데이터 '+imported.length+'개로 교체할까요?\n(현재 데이터는 사라집니다)'))return;
-        data=imported;
+        var before=data.length;
+        if(!confirm('파일 '+imported.length+'개를 현재 '+before+'개에 합칩니다.\n(현재 데이터는 안 지워지고 합쳐져요)\n계속?'))return;
+        data=mergeData(data.slice(), imported);  // 교체 아님 → 합치기(둘 다 보존)
         save(); render(); bulkPushAll();
-        alert('불러오기 완료!');
+        alert('가져오기 완료!\n'+before+'개 + 파일 '+imported.length+'개 → 합쳐서 '+data.length+'개');
       }catch(e){alert('파일 형식이 올바르지 않습니다.');}
     };
     reader.readAsText(file);
