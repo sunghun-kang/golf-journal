@@ -152,7 +152,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.91 · 26-6-24</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.0.92 · 26-6-24</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">달력</button>
@@ -169,6 +169,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
         <button onclick="importFile();toggleMore()">📂 가져오기</button>
         <button onclick="exportFile();toggleMore()">💾 보냄</button>
         <button onclick="migrateToPosts();toggleMore()">🔁 새 동기화로 이전</button>
+        <button onclick="resyncAll();toggleMore()">📥 전체 다시받기</button>
       </div>
     </div>
     <button class="btn-add" onclick="openAdd()">+ 추가</button>
@@ -269,7 +270,7 @@ function loadFromServer() {
     var since = new Date(new Date(_syncMax).getTime() - 5*60*1000).toISOString(); // 5분 버퍼
     base += '&updated_at=gt.' + encodeURIComponent(since);
   }
-  var PAGE=50, offset=0, total=0;
+  var PAGE=10, offset=0, total=0;
   function loadPage(){
     return fetch(base+'&limit='+PAGE+'&offset='+offset, { headers: sbH() })
       .then(function(r){ if(!r.ok) throw new Error('http_'+r.status); return r.json(); })
@@ -358,7 +359,7 @@ function applyServerRows(rows){
 
 function bulkPushAll(){
   var rows=data.map(function(r){ return {id:r.id, data:r, updated_at:new Date().toISOString()}; });
-  var chunks=[]; for(var i=0;i<rows.length;i+=40) chunks.push(rows.slice(i,i+40));
+  var chunks=[]; for(var i=0;i<rows.length;i+=10) chunks.push(rows.slice(i,i+10));
   var done=0;
   return chunks.reduce(function(pr,ch){ return pr.then(function(){ showSyncStatus('올리는중... '+done+'/'+rows.length); return postRows(ch).then(function(){ done+=ch.length; }); }); }, Promise.resolve())
     .then(function(){ localStorage.setItem('golfSyncAt2', new Date().toISOString()); });
@@ -367,11 +368,16 @@ function bulkPushAll(){
 function pullAllPosts(){
   _syncMax = localStorage.getItem('golfSyncAt2')||'';
   var base=SUPABASE_URL+'/rest/v1/golf_posts?select=id,data,updated_at&order=updated_at.asc';
-  var PAGE=50, offset=0;
+  var PAGE=10, offset=0;
   function pg(){ return fetch(base+'&limit='+PAGE+'&offset='+offset,{headers:sbH()})
     .then(function(r){ if(!r.ok) throw new Error('http_'+r.status); return r.json(); })
     .then(function(rows){ if(!Array.isArray(rows))rows=[]; applyServerRows(rows); if(rows.length===PAGE){offset+=PAGE;return pg();} }); }
   return pg();
+}
+function resyncAll(){
+  if(!confirm('서버(golf_posts)에서 전체를 다시 받아옵니다.\n(로컬은 합쳐지며 지워지지 않아요)\n계속?'))return;
+  localStorage.removeItem('golfSyncAt2'); // 델타 초기화 → 전체 재수신
+  loadFromServer();
 }
 function migrateToPosts(){
   if(!confirm('이 기기의 '+data.length+'개 + 서버 기존데이터를 합쳐 새 저장방식(golf_posts)에 올립니다.\n(기존 데이터는 그대로, 복사만)\n\n※ 데이터가 가장 많은 기기(폰)에서 먼저 하면 제일 안전해요.\n계속할까요?'))return;
