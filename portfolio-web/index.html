@@ -86,6 +86,7 @@
   tbody tr:last-child{border-bottom:none;}
   .nm .t{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;} .nm .c{font-size:10px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .up{color:var(--up);} .dn{color:var(--dn);} .flat{color:var(--flat);}
+  td.b{font-weight:700;}
   .pill{font-size:11px;padding:1px 6px;border-radius:6px;background:rgba(138,147,166,.15);color:var(--sub);margin-left:6px;}
   .pill.err{background:rgba(229,52,42,.15);color:var(--up);}
   .edit-actions{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap;}
@@ -335,8 +336,8 @@ function renderSummary(){
   const total=tot||1;
   const body=rows.map(({a,s,dom,frn})=>`<tr>
     <td class="nm"><div class="t">${esc(a.name)}</div></td>
-    <td>${won(s.val)}</td><td>${won(s.cost)}</td>
-    <td class="${cls(s.pnl)}">${pct(s.pnlPct)}</td><td class="${cls(s.day)}">${s.day===0?"0":signWon(s.day)}</td><td class="${cls(s.pnl)}">${signWon(s.pnl)}</td>
+    <td class="b">${won(s.val)}</td><td>${won(s.cost)}</td>
+    <td class="${cls(s.pnl)}">${pct(s.pnlPct)}</td><td class="${cls(s.day)}">${s.day===0?"0":signWon(s.day)}</td><td class="b ${cls(s.pnl)}">${signWon(s.pnl)}</td>
     <td>${dom}</td><td>${frn}</td><td>${(s.val/total*100).toFixed(1)}%</td></tr>`).join("");
   const tPnl=tot-totCost, tPct=totCost?tPnl/totCost*100:0;
   el.innerHTML=`<div class="card"><div class="card-h"><div class="nm">기관별 집계</div>
@@ -362,8 +363,8 @@ function renderAcct(){
       return `<tr>
         <td class="nm"><div class="t" title="${esc(h.name||h.symbol)}">${esc(shortName(h.name||h.symbol))}${badge(c.source,c.fxOk)}</div><div class="c">${sub}</div></td>
         <td>${curCell}</td><td>${buy}</td>
-        <td>${won(c.valKRW)}</td>
-        <td>${pr}</td><td>${c.dayKRW===0?"0":`<span class="${cls(c.dayKRW)}">${signWon(c.dayKRW)}</span>`}</td><td>${pa}</td>
+        <td class="b">${won(c.valKRW)}</td>
+        <td>${pr}</td><td>${c.dayKRW===0?"0":`<span class="${cls(c.dayKRW)}">${signWon(c.dayKRW)}</span>`}</td><td class="b">${pa}</td>
         <td>${won(c.costKRW)}</td></tr>`;
     }).join("");
     const card=document.createElement("div"); card.className="card";
@@ -400,8 +401,8 @@ function renderSym(){
     return `<tr>
       <td class="nm"><div class="t" title="${esc(m.name||m.symbol)}">${esc(shortName(m.name||m.symbol))}${badge(m.source,m.fxOk)}</div><div class="c">${sub}</div></td>
       <td>${curCell}</td><td>${buy}</td>
-      <td>${won(m.val)}</td>
-      <td>${pr}</td><td>${m.day===0?"0":`<span class="${cls(m.day)}">${signWon(m.day)}</span>`}</td><td>${pa}</td>
+      <td class="b">${won(m.val)}</td>
+      <td>${pr}</td><td>${m.day===0?"0":`<span class="${cls(m.day)}">${signWon(m.day)}</span>`}</td><td class="b">${pa}</td>
       <td>${won(m.cost)}</td><td>${w.toFixed(1)}%</td></tr>`;
   }).join("");
   card.innerHTML=`<div class="tscroll"><table class="t-sym"><thead><tr><th class="nm">종목</th><th>현재가</th><th>매수가</th><th>평가액</th><th>손익률</th><th>어제대비</th><th>손익금액</th><th>원금</th><th>비중</th></tr></thead>
