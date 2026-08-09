@@ -1,0 +1,15 @@
+{
+  "name": "내 자산 한눈에 보기",
+  "short_name": "내 자산",
+  "description": "증권사·은행 분산 자산을 한눈에 보는 포트폴리오",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#2b3a6e",
+  "theme_color": "#2b3a6e",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
