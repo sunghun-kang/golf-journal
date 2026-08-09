@@ -29,15 +29,20 @@
     -webkit-font-smoothing:antialiased;}
   .wrap{max-width:1180px;margin:0 auto;padding:16px 14px 60px;}
   header.hero{background:var(--card);border:1px solid var(--line);border-radius:16px;
-    box-shadow:var(--shadow);padding:18px 18px;margin-bottom:16px;}
+    box-shadow:var(--shadow);padding:12px 14px;margin-bottom:12px;}
   .hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;}
-  .hero h1{font-size:16px;margin:0 0 2px;font-weight:700;letter-spacing:-.2px;}
-  .hero .updated{font-size:12px;color:var(--sub);}
-  .total{font-size:32px;font-weight:800;letter-spacing:-1px;margin:8px 0 2px;font-variant-numeric:tabular-nums;}
+  .hero h1{font-size:16px;margin:0 0 1px;font-weight:700;letter-spacing:-.2px;}
+  .hero .updated{font-size:11px;color:var(--sub);}
+  .total-row{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;margin:4px 0 4px;}
+  .total{font-size:30px;font-weight:800;letter-spacing:-1px;margin:0;font-variant-numeric:tabular-nums;line-height:1;}
   .total .cur{font-size:17px;font-weight:700;color:var(--sub);margin-right:4px;}
-  .kpis{display:flex;gap:22px;flex-wrap:wrap;margin-top:8px;}
-  .kpi .lab{font-size:12px;color:var(--sub);margin-bottom:2px;}
-  .kpi .val{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;}
+  .fx-top{text-align:right;white-space:nowrap;}
+  .fx-top .lab{font-size:10.5px;color:var(--sub);margin-bottom:1px;}
+  .fx-top .val{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;}
+  .kpis{display:flex;gap:10px;flex-wrap:nowrap;margin-top:6px;}
+  .kpi{min-width:0;}
+  .kpi .lab{font-size:10.5px;color:var(--sub);margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .kpi .val{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;}
   .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
   button{font-family:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);
     background:var(--card);color:var(--ink);padding:8px 12px;font-size:13px;font-weight:600;}
@@ -47,7 +52,8 @@
   button.on{background:var(--accent);color:#fff;border-color:var(--accent);}
   .switch{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--sub);}
   .tabs{display:flex;gap:6px;margin:16px 0 10px;}
-  .sortbar{display:flex;align-items:center;gap:8px;margin:0 0 12px;font-size:13px;color:var(--sub);}
+  .sortbar{display:flex;align-items:center;gap:6px;margin:0 0 12px;font-size:13px;color:var(--sub);flex-wrap:wrap;}
+  .sortbar button{white-space:nowrap;padding:7px 10px;}
   .sortbar select{font-weight:700;}
   #acctSummary{margin-bottom:4px;}
   .tab{padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);
@@ -65,20 +71,20 @@
   .card-h .sub .v{font-weight:800;font-size:15px;font-variant-numeric:tabular-nums;}
   .card-h .sub .p{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;}
   .tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-  table{width:100%;border-collapse:collapse;font-size:11.5px;}
+  table{width:100%;border-collapse:collapse;font-size:10.5px;}
   td.sp,th.sp{width:100%;padding:0;min-width:6px;}
-  th,td{padding:3px 2px;text-align:right;white-space:nowrap;vertical-align:middle;font-variant-numeric:tabular-nums;line-height:1.25;}
-  th{color:var(--sub);font-weight:600;font-size:11px;border-bottom:1px solid var(--line);padding:5px 2px;}
+  th,td{padding:2px 1px;text-align:right;white-space:nowrap;vertical-align:middle;font-variant-numeric:tabular-nums;line-height:1.2;}
+  th{color:var(--sub);font-weight:600;font-size:10px;border-bottom:1px solid var(--line);padding:3px 1px;}
   td:first-child,th:first-child{padding-left:1px;padding-right:1px;}
   td.nm,th.nm{text-align:left;white-space:normal;min-width:100px;max-width:112px;
     position:sticky;left:0;background:var(--card);z-index:1;box-shadow:1px 0 0 var(--line);}
   .fl{color:var(--sub);font-weight:600;font-size:10px;}
   tbody tr{border-bottom:1px solid var(--line);}
-  .nm .t{line-height:1.2;} .nm .c{line-height:1.15;margin-top:1px;}
+  .nm .t{line-height:1.1;} .nm .c{line-height:1.05;margin-top:0;}
   .sumrow{font-weight:800;border-top:2px solid var(--line);}
   .sumrow td.nm{background:var(--card);}
   tbody tr:last-child{border-bottom:none;}
-  .nm .t{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;} .nm .c{font-size:11px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .nm .t{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;} .nm .c{font-size:10px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .up{color:var(--up);} .dn{color:var(--dn);} .flat{color:var(--flat);}
   .pill{font-size:11px;padding:1px 6px;border-radius:6px;background:rgba(138,147,166,.15);color:var(--sub);margin-left:6px;}
   .pill.err{background:rgba(229,52,42,.15);color:var(--up);}
@@ -139,12 +145,14 @@
         <button id="editBtn" class="primary">✎ 편집</button>
       </div>
     </div>
-    <div class="total"><span id="totalKRW">—</span></div>
+    <div class="total-row">
+      <div class="total"><span id="totalKRW">—</span></div>
+      <div class="fx-top"><div class="lab">환율(USD/KRW)</div><div class="val" id="fx">—</div></div>
+    </div>
     <div class="kpis">
       <div class="kpi"><div class="lab">평가손익 (평단 대비)</div><div class="val" id="pnl">—</div></div>
       <div class="kpi"><div class="lab">오늘 등락 (전일 대비)</div><div class="val" id="today">—</div></div>
       <div class="kpi"><div class="lab">원금(투자금)</div><div class="val" id="cost">—</div></div>
-      <div class="kpi"><div class="lab">적용 환율 (USD/KRW)</div><div class="val" id="fx">—</div></div>
     </div>
   </header>
 
