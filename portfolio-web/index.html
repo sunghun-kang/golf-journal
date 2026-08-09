@@ -305,13 +305,12 @@ function renderSummary(){
   });
   const total=tot||1;
   const body=rows.map(({a,s,dom,frn})=>`<tr>
-    <td class="nm"><div class="t">${esc(a.name)}<span class="tag ${a.type==="은행"?'bank':''}">${esc(a.type||'')}</span></div></td>
+    <td class="nm"><div class="t">${esc(a.name)}</div></td>
     <td>${won(s.val)}</td><td>${won(s.cost)}</td>
     <td class="${cls(s.pnl)}">${pct(s.pnlPct)}</td><td class="${cls(s.pnl)}">${signWon(s.pnl)}</td>
     <td>${dom}</td><td>${frn}</td><td>${(s.val/total*100).toFixed(1)}%</td><td class="sp"></td></tr>`).join("");
   const tPnl=tot-totCost, tPct=totCost?tPnl/totCost*100:0;
-  el.innerHTML=`<div class="card"><div class="card-h"><div class="nm">기관별 집계</div>
-    <div class="sub"><div class="v">${won(tot)}</div><div class="p ${cls(tPnl)}">${pct(tPct)} · ${signWon(tPnl)}</div></div></div>
+  el.innerHTML=`<div class="card"><div class="card-h"><div class="nm">기관별 집계</div></div>
     <div class="tscroll"><table class="t-sum"><thead><tr><th class="nm">기관</th><th>평가액</th><th>원금</th><th>손익률</th><th>손익금액</th><th>국내</th><th>해외</th><th>비중</th><th class="sp"></th></tr></thead>
     <tbody>${body}
     <tr class="sumrow"><td class="nm"><div class="t">합계</div></td><td>${won(tot)}</td><td>${won(totCost)}</td><td class="${cls(tPnl)}">${pct(tPct)}</td><td class="${cls(tPnl)}">${signWon(tPnl)}</td><td>${totDom}</td><td>${totFor}</td><td>100%</td><td class="sp"></td></tr>
@@ -338,10 +337,10 @@ function renderAcct(){
         <td>${won(c.costKRW)}</td><td class="sp"></td></tr>`;
     }).join("");
     const card=document.createElement("div"); card.className="card";
-    card.innerHTML=`<div class="card-h"><div class="nm">${esc(acc.name)}<span class="tag ${isBank?'bank':''}">${esc(acc.type||'')}</span></div>
-      <div class="sub"><div class="v">${won(s.val)}</div><div class="p ${cls(s.pnl)}">${pct(s.pnlPct)} · ${signWon(s.pnl)}</div></div></div>
+    const sumRow=`<tr class="sumrow"><td class="nm"><div class="t">합계</div></td><td></td><td></td><td>${won(s.val)}</td><td class="${cls(s.pnl)}">${pct(s.pnlPct)}</td><td class="${cls(s.pnl)}">${signWon(s.pnl)}</td><td>${won(s.cost)}</td><td class="sp"></td></tr>`;
+    card.innerHTML=`<div class="card-h"><div class="nm">${esc(acc.name)}</div></div>
       <div class="tscroll"><table class="t-acct"><thead><tr><th class="nm">종목</th><th>현재가</th><th>매수가</th><th>평가액</th><th>손익률</th><th>손익금액</th><th>원금</th><th class="sp"></th></tr></thead>
-      <tbody>${rows||'<tr><td class="nm" colspan="8" style="color:var(--sub)">보유 종목 없음</td></tr>'}</tbody></table></div>`;
+      <tbody>${rows||'<tr><td class="nm" colspan="8" style="color:var(--sub)">보유 종목 없음</td></tr>'}${(acc.holdings&&acc.holdings.length)?sumRow:''}</tbody></table></div>`;
     g.appendChild(card);
   });
   return g;
