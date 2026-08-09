@@ -165,11 +165,11 @@
       <option value="changePct">등락률</option>
       <option value="avg">매수가</option>
       <option value="qty">수량</option>
-      <option value="val">평가액</option>
+      <option value="val" selected>평가액</option>
       <option value="pnl">손익액</option>
       <option value="pnlPct">손익률</option>
     </select>
-    <button id="sortDir" class="ghost">오름차순 ⬆</button>
+    <button id="sortDir" class="ghost">내림차순 ⬇</button>
   </div>
 
   <div id="viewArea"></div>
@@ -188,7 +188,7 @@ const LS_KEY = "portfolio_v1";
 const CACHE_KEY = "quotes_cache_v1";
 let PORT = {title:"내 자산 한눈에 보기", accounts:[]};
 let QUOTES = {}, FX = 0, VIEW = "acct", EDITING = false, timer = null;
-let SORT = {key:"", dir:1}; // key="" → 원래 순서, dir 1=오름차순 -1=내림차순
+let SORT = {key:"val", dir:-1}; // 기본: 평가액 내림차순 (key="" → 원래 순서, dir 1=오름 -1=내림)
 
 // 시세 조회 실패 시 폴백용 스냅샷(공개 시장가만 — 보유수량/금액 아님)
 const SNAP = {
