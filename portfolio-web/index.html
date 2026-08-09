@@ -49,9 +49,6 @@
   .sortbar{display:flex;align-items:center;gap:8px;margin:0 0 12px;font-size:13px;color:var(--sub);}
   .sortbar select{font-weight:700;}
   #acctSummary{margin-bottom:4px;}
-  .t-sum th:nth-child(1),.t-sum td:nth-child(1){width:52%;}
-  .t-sum th:nth-child(2),.t-sum td:nth-child(2){width:14%;}
-  .t-sum th:nth-child(3),.t-sum td:nth-child(3){width:34%;}
   .tab{padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);
     font-size:13px;font-weight:700;color:var(--sub);}
   .tab.active{background:var(--accent);color:#fff;border-color:var(--accent);}
@@ -216,6 +213,17 @@ const signWon = n => (n>=0?"+":"−") + won(Math.abs(n));
 const cls = n => n>0 ? "up" : (n<0 ? "dn" : "flat");
 const isDom = s => /^[0-9][0-9A-Z]{5}$/.test((s||"").toUpperCase());
 function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+// 표시용 이름 축약: 설명용 괄호 제거(단 (2023)같은 숫자 연도는 유지) + 너무 길면 …
+function shortName(n){
+  n=String(n||"").trim();
+  let suffix="";
+  const m=n.match(/\(([0-9][0-9\s\-~.]*)\)\s*$/);   // 끝의 (2023) 등 숫자 괄호는 보존
+  if(m){ suffix=" ("+m[1].trim()+")"; n=n.slice(0,m.index).trim(); }
+  n=n.replace(/\s*\([^)]*\)\s*$/,"").trim();          // 설명용 괄호 제거
+  const arr=[...n], MAX=12;
+  if(arr.length>MAX) n=arr.slice(0,MAX).join("")+"…";
+  return n+suffix;
+}
 
 // ---------- 계산 ----------
 function calc(h){
@@ -323,7 +331,7 @@ function renderAcct(){
       const pr=c.pnlKRW===0?"":`<span class="${cls(c.pnlKRW)}">${pct(c.pnlPct)}</span>`;
       const pa=c.pnlKRW===0?"":`<span class="${cls(c.pnlKRW)}">${signWon(c.pnlKRW)}</span>`;
       return `<tr>
-        <td class="nm"><div class="t">${esc(h.name||h.symbol)}${badge(c.source,c.fxOk)}</div><div class="c">${sub}</div></td>
+        <td class="nm"><div class="t" title="${esc(h.name||h.symbol)}">${esc(shortName(h.name||h.symbol))}${badge(c.source,c.fxOk)}</div><div class="c">${sub}</div></td>
         <td>${curCell}</td><td>${buy}</td>
         <td>${won(c.valKRW)}</td>
         <td>${pr}</td><td>${pa}</td>
@@ -361,7 +369,7 @@ function renderSym(){
     const pr=pnl===0?"":`<span class="${cls(pnl)}">${pct(pnlPct)}</span>`;
     const pa=pnl===0?"":`<span class="${cls(pnl)}">${signWon(pnl)}</span>`;
     return `<tr>
-      <td class="nm"><div class="t">${esc(m.name||m.symbol)}${badge(m.source,m.fxOk)}</div><div class="c">${sub}</div></td>
+      <td class="nm"><div class="t" title="${esc(m.name||m.symbol)}">${esc(shortName(m.name||m.symbol))}${badge(m.source,m.fxOk)}</div><div class="c">${sub}</div></td>
       <td>${curCell}</td><td>${buy}</td>
       <td>${won(m.val)}</td>
       <td>${pr}</td><td>${pa}</td>
