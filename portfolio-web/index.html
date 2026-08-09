@@ -87,6 +87,13 @@
   .nm .t{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;} .nm .c{font-size:10px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .up{color:var(--up);} .dn{color:var(--dn);} .flat{color:var(--flat);}
   td.b{font-weight:700;}
+  /* 기관별 집계만: 줄간격·폰트 확대, 기관명 폭 축소 */
+  .t-sum th,.t-sum td{font-size:13.5px;line-height:1.5;padding:4px 3px;}
+  .t-sum th{font-size:12px;}
+  .t-sum td.nm,.t-sum th.nm{min-width:96px;max-width:120px;}
+  .t-sum .ord{display:inline-flex;flex-direction:column;vertical-align:middle;margin-right:4px;line-height:.8;}
+  .t-sum .ord b{cursor:pointer;font-size:9px;color:var(--sub);padding:0 2px;-webkit-user-select:none;user-select:none;}
+  .t-sum .ord b:active{color:var(--accent);}
   .pill{font-size:11px;padding:1px 6px;border-radius:6px;background:rgba(138,147,166,.15);color:var(--sub);margin-left:6px;}
   .pill.err{background:rgba(229,52,42,.15);color:var(--up);}
   .edit-actions{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap;}
@@ -334,8 +341,8 @@ function renderSummary(){
     return {a,s,dom,frn};
   });
   const total=tot||1;
-  const body=rows.map(({a,s,dom,frn})=>`<tr>
-    <td class="nm"><div class="t">${esc(a.name)}</div></td>
+  const body=rows.map(({a,s,dom,frn},i)=>`<tr>
+    <td class="nm"><span class="ord"><b data-sumup="${i}" title="위로">▲</b><b data-sumdown="${i}" title="아래로">▼</b></span><span class="t">${esc(a.name)}</span></td>
     <td class="b">${won(s.val)}</td><td>${won(s.cost)}</td>
     <td class="${cls(s.pnl)}">${pct(s.pnlPct)}</td><td class="${cls(s.day)}">${s.day===0?"0":signWon(s.day)}</td><td class="b ${cls(s.pnl)}">${signWon(s.pnl)}</td>
     <td>${dom}</td><td>${frn}</td><td>${(s.val/total*100).toFixed(1)}%</td></tr>`).join("");
@@ -507,6 +514,11 @@ function renderEdit(){
     else if(t.id==="cancelBtn"){toggleEdit(false);PORT=loadLocal()||PORT;refresh();}
     else if(t.id==="saveBtn"){saveLocal();toggleEdit(false);refresh();}};
 }
+$("#acctSummary").onclick=e=>{
+  const up=e.target.closest("[data-sumup]"), dn=e.target.closest("[data-sumdown]");
+  if(up){const i=+up.dataset.sumup; if(i>0){const x=PORT.accounts.splice(i,1)[0];PORT.accounts.splice(i-1,0,x);saveLocal();render();}}
+  else if(dn){const i=+dn.dataset.sumdown; if(i<PORT.accounts.length-1){const x=PORT.accounts.splice(i,1)[0];PORT.accounts.splice(i+1,0,x);saveLocal();render();}}
+};
 function toggleEdit(on){EDITING=on;$("#editArea").style.display=on?"block":"none";$("#viewArea").style.display=on?"none":"block";
   $("#tabs").style.display=on?"none":"flex";$("#editBtn").textContent=on?"✎ 편집 종료":"✎ 편집";$("#editBtn").classList.toggle("primary",!on);if(on)renderEdit();}
 
