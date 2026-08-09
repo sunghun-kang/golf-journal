@@ -68,12 +68,15 @@
   .card-h .sub .p{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;}
   .tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
   table{width:auto;min-width:100%;border-collapse:collapse;font-size:12.5px;}
-  th,td{padding:9px 12px;text-align:right;white-space:nowrap;vertical-align:middle;font-variant-numeric:tabular-nums;}
-  th{color:var(--sub);font-weight:600;font-size:11px;border-bottom:1px solid var(--line);}
-  td.nm,th.nm{text-align:left;white-space:normal;min-width:132px;max-width:180px;
+  th,td{padding:3px 12px;text-align:right;white-space:nowrap;vertical-align:middle;font-variant-numeric:tabular-nums;line-height:1.25;}
+  th{color:var(--sub);font-weight:600;font-size:11px;border-bottom:1px solid var(--line);padding:5px 12px;}
+  td.nm,th.nm{text-align:left;white-space:normal;min-width:132px;max-width:200px;
     position:sticky;left:0;background:var(--card);z-index:1;box-shadow:1px 0 0 var(--line);}
   .fl{color:var(--sub);font-weight:600;font-size:10px;}
   tbody tr{border-bottom:1px solid var(--line);}
+  .nm .t{line-height:1.2;} .nm .c{line-height:1.15;margin-top:1px;}
+  .sumrow{font-weight:800;border-top:2px solid var(--line);}
+  .sumrow td.nm{background:var(--card);}
   tbody tr:last-child{border-bottom:none;}
   .nm .t{font-weight:700;} .nm .c{font-size:11px;color:var(--sub);}
   .up{color:var(--up);} .dn{color:var(--dn);} .flat{color:var(--flat);}
@@ -282,15 +285,21 @@ function badge(source,fxOk){ if(source==="error")return `<span class="pill err">
 function renderSummary(){
   const el=$("#acctSummary"); if(!el) return;
   if(!PORT.accounts.length){ el.innerHTML=""; return; }
-  let tot=0; const rows=PORT.accounts.map(a=>{const s=sumAccount(a);tot+=s.val;return {a,s};});
+  let tot=0, totCost=0;
+  const rows=PORT.accounts.map(a=>{const s=sumAccount(a);tot+=s.val;totCost+=s.cost;return {a,s};});
   const total=tot||1;
+  const body=rows.map(({a,s})=>`<tr>
+    <td class="nm"><div class="t">${esc(a.name)}<span class="tag ${a.type==="은행"?'bank':''}">${esc(a.type||'')}</span></div></td>
+    <td>${(s.val/total*100).toFixed(1)}%</td>
+    <td>${won(s.cost)}</td><td>${won(s.val)}</td>
+    <td class="${cls(s.pnl)}">${pct(s.pnlPct)}</td><td class="${cls(s.pnl)}">${signWon(s.pnl)}</td></tr>`).join("");
+  const tPnl=tot-totCost, tPct=totCost?tPnl/totCost*100:0;
   el.innerHTML=`<div class="card"><div class="card-h"><div class="nm">기관별 집계</div>
-    <div class="sub"><div class="v">${won(tot)}</div></div></div>
-    <table class="t-sum"><tbody>${rows.map(({a,s})=>`
-      <tr><td class="nm"><div class="t">${esc(a.name)}<span class="tag ${a.type==="은행"?'bank':''}">${esc(a.type||'')}</span></div></td>
-        <td>${(s.val/total*100).toFixed(1)}%</td>
-        <td>${won(s.val)}<div class="c ${cls(s.pnl)}">${pct(s.pnlPct)}</div><div class="c ${cls(s.pnl)}">${signWon(s.pnl)}</div></td></tr>`).join("")}
-    </tbody></table></div>`;
+    <div class="sub"><div class="v">${won(tot)}</div><div class="p ${cls(tPnl)}">${pct(tPct)} · ${signWon(tPnl)}</div></div></div>
+    <div class="tscroll"><table class="t-sum"><thead><tr><th class="nm">기관</th><th>비중</th><th>원금</th><th>평가액</th><th>손익률</th><th>손익금액</th></tr></thead>
+    <tbody>${body}
+    <tr class="sumrow"><td class="nm"><div class="t">합계</div></td><td>100%</td><td>${won(totCost)}</td><td>${won(tot)}</td><td class="${cls(tPnl)}">${pct(tPct)}</td><td class="${cls(tPnl)}">${signWon(tPnl)}</td></tr>
+    </tbody></table></div></div>`;
 }
 function renderAcct(){
   const g=document.createElement("div"); g.className="grid";
