@@ -44,6 +44,7 @@
   button:hover{border-color:var(--accent);}
   button.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
   button.ghost{background:transparent;}
+  button.on{background:var(--accent);color:#fff;border-color:var(--accent);}
   .switch{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--sub);}
   .tabs{display:flex;gap:6px;margin:16px 0 10px;}
   .sortbar{display:flex;align-items:center;gap:8px;margin:0 0 12px;font-size:13px;color:var(--sub);}
@@ -170,6 +171,17 @@
       <option value="pnlPct">손익률</option>
     </select>
     <button id="sortDir" class="ghost">내림차순 ⬇</button>
+    <button id="fltGain" class="ghost">이익</button>
+    <button id="fltLoss" class="ghost">손실</button>
+    <select id="fltThr">
+      <option value="0">손익률</option>
+      <option value="10">+10% ↑</option>
+      <option value="20">+20% ↑</option>
+      <option value="30">+30% ↑</option>
+      <option value="-10">−10% ↓</option>
+      <option value="-20">−20% ↓</option>
+      <option value="-30">−30% ↓</option>
+    </select>
   </div>
 
   <div id="viewArea"></div>
@@ -189,6 +201,15 @@ const CACHE_KEY = "quotes_cache_v1";
 let PORT = {title:"내 자산 한눈에 보기", accounts:[]};
 let QUOTES = {}, FX = 0, VIEW = "acct", EDITING = false, timer = null;
 let SORT = {key:"val", dir:-1}; // 기본: 평가액 내림차순 (key="" → 원래 순서, dir 1=오름 -1=내림)
+let FILTER = {side:"", thr:0}; // side: "" | "gain" | "loss" ; thr: 0 | ±10/20/30 (손익률 %)
+function passFilter(p){ // p = 손익률(%)
+  p = Number(p)||0;
+  if(FILTER.side==="gain" && !(p>0)) return false;
+  if(FILTER.side==="loss" && !(p<0)) return false;
+  if(FILTER.thr>0 && !(p>=FILTER.thr)) return false;
+  if(FILTER.thr<0 && !(p<=FILTER.thr)) return false;
+  return true;
+}
 
 // 시세 조회 실패 시 폴백용 스냅샷(공개 시장가만 — 보유수량/금액 아님)
 const SNAP = {
@@ -321,7 +342,7 @@ function renderAcct(){
   const g=document.createElement("div"); g.className="grid";
   PORT.accounts.forEach(acc=>{
     const s=sumAccount(acc), isBank=acc.type==="은행";
-    const items=applySort((acc.holdings||[]).map(h=>({h,c:calc(h)})), o=>metricOf(o.c,o.h,SORT.key));
+    const items=applySort((acc.holdings||[]).map(h=>({h,c:calc(h)})).filter(o=>passFilter(o.c.pnlPct)), o=>metricOf(o.c,o.h,SORT.key));
     const rows=items.map(({h,c})=>{
       const curSym=c.cur==="USD"?"$":"";
       const price=c.source==="error"?"—":curSym+(c.cur==="USD"?usd(c.price):won(c.price));
@@ -353,7 +374,7 @@ function renderSym(){
     if(!map[k]) map[k]={name:h.name,symbol:h.symbol||"",qty:0,val:0,cost:0,day:0,price:c.price,cur:c.cur,changePct:c.changePct,source:c.source,fxOk:c.fxOk,fixed:c.fixed,kind:c.kind,accts:[]};
     const m=map[k]; m.qty+=c.qty; m.val+=c.valKRW; m.cost+=c.costKRW; m.day+=c.dayKRW; m.accts.push(a.name);
   }));
-  let arr=Object.values(map); const tot=arr.reduce((s,m)=>s+m.val,0)||1;
+  let arr=Object.values(map).filter(m=>passFilter(m.cost?((m.val-m.cost)/m.cost*100):0)); const tot=arr.reduce((s,m)=>s+m.val,0)||1;
   arr = SORT.key
     ? applySort(arr, m=>metricOf({price:m.price,cur:m.cur,changePct:m.changePct,avg:(m.qty?m.cost/m.qty:0),qty:m.qty,valKRW:m.val,pnlKRW:m.val-m.cost,pnlPct:(m.cost?(m.val-m.cost)/m.cost*100:0),name:m.name||m.symbol}, {name:m.name,symbol:m.symbol}, SORT.key))
     : arr.sort((a,b)=>b.val-a.val);
@@ -508,6 +529,10 @@ $("#refresh").onclick=refresh;
 $("#editBtn").onclick=()=>toggleEdit(!EDITING);
 $("#sortKey").onchange=e=>{ SORT.key=e.target.value; render(); };
 $("#sortDir").onclick=()=>{ SORT.dir=-SORT.dir; $("#sortDir").textContent=SORT.dir>0?"오름차순 ⬆":"내림차순 ⬇"; render(); };
+function syncFilterUI(){ $("#fltGain").classList.toggle("on",FILTER.side==="gain"); $("#fltLoss").classList.toggle("on",FILTER.side==="loss"); }
+$("#fltGain").onclick=()=>{ FILTER.side=FILTER.side==="gain"?"":"gain"; syncFilterUI(); render(); };
+$("#fltLoss").onclick=()=>{ FILTER.side=FILTER.side==="loss"?"":"loss"; syncFilterUI(); render(); };
+$("#fltThr").onchange=e=>{ FILTER.thr=Number(e.target.value)||0; render(); };
 document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));t.classList.add("active");VIEW=t.dataset.view;render();});
 
 (function init(){
