@@ -58,7 +58,6 @@
   .banner{border-radius:12px;padding:10px 14px;font-size:13px;margin-bottom:12px;display:none;}
   .banner.warn{display:block;background:rgba(201,138,0,.12);color:var(--warn);border:1px solid rgba(201,138,0,.35);}
   .grid{display:grid;grid-template-columns:1fr;gap:14px;}
-  @media(min-width:1100px){ .grid{grid-template-columns:repeat(auto-fill,minmax(440px,1fr));} }
   .card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;}
   .card-h{display:flex;justify-content:space-between;align-items:center;padding:13px 16px;border-bottom:1px solid var(--line);}
   .card-h .nm{font-weight:800;font-size:15px;}
@@ -67,18 +66,13 @@
   .card-h .sub{text-align:right;}
   .card-h .sub .v{font-weight:800;font-size:15px;font-variant-numeric:tabular-nums;}
   .card-h .sub .p{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;}
-  table{width:100%;border-collapse:collapse;font-size:12.5px;table-layout:fixed;}
-  th,td{padding:9px 8px;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:top;font-variant-numeric:tabular-nums;}
+  .tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  table{width:auto;min-width:100%;border-collapse:collapse;font-size:12.5px;}
+  th,td{padding:9px 12px;text-align:right;white-space:nowrap;vertical-align:middle;font-variant-numeric:tabular-nums;}
   th{color:var(--sub);font-weight:600;font-size:11px;border-bottom:1px solid var(--line);}
-  td.nm,th.nm{text-align:left;white-space:normal;overflow:visible;}
-  .t-acct th:nth-child(1),.t-acct td:nth-child(1){width:30%;}
-  .t-acct th:nth-child(2),.t-acct td:nth-child(2){width:32%;}
-  .t-acct th:nth-child(3),.t-acct td:nth-child(3){width:38%;}
+  td.nm,th.nm{text-align:left;white-space:normal;min-width:132px;max-width:180px;
+    position:sticky;left:0;background:var(--card);z-index:1;box-shadow:1px 0 0 var(--line);}
   .fl{color:var(--sub);font-weight:600;font-size:10px;}
-  .t-sym th:nth-child(1),.t-sym td:nth-child(1){width:40%;}
-  .t-sym th:nth-child(2),.t-sym td:nth-child(2){width:23%;}
-  .t-sym th:nth-child(3),.t-sym td:nth-child(3){width:11%;}
-  .t-sym th:nth-child(4),.t-sym td:nth-child(4){width:26%;}
   tbody tr{border-bottom:1px solid var(--line);}
   tbody tr:last-child{border-bottom:none;}
   .nm .t{font-weight:700;} .nm .c{font-size:11px;color:var(--sub);}
@@ -305,24 +299,23 @@ function renderAcct(){
     const items=applySort((acc.holdings||[]).map(h=>({h,c:calc(h)})), o=>metricOf(o.c,o.h,SORT.key));
     const rows=items.map(({h,c})=>{
       const curSym=c.cur==="USD"?"$":"";
-      const priceStr=c.source==="error"?"—":curSym+(c.cur==="USD"?usd(c.price):won(c.price));
-      const buyStr=curSym+(c.cur==="USD"?usd(c.avg):won(c.avg));
+      const price=c.source==="error"?"—":curSym+(c.cur==="USD"?usd(c.price):won(c.price));
+      const buy=c.fixed?"—":curSym+(c.cur==="USD"?usd(c.avg):won(c.avg));
       const sub=c.fixed?esc(c.kind):`${esc(h.symbol)} · ${c.qty.toLocaleString()}주`;
-      const dchg=(c.fixed||c.source==="error")?"":` <span class="${cls(c.change)}">${pct(c.changePct)}</span>`;
-      const mid=c.fixed
-        ? `<span class="pill">${esc(c.kind)}</span>`
-        : `<div class="c"><span class="fl">매수 </span>${buyStr}</div><div class="t"><span class="fl">현재 </span>${priceStr}${dchg}</div>`;
-      const pnlLines=(c.pnlKRW===0)?"":`<div class="c ${cls(c.pnlKRW)}"><span class="fl">손익 </span>${pct(c.pnlPct)}</div><div class="c ${cls(c.pnlKRW)}">${signWon(c.pnlKRW)}</div>`;
-      const val=`<div class="c"><span class="fl">원금 </span>${won(c.costKRW)}</div><div class="t"><span class="fl">평가 </span>${won(c.valKRW)}</div>${pnlLines}`;
-      return `<tr><td class="nm"><div class="t">${esc(h.name||h.symbol)}${badge(c.source,c.fxOk)}</div><div class="c">${sub}</div></td>
-        <td>${mid}</td>
-        <td>${val}</td></tr>`;
+      const curCell=c.fixed?`<span class="pill">${esc(c.kind)}</span>`:price;
+      const pr=c.pnlKRW===0?"":`<span class="${cls(c.pnlKRW)}">${pct(c.pnlPct)}</span>`;
+      const pa=c.pnlKRW===0?"":`<span class="${cls(c.pnlKRW)}">${signWon(c.pnlKRW)}</span>`;
+      return `<tr>
+        <td class="nm"><div class="t">${esc(h.name||h.symbol)}${badge(c.source,c.fxOk)}</div><div class="c">${sub}</div></td>
+        <td>${buy}</td><td>${curCell}</td>
+        <td>${won(c.costKRW)}</td><td>${won(c.valKRW)}</td>
+        <td>${pr}</td><td>${pa}</td></tr>`;
     }).join("");
     const card=document.createElement("div"); card.className="card";
     card.innerHTML=`<div class="card-h"><div class="nm">${esc(acc.name)}<span class="tag ${isBank?'bank':''}">${esc(acc.type||'')}</span></div>
       <div class="sub"><div class="v">${won(s.val)}</div><div class="p ${cls(s.pnl)}">${pct(s.pnlPct)} · ${signWon(s.pnl)}</div></div></div>
-      <table class="t-acct"><thead><tr><th class="nm">종목</th><th>매수/현재</th><th>원금/평가/손익</th></tr></thead>
-      <tbody>${rows||'<tr><td class="nm" colspan="3" style="color:var(--sub)">보유 종목 없음</td></tr>'}</tbody></table>`;
+      <div class="tscroll"><table class="t-acct"><thead><tr><th class="nm">종목</th><th>매수가</th><th>현재가</th><th>원금</th><th>평가액</th><th>손익률</th><th>손익금액</th></tr></thead>
+      <tbody>${rows||'<tr><td class="nm" colspan="7" style="color:var(--sub)">보유 종목 없음</td></tr>'}</tbody></table></div>`;
     g.appendChild(card);
   });
   return g;
@@ -340,16 +333,23 @@ function renderSym(){
     : arr.sort((a,b)=>b.val-a.val);
   const card=document.createElement("div"); card.className="card";
   const rows=arr.map(m=>{
-    const curSym=m.cur==="USD"?"$":"", priceStr=m.source==="error"?"—":curSym+(m.cur==="USD"?usd(m.price):won(m.price));
+    const curSym=m.cur==="USD"?"$":"";
+    const price=m.source==="error"?"—":curSym+(m.cur==="USD"?usd(m.price):won(m.price));
+    const avgNative=m.qty?(m.cost/(m.cur==="USD"?(FX||1):1))/m.qty:0;
+    const buy=m.fixed?"—":curSym+(m.cur==="USD"?usd(avgNative):won(avgNative));
     const pnl=m.val-m.cost, pnlPct=m.cost?(pnl/m.cost*100):0, w=m.val/tot*100;
     const sub=m.fixed?esc(m.kind+" · "+m.accts.join(", ")):`${esc(m.symbol)} · ${m.qty.toLocaleString()}주 · ${esc(m.accts.join(", "))}`;
-    const mid=m.fixed?`<span class="pill">${esc(m.kind)}</span>`:`${priceStr}<div class="c ${cls(m.changePct)}">${m.source==="error"?"":pct(m.changePct)}</div>`;
-    return `<tr><td class="nm"><div class="t">${esc(m.name||m.symbol)}${badge(m.source,m.fxOk)}</div><div class="c">${sub}</div></td>
-      <td>${mid}</td><td>${w.toFixed(1)}%</td>
-      <td>${won(m.val)}${pnl===0?"":`<div class="c ${cls(pnl)}">${pct(pnlPct)}</div><div class="c ${cls(pnl)}">${signWon(pnl)}</div>`}</td></tr>`;
+    const curCell=m.fixed?`<span class="pill">${esc(m.kind)}</span>`:price;
+    const pr=pnl===0?"":`<span class="${cls(pnl)}">${pct(pnlPct)}</span>`;
+    const pa=pnl===0?"":`<span class="${cls(pnl)}">${signWon(pnl)}</span>`;
+    return `<tr>
+      <td class="nm"><div class="t">${esc(m.name||m.symbol)}${badge(m.source,m.fxOk)}</div><div class="c">${sub}</div></td>
+      <td>${buy}</td><td>${curCell}</td><td>${w.toFixed(1)}%</td>
+      <td>${won(m.cost)}</td><td>${won(m.val)}</td>
+      <td>${pr}</td><td>${pa}</td></tr>`;
   }).join("");
-  card.innerHTML=`<table class="t-sym"><thead><tr><th class="nm">종목 (분산 계좌)</th><th>현재가/등락</th><th>비중</th><th>평가액/손익</th></tr></thead>
-    <tbody>${rows||'<tr><td class="nm" colspan="4">종목 없음</td></tr>'}</tbody></table>`;
+  card.innerHTML=`<div class="tscroll"><table class="t-sym"><thead><tr><th class="nm">종목</th><th>매수가</th><th>현재가</th><th>비중</th><th>원금</th><th>평가액</th><th>손익률</th><th>손익금액</th></tr></thead>
+    <tbody>${rows||'<tr><td class="nm" colspan="8">종목 없음</td></tr>'}</tbody></table></div>`;
   return card;
 }
 function render(){
