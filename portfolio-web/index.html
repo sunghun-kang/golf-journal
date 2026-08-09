@@ -285,20 +285,26 @@ function badge(source,fxOk){ if(source==="error")return `<span class="pill err">
 function renderSummary(){
   const el=$("#acctSummary"); if(!el) return;
   if(!PORT.accounts.length){ el.innerHTML=""; return; }
-  let tot=0, totCost=0;
-  const rows=PORT.accounts.map(a=>{const s=sumAccount(a);tot+=s.val;totCost+=s.cost;return {a,s};});
+  let tot=0, totCost=0, totDom=0, totFor=0;
+  const rows=PORT.accounts.map(a=>{
+    const s=sumAccount(a);
+    let dom=0,frn=0;
+    (a.holdings||[]).forEach(h=>{ if(!h.symbol) return; if(isDom(h.symbol)) dom++; else frn++; });
+    tot+=s.val; totCost+=s.cost; totDom+=dom; totFor+=frn;
+    return {a,s,dom,frn};
+  });
   const total=tot||1;
-  const body=rows.map(({a,s})=>`<tr>
+  const body=rows.map(({a,s,dom,frn})=>`<tr>
     <td class="nm"><div class="t">${esc(a.name)}<span class="tag ${a.type==="은행"?'bank':''}">${esc(a.type||'')}</span></div></td>
-    <td>${(s.val/total*100).toFixed(1)}%</td>
-    <td>${won(s.cost)}</td><td>${won(s.val)}</td>
-    <td class="${cls(s.pnl)}">${pct(s.pnlPct)}</td><td class="${cls(s.pnl)}">${signWon(s.pnl)}</td></tr>`).join("");
+    <td>${won(s.val)}</td><td>${won(s.cost)}</td>
+    <td class="${cls(s.pnl)}">${pct(s.pnlPct)}</td><td class="${cls(s.pnl)}">${signWon(s.pnl)}</td>
+    <td>${dom}</td><td>${frn}</td><td>${(s.val/total*100).toFixed(1)}%</td></tr>`).join("");
   const tPnl=tot-totCost, tPct=totCost?tPnl/totCost*100:0;
   el.innerHTML=`<div class="card"><div class="card-h"><div class="nm">기관별 집계</div>
     <div class="sub"><div class="v">${won(tot)}</div><div class="p ${cls(tPnl)}">${pct(tPct)} · ${signWon(tPnl)}</div></div></div>
-    <div class="tscroll"><table class="t-sum"><thead><tr><th class="nm">기관</th><th>비중</th><th>원금</th><th>평가액</th><th>손익률</th><th>손익금액</th></tr></thead>
+    <div class="tscroll"><table class="t-sum"><thead><tr><th class="nm">기관</th><th>평가액</th><th>원금</th><th>손익률</th><th>손익금액</th><th>국내</th><th>해외</th><th>비중</th></tr></thead>
     <tbody>${body}
-    <tr class="sumrow"><td class="nm"><div class="t">합계</div></td><td>100%</td><td>${won(totCost)}</td><td>${won(tot)}</td><td class="${cls(tPnl)}">${pct(tPct)}</td><td class="${cls(tPnl)}">${signWon(tPnl)}</td></tr>
+    <tr class="sumrow"><td class="nm"><div class="t">합계</div></td><td>${won(tot)}</td><td>${won(totCost)}</td><td class="${cls(tPnl)}">${pct(tPct)}</td><td class="${cls(tPnl)}">${signWon(tPnl)}</td><td>${totDom}</td><td>${totFor}</td><td>100%</td></tr>
     </tbody></table></div></div>`;
 }
 function renderAcct(){
@@ -316,14 +322,15 @@ function renderAcct(){
       const pa=c.pnlKRW===0?"":`<span class="${cls(c.pnlKRW)}">${signWon(c.pnlKRW)}</span>`;
       return `<tr>
         <td class="nm"><div class="t">${esc(h.name||h.symbol)}${badge(c.source,c.fxOk)}</div><div class="c">${sub}</div></td>
-        <td>${buy}</td><td>${curCell}</td>
-        <td>${won(c.costKRW)}</td><td>${won(c.valKRW)}</td>
-        <td>${pr}</td><td>${pa}</td></tr>`;
+        <td>${curCell}</td><td>${buy}</td>
+        <td>${won(c.valKRW)}</td>
+        <td>${pr}</td><td>${pa}</td>
+        <td>${won(c.costKRW)}</td></tr>`;
     }).join("");
     const card=document.createElement("div"); card.className="card";
     card.innerHTML=`<div class="card-h"><div class="nm">${esc(acc.name)}<span class="tag ${isBank?'bank':''}">${esc(acc.type||'')}</span></div>
       <div class="sub"><div class="v">${won(s.val)}</div><div class="p ${cls(s.pnl)}">${pct(s.pnlPct)} · ${signWon(s.pnl)}</div></div></div>
-      <div class="tscroll"><table class="t-acct"><thead><tr><th class="nm">종목</th><th>매수가</th><th>현재가</th><th>원금</th><th>평가액</th><th>손익률</th><th>손익금액</th></tr></thead>
+      <div class="tscroll"><table class="t-acct"><thead><tr><th class="nm">종목</th><th>현재가</th><th>매수가</th><th>평가액</th><th>손익률</th><th>손익금액</th><th>원금</th></tr></thead>
       <tbody>${rows||'<tr><td class="nm" colspan="7" style="color:var(--sub)">보유 종목 없음</td></tr>'}</tbody></table></div>`;
     g.appendChild(card);
   });
@@ -353,11 +360,12 @@ function renderSym(){
     const pa=pnl===0?"":`<span class="${cls(pnl)}">${signWon(pnl)}</span>`;
     return `<tr>
       <td class="nm"><div class="t">${esc(m.name||m.symbol)}${badge(m.source,m.fxOk)}</div><div class="c">${sub}</div></td>
-      <td>${buy}</td><td>${curCell}</td><td>${w.toFixed(1)}%</td>
-      <td>${won(m.cost)}</td><td>${won(m.val)}</td>
-      <td>${pr}</td><td>${pa}</td></tr>`;
+      <td>${curCell}</td><td>${buy}</td>
+      <td>${won(m.val)}</td>
+      <td>${pr}</td><td>${pa}</td>
+      <td>${won(m.cost)}</td><td>${w.toFixed(1)}%</td></tr>`;
   }).join("");
-  card.innerHTML=`<div class="tscroll"><table class="t-sym"><thead><tr><th class="nm">종목</th><th>매수가</th><th>현재가</th><th>비중</th><th>원금</th><th>평가액</th><th>손익률</th><th>손익금액</th></tr></thead>
+  card.innerHTML=`<div class="tscroll"><table class="t-sym"><thead><tr><th class="nm">종목</th><th>현재가</th><th>매수가</th><th>평가액</th><th>손익률</th><th>손익금액</th><th>원금</th><th>비중</th></tr></thead>
     <tbody>${rows||'<tr><td class="nm" colspan="8">종목 없음</td></tr>'}</tbody></table></div>`;
   return card;
 }
