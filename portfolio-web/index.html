@@ -71,9 +71,10 @@
   th,td{padding:9px 8px;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:top;font-variant-numeric:tabular-nums;}
   th{color:var(--sub);font-weight:600;font-size:11px;border-bottom:1px solid var(--line);}
   td.nm,th.nm{text-align:left;white-space:normal;overflow:visible;}
-  .t-acct th:nth-child(1),.t-acct td:nth-child(1){width:32%;}
-  .t-acct th:nth-child(2),.t-acct td:nth-child(2){width:28%;}
-  .t-acct th:nth-child(3),.t-acct td:nth-child(3){width:40%;}
+  .t-acct th:nth-child(1),.t-acct td:nth-child(1){width:30%;}
+  .t-acct th:nth-child(2),.t-acct td:nth-child(2){width:32%;}
+  .t-acct th:nth-child(3),.t-acct td:nth-child(3){width:38%;}
+  .fl{color:var(--sub);font-weight:600;font-size:10px;}
   .t-sym th:nth-child(1),.t-sym td:nth-child(1){width:40%;}
   .t-sym th:nth-child(2),.t-sym td:nth-child(2){width:23%;}
   .t-sym th:nth-child(3),.t-sym td:nth-child(3){width:11%;}
@@ -310,16 +311,17 @@ function renderAcct(){
       const dchg=(c.fixed||c.source==="error")?"":` <span class="${cls(c.change)}">${pct(c.changePct)}</span>`;
       const mid=c.fixed
         ? `<span class="pill">${esc(c.kind)}</span>`
-        : `<div class="t">${priceStr}${dchg}</div><div class="c">매수 ${buyStr}</div>`;
-      const pnlSub=(c.pnlKRW===0)?"":`<div class="c ${cls(c.pnlKRW)}">${pct(c.pnlPct)}</div><div class="c ${cls(c.pnlKRW)}">${signWon(c.pnlKRW)}</div>`;
+        : `<div class="c"><span class="fl">매수 </span>${buyStr}</div><div class="t"><span class="fl">현재 </span>${priceStr}${dchg}</div>`;
+      const pnlLines=(c.pnlKRW===0)?"":`<div class="c ${cls(c.pnlKRW)}"><span class="fl">손익 </span>${pct(c.pnlPct)}</div><div class="c ${cls(c.pnlKRW)}">${signWon(c.pnlKRW)}</div>`;
+      const val=`<div class="c"><span class="fl">원금 </span>${won(c.costKRW)}</div><div class="t"><span class="fl">평가 </span>${won(c.valKRW)}</div>${pnlLines}`;
       return `<tr><td class="nm"><div class="t">${esc(h.name||h.symbol)}${badge(c.source,c.fxOk)}</div><div class="c">${sub}</div></td>
         <td>${mid}</td>
-        <td>${won(c.valKRW)}${pnlSub}</td></tr>`;
+        <td>${val}</td></tr>`;
     }).join("");
     const card=document.createElement("div"); card.className="card";
     card.innerHTML=`<div class="card-h"><div class="nm">${esc(acc.name)}<span class="tag ${isBank?'bank':''}">${esc(acc.type||'')}</span></div>
       <div class="sub"><div class="v">${won(s.val)}</div><div class="p ${cls(s.pnl)}">${pct(s.pnlPct)} · ${signWon(s.pnl)}</div></div></div>
-      <table class="t-acct"><thead><tr><th class="nm">종목</th><th>현재가/매수가</th><th>평가액/손익</th></tr></thead>
+      <table class="t-acct"><thead><tr><th class="nm">종목</th><th>매수/현재</th><th>원금/평가/손익</th></tr></thead>
       <tbody>${rows||'<tr><td class="nm" colspan="3" style="color:var(--sub)">보유 종목 없음</td></tr>'}</tbody></table>`;
     g.appendChild(card);
   });
