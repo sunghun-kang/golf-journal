@@ -133,7 +133,7 @@
     <div class="iolabel">② 또는 파일로 (붙여넣기 없이)</div>
     <label class="filelbl">📂 JSON 파일 선택<input type="file" id="ioFile" accept=".json,application/json" style="display:none"></label>
     <div class="row2">
-      <button class="ghost" id="ioSample">샘플 보기</button>
+      <button class="ghost" id="ioReset">🔄 관리자 최신본 불러오기</button>
       <button class="ghost" id="ioExport">⬇ 내보내기(백업)</button>
       <button class="ghost" id="ioClose">닫기</button>
     </div>
@@ -214,6 +214,98 @@
 const $ = s => document.querySelector(s);
 const LS_KEY = "portfolio_v1";
 const CACHE_KEY = "quotes_cache_v1";
+// ▼▼ 관리자(Claude)가 관리하는 보유종목. 갱신 때마다 DATA_VERSION +1 → 폰에서 새로고침하면 자동 반영 ▼▼
+const DATA_VERSION = 1;
+const EMBEDDED = {"_v":DATA_VERSION,"title":"내 자산 한눈에 보기","accounts":[
+{"name":"토스증권","type":"증권사","holdings":[
+{"name":"SMHX (팹리스반도체)","symbol":"SMHX","qty":59.792325,"avgPrice":48.91},
+{"name":"VTI (미국전체)","symbol":"VTI","qty":1.57209,"avgPrice":339.19},
+{"name":"GLD (금)","symbol":"GLD","qty":1.359091,"avgPrice":392.35},
+{"name":"알파벳 C","symbol":"GOOG","qty":1.53137,"avgPrice":344.1},
+{"name":"SOXL (반도체 3x)","symbol":"SOXL","qty":3.365705,"avgPrice":233.48},
+{"name":"SNXX (SanDisk 2x)","symbol":"SNXX","qty":29.599973,"avgPrice":33.19},
+{"name":"알파벳 A","symbol":"GOOGL","qty":0.271618,"avgPrice":412.82},
+{"name":"IEI (미국채 3-7년)","symbol":"IEI","qty":0.497828,"avgPrice":109.97},
+{"name":"TLT (미국장기채)","symbol":"TLT","qty":0.56389,"avgPrice":89.38},
+{"name":"DBC (원자재)","symbol":"DBC","qty":0.781432,"avgPrice":28.7},
+{"name":"리비안","symbol":"RIVN","qty":0.445011,"avgPrice":19.01},
+{"name":"KODEX 미국나스닥100","symbol":"379800","qty":110,"avgPrice":26461},
+{"name":"필옵틱스","symbol":"161580","qty":100,"avgPrice":43950},
+{"name":"ACE KRX금현물","symbol":"411060","qty":73,"avgPrice":30994.66},
+{"name":"TIGER 코리아휴머노이드로봇산업","symbol":"0148J0","qty":200,"avgPrice":12690},
+{"name":"KODEX 미국휴머노이드로봇","symbol":"0038A0","qty":100,"avgPrice":16300},
+{"name":"KODEX 로봇액티브","symbol":"445290","qty":50,"avgPrice":33584},
+{"name":"KODEX 미국AI광통신네트워크","symbol":"0173Y0","qty":50,"avgPrice":14825}
+]},
+{"name":"카카오페이증권","type":"증권사","holdings":[
+{"name":"SOL AI반도체TOP2플러스","symbol":"0167A0","qty":190,"avgPrice":22107},
+{"name":"HS효성첨단소재","symbol":"298050","qty":10,"avgPrice":211960},
+{"name":"KODEX 코스닥150","symbol":"229200","qty":86,"avgPrice":18786},
+{"name":"RISE 삼성전자SK하이닉스채권혼합50","symbol":"0162Z0","qty":82,"avgPrice":14430},
+{"name":"두산퓨얼셀","symbol":"336260","qty":30,"avgPrice":51650},
+{"name":"KODEX 삼성전자SK하이닉스채권혼합50","symbol":"0177N0","qty":55,"avgPrice":15550},
+{"name":"아이온큐","symbol":"IONQ","qty":37.81,"avgPrice":44.45},
+{"name":"애플","symbol":"AAPL","qty":3.6829,"avgPrice":289.16},
+{"name":"SOXL (반도체 3x)","symbol":"SOXL","qty":6.275,"avgPrice":233.9},
+{"name":"존슨앤드존슨","symbol":"JNJ","qty":0.246,"avgPrice":248.19},
+{"name":"P&G","symbol":"PG","qty":0.413,"avgPrice":155.78},
+{"name":"코카콜라","symbol":"KO","qty":0.55,"avgPrice":85.52}
+]},
+{"name":"한국투자증권","type":"증권사","holdings":[
+{"name":"삼성전자","symbol":"005930","qty":130,"avgPrice":90077},
+{"name":"삼성SDI","symbol":"006400","qty":10,"avgPrice":289500},
+{"name":"SK하이닉스","symbol":"000660","qty":10,"avgPrice":950000},
+{"name":"LG","symbol":"003550","qty":30,"avgPrice":112693},
+{"name":"TIGER 코스닥150","symbol":"232080","qty":1150,"avgPrice":15222},
+{"name":"TIGER 코리아휴머노이드로봇산업","symbol":"0148J0","qty":700,"avgPrice":10874},
+{"name":"NAVER","symbol":"035420","qty":20,"avgPrice":271242},
+{"name":"에코프로","symbol":"086520","qty":100,"avgPrice":153896},
+{"name":"하이젠알앤엠","symbol":"160190","qty":100,"avgPrice":69800},
+{"name":"엔비디아","symbol":"NVDA","qty":200,"avgPrice":26.77},
+{"name":"애플","symbol":"AAPL","qty":30,"avgPrice":130.85},
+{"name":"알파벳 C","symbol":"GOOG","qty":40,"avgPrice":307.72},
+{"name":"SMHX (팹리스반도체)","symbol":"SMHX","qty":71,"avgPrice":58.8},
+{"name":"아이온큐","symbol":"IONQ","qty":70,"avgPrice":49.81},
+{"name":"알파벳 A","symbol":"GOOGL","qty":5,"avgPrice":399.28},
+{"name":"SOXL (반도체 3x)","symbol":"SOXL","qty":25,"avgPrice":200.82},
+{"name":"루시드 그룹","symbol":"LCID","qty":100,"avgPrice":31.51}
+]},
+{"name":"NH투자증권","type":"증권사","holdings":[
+{"name":"NH-타임폴리오 뉴모빌리티 신기술조합","kind":"신기술조합","fixedValue":196125447,"cost":200000000},
+{"name":"TIGER 미국S&P500","symbol":"360750","qty":400,"avgPrice":22650},
+{"name":"현대모비스","symbol":"012330","qty":20,"avgPrice":455666},
+{"name":"두산로보틱스","symbol":"454910","qty":130,"avgPrice":89749},
+{"name":"SKC","symbol":"011790","qty":100,"avgPrice":128390},
+{"name":"TIGER 코리아휴머노이드로봇산업","symbol":"0148J0","qty":700,"avgPrice":11407},
+{"name":"티엑스알로보틱스","symbol":"484810","qty":400,"avgPrice":20165},
+{"name":"KODEX 미국AI광통신네트워크","symbol":"0173Y0","qty":500,"avgPrice":15712},
+{"name":"한화오션","symbol":"042660","qty":50,"avgPrice":140720},
+{"name":"에스비비테크","symbol":"389500","qty":120,"avgPrice":36830},
+{"name":"클로봇","symbol":"466100","qty":100,"avgPrice":66500},
+{"name":"HL만도","symbol":"204320","qty":50,"avgPrice":70380},
+{"name":"ACE 삼성전자단일종목레버리지","symbol":"0194M0","qty":200,"avgPrice":27210},
+{"name":"KODEX SK하이닉스단일종목레버리지","symbol":"0193T0","qty":200,"avgPrice":29337},
+{"name":"티로보틱스","symbol":"117730","qty":100,"avgPrice":22965},
+{"name":"해성에어로보틱스","symbol":"059270","qty":150,"avgPrice":13100},
+{"name":"ACE 고배당주Plus커버드콜액티브","symbol":"0199C0","qty":70,"avgPrice":10225},
+{"name":"SOL SK하이닉스단일종목레버리지","symbol":"0197W0","qty":100,"avgPrice":24989}
+]},
+{"name":"IBK기업은행","type":"은행","holdings":[
+{"name":"보통예금(IBK평생한가족통장)","kind":"예금","fixedValue":5450698},
+{"name":"주택청약종합저축","kind":"청약","fixedValue":10000000},
+{"name":"연금저축펀드통장","kind":"펀드","fixedValue":4997755,"cost":4800073}
+]},
+{"name":"KB국민은행","type":"은행","holdings":[
+{"name":"입출금(KB카드 결제계좌)","kind":"입출금","fixedValue":2329851},
+{"name":"미국AI전력인프라 ETF 적립식신탁","kind":"신탁","fixedValue":18620408,"cost":16000000},
+{"name":"ELB 26-88호","kind":"ELB","fixedValue":50434071,"cost":49950050},
+{"name":"반도체 ETF 적립식신탁(2023)","kind":"신탁","fixedValue":91984206,"cost":20000000},
+{"name":"글로벌AI액티브 ETF 적립식신탁","kind":"신탁","fixedValue":41753792,"cost":22000000},
+{"name":"반도체 ETF 적립식신탁(2025)","kind":"신탁","fixedValue":54730385,"cost":20012383},
+{"name":"개인형IRP(적립겸용)","kind":"IRP","fixedValue":102987835,"cost":84232370}
+]}
+]};
+// ▲▲ 관리자 관리 데이터 끝 ▲▲
 let PORT = {title:"내 자산 한눈에 보기", accounts:[]};
 let QUOTES = {}, FX = 0, VIEW = "acct", EDITING = false, timer = null;
 let SORT = {key:"val", dir:-1}; // 기본: 평가액 내림차순 (key="" → 원래 순서, dir 1=오름 -1=내림)
@@ -573,7 +665,7 @@ function openIO(){ $("#ioText").value=""; $("#ioModal").classList.add("on"); }
 function closeIO(){ $("#ioModal").classList.remove("on"); }
 function applyImport(obj){
   if(!obj||!Array.isArray(obj.accounts)) { alert("형식 오류: accounts 배열이 필요합니다."); return false; }
-  PORT=obj; if(!PORT.title)PORT.title="내 자산 한눈에 보기";
+  PORT=obj; if(!PORT.title)PORT.title="내 자산 한눈에 보기"; PORT._v=DATA_VERSION;
   saveLocal(); document.title=PORT.title; $("#title").textContent=PORT.title;
   closeIO(); refresh(); return true;
 }
@@ -587,9 +679,7 @@ $("#ioFile").onchange=e=>{ const f=e.target.files[0]; if(!f)return; const r=new 
   r.onload=()=>{ try{ applyImport(JSON.parse(r.result)); }catch(err){ alert("파일 파싱 실패: "+err.message); } }; r.readAsText(f); };
 $("#ioExport").onclick=()=>{ const blob=new Blob([JSON.stringify(PORT,null,2)],{type:"application/json"});
   const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="portfolio.json"; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); };
-$("#ioSample").onclick=()=>{ applyImport({title:"내 자산 한눈에 보기(샘플)",accounts:[
-  {name:"내 증권사",type:"증권사",holdings:[{name:"KODEX 200",symbol:"069500",qty:10,avgPrice:34000},{name:"애플",symbol:"AAPL",qty:2,avgPrice:200}]},
-  {name:"내 은행",type:"은행",holdings:[{name:"예금",kind:"예금",fixedValue:1000000}]}]}); };
+$("#ioReset").onclick=()=>{ if(confirm("관리자(Claude)가 갱신한 최신 보유종목으로 불러올까요? 폰에서 직접 편집한 내용은 사라집니다.")){ loadEmbedded(); closeIO(); document.title=PORT.title; $("#title").textContent=PORT.title; refresh(); } };
 
 // ---------- 이벤트 & 시작 ----------
 $("#refresh").onclick=refresh;
@@ -602,16 +692,17 @@ $("#fltLoss").onclick=()=>{ FILTER.side=FILTER.side==="loss"?"":"loss"; syncFilt
 $("#fltThr").onchange=e=>{ FILTER.thr=Number(e.target.value)||0; render(); };
 document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));t.classList.add("active");VIEW=t.dataset.view;render();});
 
+function loadEmbedded(){ PORT=JSON.parse(JSON.stringify(EMBEDDED)); saveLocal(); }
 (function init(){
   const local=loadLocal();
-  if(local && Array.isArray(local.accounts) && local.accounts.length){
-    PORT=local; if(PORT.title){document.title=PORT.title;$("#title").textContent=PORT.title;}
-    refresh();
+  // 사용자 저장본이 관리자 최신 버전 이상이면 그대로, 아니면 관리자 갱신본으로 자동 교체
+  if(local && Array.isArray(local.accounts) && local.accounts.length && (local._v||0)>=DATA_VERSION){
+    PORT=local;
   } else {
-    $("#updated").textContent="보유내역을 가져오세요 →";
-    openIO();
-    $("#ioTitle").textContent="처음이시네요 — 보유내역 가져오기";
+    loadEmbedded();
   }
+  if(PORT.title){document.title=PORT.title;$("#title").textContent=PORT.title;}
+  refresh();
 })();
 </script>
 </body>
