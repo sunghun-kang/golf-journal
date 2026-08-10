@@ -462,8 +462,9 @@ async function qKR(sym){
       const rf=String(d.rf||d.risefall||"3"); if(change&&(rf==="4"||rf==="5")){change=-Math.abs(change);cr=-Math.abs(cr);}
     }
   }catch(e){}
-  // 2) 값이 비었거나 전일대비를 못 얻으면 네이버 모바일 엔드포인트로 보강
-  if(!price || (!change && !prev)){
+  if(price&&!change&&prev){change=price-prev;cr=prev?change/prev*100:0;} // 폴링 전일종가로 전일대비 계산
+  // 2) 아직 전일대비(어제대비)를 못 얻었거나 가격이 없으면 네이버 모바일 엔드포인트로 보강
+  if(!price || !change){
     try{
       const d=await jget("https://m.stock.naver.com/api/stock/"+code+"/basic");
       const p=numf(d.closePrice);
@@ -527,7 +528,7 @@ function renderEdit(){
     box.appendChild(head);
     (acc.holdings||[]).forEach((h,hi)=>{
       const row=document.createElement("div"); row.className="ed-row";
-      const isFix=!h.symbol;
+      const isFix=!h.symbol && (h.fixedValue!=null || h.cost!=null || h.kind!=null); // 예금·펀드 등 고정자산
       const amt=isFix
         ? `<input class="px" type="number" step="any" value="${h.fixedValue??""}" data-ai="${ai}" data-hi="${hi}" data-f="fixedValue" placeholder="평가액"/>
            <input class="px" type="number" step="any" value="${h.cost??""}" data-ai="${ai}" data-hi="${hi}" data-f="cost" placeholder="원금"/>`
@@ -540,13 +541,16 @@ function renderEdit(){
       box.appendChild(row);
     });
     const add=document.createElement("button"); add.className="ghost"; add.textContent="+ 종목 추가"; add.dataset.addhold=ai; box.appendChild(add);
+    const addf=document.createElement("button"); addf.className="ghost"; addf.textContent="+ 예금/펀드(고정)"; addf.dataset.addfix=ai; box.appendChild(addf);
     area.appendChild(box);
   });
   area.oninput=e=>{const t=e.target,ai=t.dataset.ai,hi=t.dataset.hi,f=t.dataset.f;if(ai==null)return;let v=t.value;
     if(f==="qty"||f==="avgPrice"||f==="fixedValue"||f==="cost")v=Number(v)||0;
     if(hi==null)PORT.accounts[ai][f]=v; else PORT.accounts[ai].holdings[hi][f]=v;};
+  area.onchange=e=>{ if(e.target.dataset.f==="symbol") renderEdit(); }; // 코드 입력/삭제 시 종목↔고정 칸 전환
   area.onclick=e=>{const t=e.target;
     if(t.dataset.addhold!=null){PORT.accounts[t.dataset.addhold].holdings.push({name:"",symbol:"",qty:0,avgPrice:0});renderEdit();}
+    else if(t.dataset.addfix!=null){PORT.accounts[t.dataset.addfix].holdings.push({name:"",symbol:"",kind:"예금",fixedValue:0,cost:0});renderEdit();}
     else if(t.dataset.delhold!=null){const [a,h]=t.dataset.delhold.split(":");PORT.accounts[a].holdings.splice(h,1);renderEdit();}
     else if(t.dataset.upacct!=null){const i=+t.dataset.upacct; if(i>0){const x=PORT.accounts.splice(i,1)[0];PORT.accounts.splice(i-1,0,x);renderEdit();}}
     else if(t.dataset.downacct!=null){const i=+t.dataset.downacct; if(i<PORT.accounts.length-1){const x=PORT.accounts.splice(i,1)[0];PORT.accounts.splice(i+1,0,x);renderEdit();}}
