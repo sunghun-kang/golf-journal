@@ -265,7 +265,8 @@ function shortName(n){
 // ---------- 계산 ----------
 function calc(h){
   if(!h.symbol){
-    const val=Number(h.fixedValue)||0, cost=h.cost!=null?Number(h.cost):val;
+    const alt=(Number(h.qty)||0)*(Number(h.avgPrice)||0); // 실수로 수량×단가로 입력한 경우도 인식
+    const val=(Number(h.fixedValue)||0)||alt||0, cost=h.cost!=null?Number(h.cost):(alt||val);
     return {fixed:true,kind:h.kind||"고정",cur:"KRW",price:0,change:0,changePct:0,fxOk:true,source:"fixed",
       valKRW:val,costKRW:cost,dayKRW:0,pnlKRW:val-cost,pnlPct:cost?((val-cost)/cost*100):0,valNative:val,qty:0,avg:0};
   }
