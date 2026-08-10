@@ -358,7 +358,9 @@ function renderAcct(){
   const g=document.createElement("div"); g.className="grid";
   PORT.accounts.forEach(acc=>{
     const s=sumAccount(acc), isBank=acc.type==="은행";
-    const items=applySort((acc.holdings||[]).map(h=>({h,c:calc(h)})).filter(o=>passFilter(o.c.pnlPct)), o=>metricOf(o.c,o.h,SORT.key));
+    const sorted=applySort((acc.holdings||[]).map(h=>({h,c:calc(h)})).filter(o=>passFilter(o.c.pnlPct)), o=>metricOf(o.c,o.h,SORT.key));
+    const isDomItem=o=>o.c.fixed||(o.h.symbol&&isDom(o.h.symbol)); // 고정자산(예금 등)도 국내로 취급
+    const items=[...sorted.filter(isDomItem), ...sorted.filter(o=>!isDomItem(o))]; // 국내 먼저, 해외 다음
     const rows=items.map(({h,c})=>{
       const curSym=c.cur==="USD"?"$":"";
       const price=c.source==="error"?"—":curSym+(c.cur==="USD"?usd(c.price):won(c.price));
