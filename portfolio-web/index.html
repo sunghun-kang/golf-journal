@@ -431,16 +431,50 @@ function saveLocal(){ localStorage.setItem(LS_KEY, JSON.stringify(PORT)); }
 function allSymbols(){ const set=new Set(); PORT.accounts.forEach(a=>(a.holdings||[]).forEach(h=>{if(h.symbol)set.add(h.symbol);})); return [...set]; }
 
 // ---------- 시세(폰에서 직접 조회) ----------
-const CORS = "https://api.allorigins.win/raw?url=";
-async function jget(url){ const r=await fetch(CORS+encodeURIComponent(url),{cache:"no-store"}); if(!r.ok) throw new Error("http"); return await r.json(); }
+// 여러 CORS 프록시를 순서대로 시도(한 곳이 막혀도 다음 프록시로 폴백)
+const PROXIES = [
+  u=>"https://api.allorigins.win/raw?url="+encodeURIComponent(u),
+  u=>"https://corsproxy.io/?url="+encodeURIComponent(u),
+  u=>"https://api.codetabs.com/v1/proxy/?quest="+encodeURIComponent(u),
+];
+async function jget(url){
+  let lastErr;
+  for(const mk of PROXIES){
+    const ac=new AbortController(); const to=setTimeout(()=>ac.abort(),8000);
+    try{ const r=await fetch(mk(url),{cache:"no-store",signal:ac.signal}); if(!r.ok) throw new Error("http"+r.status);
+      const t=await r.text(); if(!t) throw new Error("empty"); return JSON.parse(t); }
+    catch(e){ lastErr=e; }
+    finally{ clearTimeout(to); }
+  }
+  throw lastErr||new Error("proxyfail");
+}
+const numf=v=>{ if(v==null||v==="") return 0; const n=parseFloat(String(v).replace(/,/g,"")); return isFinite(n)?n:0; };
 async function qKR(sym){
   const code=(sym||"").toUpperCase().replace(/\.(KS|KQ)$/,"");
-  const raw=await jget("https://polling.finance.naver.com/api/realtime/domestic/stock/"+code);
-  let datas=raw.datas||(raw.result&&raw.result.areas&&raw.result.areas[0]&&raw.result.areas[0].datas);
-  if(!datas||!datas.length) throw new Error("nodata");
-  const d=datas[0], num=(...k)=>{for(const x of k){const v=d[x];if(v!=null&&v!=="")return parseFloat(String(v).replace(/,/g,""));}return 0;};
-  let price=num("nv","now","closePrice"), prev=num("sv","prev","prevClosePrice"), change=num("cv","change"), cr=num("cr","changeRate");
-  const rf=String(d.rf||d.risefall||"3"); if(change&&(rf==="4"||rf==="5")){change=-Math.abs(change);cr=-Math.abs(cr);}
+  let price=0,prev=0,change=0,cr=0;
+  // 1) 네이버 실시간 폴링 엔드포인트
+  try{
+    const raw=await jget("https://polling.finance.naver.com/api/realtime/domestic/stock/"+code);
+    let datas=raw.datas||(raw.result&&raw.result.areas&&raw.result.areas[0]&&raw.result.areas[0].datas);
+    if(datas&&datas.length){
+      const d=datas[0], num=(...k)=>{for(const x of k){const v=d[x];if(v!=null&&v!=="")return numf(v);}return 0;};
+      price=num("nv","now","closePrice"); prev=num("sv","prev","prevClosePrice"); change=num("cv","change"); cr=num("cr","changeRate");
+      const rf=String(d.rf||d.risefall||"3"); if(change&&(rf==="4"||rf==="5")){change=-Math.abs(change);cr=-Math.abs(cr);}
+    }
+  }catch(e){}
+  // 2) 값이 비었거나 전일대비를 못 얻으면 네이버 모바일 엔드포인트로 보강
+  if(!price || (!change && !prev)){
+    try{
+      const d=await jget("https://m.stock.naver.com/api/stock/"+code+"/basic");
+      const p=numf(d.closePrice);
+      if(p){ price=p; cr=numf(d.fluctuationsRatio);
+        change=Math.abs(numf(d.compareToPreviousClosePrice));
+        const dir=(d.compareToPreviousPrice&&d.compareToPreviousPrice.code)||"";
+        if(cr<0||dir==="4"||dir==="5") change=-change;
+        prev=price-change;
+      }
+    }catch(e){}
+  }
   if(!prev&&price&&change) prev=price-change;
   if(price&&!change&&prev){change=price-prev;cr=prev?change/prev*100:0;}
   if(!price) throw new Error("noprice");
