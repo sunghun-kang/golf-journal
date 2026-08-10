@@ -527,10 +527,15 @@ function renderEdit(){
     box.appendChild(head);
     (acc.holdings||[]).forEach((h,hi)=>{
       const row=document.createElement("div"); row.className="ed-row";
+      const isFix=!h.symbol;
+      const amt=isFix
+        ? `<input class="px" type="number" step="any" value="${h.fixedValue??""}" data-ai="${ai}" data-hi="${hi}" data-f="fixedValue" placeholder="평가액"/>
+           <input class="px" type="number" step="any" value="${h.cost??""}" data-ai="${ai}" data-hi="${hi}" data-f="cost" placeholder="원금"/>`
+        : `<input class="qty" type="number" value="${h.qty??""}" data-ai="${ai}" data-hi="${hi}" data-f="qty" placeholder="수량"/>
+           <input class="px" type="number" step="any" value="${h.avgPrice??""}" data-ai="${ai}" data-hi="${hi}" data-f="avgPrice" placeholder="평단"/>`;
       row.innerHTML=`<input class="hn" value="${esc(h.name)}" data-ai="${ai}" data-hi="${hi}" data-f="name" placeholder="종목명"/>
         <input class="sym" value="${esc(h.symbol||"")}" data-ai="${ai}" data-hi="${hi}" data-f="symbol" placeholder="코드/티커(없으면 예금)"/>
-        <input class="qty" type="number" value="${h.symbol?(h.qty??""):""}" data-ai="${ai}" data-hi="${hi}" data-f="qty" placeholder="수량"/>
-        <input class="px" type="number" step="any" value="${h.symbol?(h.avgPrice??""):(h.fixedValue??"")}" data-ai="${ai}" data-hi="${hi}" data-f="${h.symbol?'avgPrice':'fixedValue'}" placeholder="${h.symbol?'평단':'평가금액'}"/>
+        ${amt}
         <button class="del" data-delhold="${ai}:${hi}" title="종목 삭제">✕</button>`;
       box.appendChild(row);
     });
@@ -538,7 +543,7 @@ function renderEdit(){
     area.appendChild(box);
   });
   area.oninput=e=>{const t=e.target,ai=t.dataset.ai,hi=t.dataset.hi,f=t.dataset.f;if(ai==null)return;let v=t.value;
-    if(f==="qty"||f==="avgPrice"||f==="fixedValue")v=Number(v)||0;
+    if(f==="qty"||f==="avgPrice"||f==="fixedValue"||f==="cost")v=Number(v)||0;
     if(hi==null)PORT.accounts[ai][f]=v; else PORT.accounts[ai].holdings[hi][f]=v;};
   area.onclick=e=>{const t=e.target;
     if(t.dataset.addhold!=null){PORT.accounts[t.dataset.addhold].holdings.push({name:"",symbol:"",qty:0,avgPrice:0});renderEdit();}
