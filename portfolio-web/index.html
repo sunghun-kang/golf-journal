@@ -471,7 +471,7 @@ function renderAcct(){
     }).join("");
     const card=document.createElement("div"); card.className="card";
     card.innerHTML=`<div class="card-h"><div class="nm">${esc(acc.name)}</div>
-      <div class="sub"><div class="v">${won(s.val)}</div><div class="p ${cls(s.pnl)}">${pct(s.pnlPct)} · ${signWon(s.pnl)}</div><div class="p ${cls(s.day)}">어제대비 ${s.day===0?"0":signWon(s.day)}</div></div></div>
+      <div class="sub"><div class="v">${won(s.val)}</div><div class="p ${cls(s.pnl)}">${pct(s.pnlPct)} · ${signWon(s.pnl)}</div><div class="p ${cls(s.day)}">어제대비 ${s.day===0?"0":pct(s.day/((s.val-s.day)||1)*100)+" · "+signWon(s.day)}</div></div></div>
       <div class="tscroll"><table class="t-acct"><thead><tr><th class="nm">종목</th><th>현재가</th><th>매수가</th><th>평가액</th><th>손익률</th><th>어제대비</th><th>손익금액</th><th>원금</th></tr></thead>
       <tbody>${rows||'<tr><td class="nm" colspan="8" style="color:var(--sub)">보유 종목 없음</td></tr>'}</tbody></table></div>`;
     g.appendChild(card);
