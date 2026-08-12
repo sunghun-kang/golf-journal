@@ -70,6 +70,7 @@
   .card-h .sub{text-align:right;}
   .card-h .sub .v{font-weight:800;font-size:15px;font-variant-numeric:tabular-nums;}
   .card-h .sub .p{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;}
+  .card-h .sub .p .day{font-size:11px;margin-left:4px;}
   .tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
   table{width:100%;border-collapse:collapse;font-size:11.5px;}
   td.sp,th.sp{width:100%;padding:0;min-width:6px;}
@@ -341,6 +342,8 @@ const pct = n => (n==null||isNaN(n)) ? "—" : (n>=0?"+":"") + n.toFixed(2) + "%
 const signWon = n => (n>=0?"+":"−") + won(Math.abs(n));
 const cls = n => n>0 ? "up" : (n<0 ? "dn" : "flat");
 const isDom = s => /^[0-9][0-9A-Z]{5}$/.test((s||"").toUpperCase());
+function prevTradeLabel(){ const d=new Date(); do{ d.setDate(d.getDate()-1); }while(d.getDay()===0||d.getDay()===6); // 주말 제외한 전 거래일
+  return String(d.getMonth()+1).padStart(2,"0")+"/"+String(d.getDate()).padStart(2,"0"); }
 function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 // 표시용 이름 축약: 설명용 괄호 제거(단 (2023)같은 숫자 연도는 유지) + 너무 길면 …
 function shortName(n){
@@ -449,6 +452,7 @@ function renderSummary(){
 }
 function renderAcct(){
   const g=document.createElement("div"); g.className="grid";
+  const DLAB=prevTradeLabel();
   PORT.accounts.forEach(acc=>{
     const s=sumAccount(acc), isBank=acc.type==="은행";
     const sorted=applySort((acc.holdings||[]).map(h=>({h,c:calc(h)})).filter(o=>passFilter(o.c.pnlPct)), o=>metricOf(o.c,o.h,SORT.key));
@@ -471,7 +475,7 @@ function renderAcct(){
     }).join("");
     const card=document.createElement("div"); card.className="card";
     card.innerHTML=`<div class="card-h"><div class="nm">${esc(acc.name)}</div>
-      <div class="sub"><div class="v">${won(s.val)}</div><div class="p ${cls(s.pnl)}">${pct(s.pnlPct)} · ${signWon(s.pnl)}</div><div class="p ${cls(s.day)}">어제대비 ${s.day===0?"0":pct(s.day/((s.val-s.day)||1)*100)+" · "+signWon(s.day)}</div></div></div>
+      <div class="sub"><div class="v">${won(s.val)}</div><div class="p"><span class="${cls(s.pnl)}">${pct(s.pnlPct)} · ${signWon(s.pnl)}</span> <span class="day ${cls(s.day)}">어제(${DLAB})대비 ${s.day===0?"0":signWon(s.day)}</span></div></div></div>
       <div class="tscroll"><table class="t-acct"><thead><tr><th class="nm">종목</th><th>현재가</th><th>매수가</th><th>평가액</th><th>손익률</th><th>어제대비</th><th>손익금액</th><th>원금</th></tr></thead>
       <tbody>${rows||'<tr><td class="nm" colspan="8" style="color:var(--sub)">보유 종목 없음</td></tr>'}</tbody></table></div>`;
     g.appendChild(card);
