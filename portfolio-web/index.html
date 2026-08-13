@@ -339,6 +339,7 @@ const SNAP_FX = 1412.6;
 const won = n => (n==null||isNaN(n)) ? "—" : Math.round(n).toLocaleString("ko-KR");
 const usd = n => (n==null||isNaN(n)) ? "—" : n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
 const pct = n => (n==null||isNaN(n)) ? "—" : (n>=0?"+":"") + n.toFixed(2) + "%";
+const pctn = n => (n==null||isNaN(n)) ? "—" : (n>=0?"+":"") + n.toFixed(2); // % 기호 없는 손익률
 const signWon = n => (n>=0?"+":"−") + won(Math.abs(n));
 const cls = n => n>0 ? "up" : (n<0 ? "dn" : "flat");
 const isDom = s => /^[0-9][0-9A-Z]{5}$/.test((s||"").toUpperCase());
@@ -440,14 +441,14 @@ function renderSummary(){
   const body=rows.map(({a,s,dom,frn},i)=>`<tr>
     <td class="nm"><span class="ord"><b data-sumup="${i}" title="위로">▲</b><b data-sumdown="${i}" title="아래로">▼</b></span><span class="t">${esc(a.name)}</span></td>
     <td class="b">${won(s.val)}</td><td>${won(s.cost)}</td>
-    <td class="${cls(s.pnl)}">${pct(s.pnlPct)}</td><td class="${cls(s.day)}">${s.day===0?"0":signWon(s.day)}</td><td class="b ${cls(s.pnl)}">${signWon(s.pnl)}</td>
+    <td class="${cls(s.pnl)}">${pctn(s.pnlPct)}</td><td class="${cls(s.day)}">${s.day===0?"0":signWon(s.day)}</td><td class="b ${cls(s.pnl)}">${signWon(s.pnl)}</td>
     <td>${dom}</td><td>${frn}</td><td>${(s.val/total*100).toFixed(1)}%</td></tr>`).join("");
   const tPnl=tot-totCost, tPct=totCost?tPnl/totCost*100:0;
   el.innerHTML=`<div class="card"><div class="card-h"><div class="nm">기관별 집계</div>
     <div class="sub"><div class="v">${won(tot)}</div><div class="p ${cls(tPnl)}">${pct(tPct)} · ${signWon(tPnl)}</div></div></div>
-    <div class="tscroll"><table class="t-sum"><thead><tr><th class="nm">기관</th><th>평가액</th><th>원금</th><th>손익률</th><th>어제대비</th><th>손익금액</th><th>국내</th><th>해외</th><th>비중</th></tr></thead>
+    <div class="tscroll"><table class="t-sum"><thead><tr><th class="nm">기관</th><th>평가액</th><th>원금</th><th>손익률(%)</th><th>어제대비</th><th>손익금액</th><th>국내</th><th>해외</th><th>비중</th></tr></thead>
     <tbody>${body}
-    <tr class="sumrow"><td class="nm"><div class="t">합계</div></td><td>${won(tot)}</td><td>${won(totCost)}</td><td class="${cls(tPnl)}">${pct(tPct)}</td><td class="${cls(totDay)}">${totDay===0?"0":signWon(totDay)}</td><td class="${cls(tPnl)}">${signWon(tPnl)}</td><td>${totDom}</td><td>${totFor}</td><td>100%</td></tr>
+    <tr class="sumrow"><td class="nm"><div class="t">합계</div></td><td>${won(tot)}</td><td>${won(totCost)}</td><td class="${cls(tPnl)}">${pctn(tPct)}</td><td class="${cls(totDay)}">${totDay===0?"0":signWon(totDay)}</td><td class="${cls(tPnl)}">${signWon(tPnl)}</td><td>${totDom}</td><td>${totFor}</td><td>100%</td></tr>
     </tbody></table></div></div>`;
 }
 function renderAcct(){
@@ -464,7 +465,7 @@ function renderAcct(){
       const buy=c.fixed?"—":curSym+(c.cur==="USD"?usd(c.avg):won(c.avg));
       const sub=c.fixed?esc(c.kind):`${esc(h.symbol)} · ${c.qty.toLocaleString()}주`;
       const curCell=c.fixed?`<span class="pill">${esc(c.kind)}</span>`:price;
-      const pr=c.pnlKRW===0?"":`<span class="${cls(c.pnlKRW)}">${pct(c.pnlPct)}</span>`;
+      const pr=c.pnlKRW===0?"":`<span class="${cls(c.pnlKRW)}">${pctn(c.pnlPct)}</span>`;
       const pa=c.pnlKRW===0?"":`<span class="${cls(c.pnlKRW)}">${signWon(c.pnlKRW)}</span>`;
       return `<tr>
         <td class="nm"><div class="t" title="${esc(h.name||h.symbol)}">${esc(shortName(h.name||h.symbol))}${badge(c.source,c.fxOk)}</div><div class="c">${sub}</div></td>
@@ -476,7 +477,7 @@ function renderAcct(){
     const card=document.createElement("div"); card.className="card";
     card.innerHTML=`<div class="card-h"><div class="nm">${esc(acc.name)}</div>
       <div class="sub"><div class="v">${won(s.val)}</div><div class="p"><span class="day ${cls(s.day)}">어제(${DLAB})대비 ${s.day===0?"0":signWon(s.day)}</span> <span class="${cls(s.pnl)}">${pct(s.pnlPct)} · ${signWon(s.pnl)}</span></div></div></div>
-      <div class="tscroll"><table class="t-acct"><thead><tr><th class="nm">종목</th><th>현재가</th><th>매수가</th><th>평가액</th><th>손익률</th><th>어제대비</th><th>손익금액</th><th>원금</th></tr></thead>
+      <div class="tscroll"><table class="t-acct"><thead><tr><th class="nm">종목</th><th>현재가</th><th>매수가</th><th>평가액</th><th>손익률(%)</th><th>어제대비</th><th>손익금액</th><th>원금</th></tr></thead>
       <tbody>${rows||'<tr><td class="nm" colspan="8" style="color:var(--sub)">보유 종목 없음</td></tr>'}</tbody></table></div>`;
     g.appendChild(card);
   });
@@ -502,7 +503,7 @@ function renderSym(){
     const pnl=m.val-m.cost, pnlPct=m.cost?(pnl/m.cost*100):0, w=m.val/tot*100;
     const sub=m.fixed?esc(m.kind+" · "+m.accts.join(", ")):`${esc(m.symbol)} · ${m.qty.toLocaleString()}주 · ${esc(m.accts.join(", "))}`;
     const curCell=m.fixed?`<span class="pill">${esc(m.kind)}</span>`:price;
-    const pr=pnl===0?"":`<span class="${cls(pnl)}">${pct(pnlPct)}</span>`;
+    const pr=pnl===0?"":`<span class="${cls(pnl)}">${pctn(pnlPct)}</span>`;
     const pa=pnl===0?"":`<span class="${cls(pnl)}">${signWon(pnl)}</span>`;
     return `<tr>
       <td class="nm"><div class="t" title="${esc(m.name||m.symbol)}">${esc(shortName(m.name||m.symbol))}${badge(m.source,m.fxOk)}</div><div class="c">${sub}</div></td>
@@ -511,7 +512,7 @@ function renderSym(){
       <td>${pr}</td><td>${m.day===0?"0":`<span class="${cls(m.day)}">${signWon(m.day)}</span>`}</td><td class="b">${pa}</td>
       <td>${won(m.cost)}</td><td>${w.toFixed(1)}%</td></tr>`;
   }).join("");
-  card.innerHTML=`<div class="tscroll"><table class="t-sym"><thead><tr><th class="nm">종목</th><th>현재가</th><th>매수가</th><th>평가액</th><th>손익률</th><th>어제대비</th><th>손익금액</th><th>원금</th><th>비중</th></tr></thead>
+  card.innerHTML=`<div class="tscroll"><table class="t-sym"><thead><tr><th class="nm">종목</th><th>현재가</th><th>매수가</th><th>평가액</th><th>손익률(%)</th><th>어제대비</th><th>손익금액</th><th>원금</th><th>비중</th></tr></thead>
     <tbody>${rows||'<tr><td class="nm" colspan="9">종목 없음</td></tr>'}</tbody></table></div>`;
   return card;
 }
