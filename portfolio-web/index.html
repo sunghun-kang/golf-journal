@@ -70,7 +70,7 @@
   .card-h .sub{text-align:right;}
   .card-h .sub .v{font-weight:800;font-size:15px;font-variant-numeric:tabular-nums;}
   .card-h .sub .p{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;}
-  .card-h .sub .p .day{font-size:11px;margin-left:4px;}
+  .card-h .sub .p .day{font-size:11px;margin-right:5px;}
   .tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
   table{width:100%;border-collapse:collapse;font-size:11.5px;}
   td.sp,th.sp{width:100%;padding:0;min-width:6px;}
@@ -475,7 +475,7 @@ function renderAcct(){
     }).join("");
     const card=document.createElement("div"); card.className="card";
     card.innerHTML=`<div class="card-h"><div class="nm">${esc(acc.name)}</div>
-      <div class="sub"><div class="v">${won(s.val)}</div><div class="p"><span class="${cls(s.pnl)}">${pct(s.pnlPct)} · ${signWon(s.pnl)}</span> <span class="day ${cls(s.day)}">어제(${DLAB})대비 ${s.day===0?"0":signWon(s.day)}</span></div></div></div>
+      <div class="sub"><div class="v">${won(s.val)}</div><div class="p"><span class="day ${cls(s.day)}">어제(${DLAB})대비 ${s.day===0?"0":signWon(s.day)}</span> <span class="${cls(s.pnl)}">${pct(s.pnlPct)} · ${signWon(s.pnl)}</span></div></div></div>
       <div class="tscroll"><table class="t-acct"><thead><tr><th class="nm">종목</th><th>현재가</th><th>매수가</th><th>평가액</th><th>손익률</th><th>어제대비</th><th>손익금액</th><th>원금</th></tr></thead>
       <tbody>${rows||'<tr><td class="nm" colspan="8" style="color:var(--sub)">보유 종목 없음</td></tr>'}</tbody></table></div>`;
     g.appendChild(card);
