@@ -216,7 +216,7 @@ const $ = s => document.querySelector(s);
 const LS_KEY = "portfolio_v1";
 const CACHE_KEY = "quotes_cache_v1";
 // ▼▼ 관리자(Claude)가 관리하는 보유종목. 갱신 때마다 DATA_VERSION +1 → 폰에서 새로고침하면 자동 반영 ▼▼
-const DATA_VERSION = 1;
+const DATA_VERSION = 2;
 const EMBEDDED = {"_v":DATA_VERSION,"title":"내 자산 한눈에 보기","accounts":[
 {"name":"토스증권","type":"증권사","holdings":[
 {"name":"SMHX (팹리스반도체)","symbol":"SMHX","qty":59.792325,"avgPrice":48.91},
@@ -289,7 +289,11 @@ const EMBEDDED = {"_v":DATA_VERSION,"title":"내 자산 한눈에 보기","accou
 {"name":"티로보틱스","symbol":"117730","qty":100,"avgPrice":22965},
 {"name":"해성에어로보틱스","symbol":"059270","qty":150,"avgPrice":13100},
 {"name":"ACE 고배당주Plus커버드콜액티브","symbol":"0199C0","qty":70,"avgPrice":10225},
-{"name":"SOL SK하이닉스단일종목레버리지","symbol":"0197W0","qty":100,"avgPrice":24989}
+{"name":"SOL SK하이닉스단일종목레버리지","symbol":"0197W0","qty":100,"avgPrice":24989},
+{"name":"T-REX 2X Long SMR(SMUP)","symbol":"SMUP","qty":2,"avgPrice":10.99},
+{"name":"CMA 발행어음","kind":"CMA","fixedValue":5336215,"cost":5335871},
+{"name":"클로봇 12R(권리주)","kind":"권리주","fixedValue":0,"cost":0},
+{"name":"외화예수금(USD)","kind":"외화","fixedValue":1831,"cost":1831}
 ]},
 {"name":"IBK기업은행","type":"은행","holdings":[
 {"name":"보통예금(IBK평생한가족통장)","kind":"예금","fixedValue":5450698},
