@@ -32,6 +32,8 @@
     box-shadow:var(--shadow);padding:12px 14px;margin-bottom:12px;}
   .hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;}
   .hero h1{font-size:16px;margin:0 0 1px;font-weight:700;letter-spacing:-.2px;}
+  .titrow{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;}
+  .titrow .ver{font-size:11px;font-weight:600;color:var(--sub);}
   .hero .updated{font-size:11px;color:var(--sub);}
   .total-row{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;margin:4px 0 4px;}
   .total{font-size:30px;font-weight:800;letter-spacing:-1px;margin:0;font-variant-numeric:tabular-nums;line-height:1;}
@@ -145,7 +147,7 @@
   <header class="hero">
     <div class="hero-top">
       <div>
-        <h1 id="title">내 자산 한눈에 보기</h1>
+        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.01</span></div>
         <div class="updated" id="updated">준비 중…</div>
       </div>
       <div class="controls">
@@ -207,7 +209,6 @@
   <div class="foot">
     보유내역은 이 기기에만 저장됩니다 · 시세는 조회 시점 기준(지연 가능, 참고용) ·
     국내=6자리 코드, 해외=티커 · 상승 <span class="up">빨강</span> / 하락 <span class="dn">파랑</span>
-    <div style="margin-top:8px;font-weight:700;opacity:.8">v01.00.01 · 26-08-14</div>
   </div>
 </div>
 
