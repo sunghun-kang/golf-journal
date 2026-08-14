@@ -597,6 +597,20 @@ async function qKRchange(code){
   if(cr<0||dir==="4"||dir==="5") change=-change;
   return {change,changePct:cr,prevClose:price-change};
 }
+// 국내 전일대비: 6자리 종목은 야후(.KS/.KQ, 미국과 동일 방식·검증됨), 그 외(신규 영문코드)는 네이버 모바일
+async function qKRdayChange(code){
+  if(/^[0-9]{6}$/.test(code)){
+    for(const suf of [".KS",".KQ"]){
+      try{
+        const raw=await jget("https://query1.finance.yahoo.com/v8/finance/chart/"+code+suf+"?interval=1d&range=1d");
+        const m=raw.chart&&raw.chart.result&&raw.chart.result[0]&&raw.chart.result[0].meta;
+        if(m&&m.regularMarketPrice){ const p=m.regularMarketPrice, pv=m.chartPreviousClose||m.previousClose||p;
+          return {change:p-pv, changePct:pv?(p-pv)/pv*100:0}; }
+      }catch(e){}
+    }
+  }
+  const ch=await qKRchange(code); return {change:ch.change, changePct:ch.changePct};
+}
 async function qUS(sym){
   const raw=await jget("https://query1.finance.yahoo.com/v8/finance/chart/"+encodeURIComponent(sym)+"?interval=1d&range=1d");
   const res=raw.chart&&raw.chart.result&&raw.chart.result[0]; if(!res) throw new Error("nores");
@@ -642,10 +656,10 @@ async function loadQuotes(){
   await Promise.all(miss.map(async s=>{ try{ const q=await qKR(s); q.symbol=s; out[s]=q; okCount++; }catch(e){ out[s]=fallback(s); } }));
   // 3) 해외: 개별(야후)
   await Promise.all(us.map(async s=>{ try{ const q=await qUS(s); q.symbol=s; out[s]=q; okCount++; }catch(e){ out[s]=fallback(s); } }));
-  // 4) 국내 전일대비(어제대비)가 0인 종목만 네이버 모바일로 보강 — 가격은 유지
-  const needCh=dom.filter(s=>out[s]&&out[s].source==="naver"&&!out[s].change);
+  // 4) 국내 전일대비(어제대비)가 0인 종목만 보강 — 가격은 유지(야후 우선, 실패해도 안전)
+  const needCh=dom.filter(s=>out[s]&&out[s].price&&!out[s].change);
   await Promise.all(needCh.map(async s=>{ const c=s.toUpperCase().replace(/\.(KS|KQ)$/,"");
-    try{ const ch=await qKRchange(c); if(ch.change){ out[s].change=ch.change; out[s].changePct=ch.changePct; out[s].prevClose=ch.prevClose; } }catch(e){} }));
+    try{ const ch=await qKRdayChange(c); if(ch.change){ out[s].change=ch.change; out[s].changePct=ch.changePct; out[s].prevClose=out[s].price-ch.change; } }catch(e){} }));
   let fx=0; try{ fx=(await qUS("USDKRW=X")).price||0; }catch(e){ fx=(cache&&cache.FX)||SNAP_FX; }
   QUOTES=out; FX=fx||SNAP_FX;
   try{ localStorage.setItem(CACHE_KEY, JSON.stringify({QUOTES,FX,t:Date.now()})); }catch(e){}
