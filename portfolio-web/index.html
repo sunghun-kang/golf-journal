@@ -583,6 +583,16 @@ async function qKR(sym){
   if(!price) throw new Error("noprice");
   return {price,prevClose:prev,change,changePct:cr,currency:"KRW",source:"naver"};
 }
+// 국내 전일대비만 네이버 모바일에서 보강(가격은 안 건드림)
+async function qKRchange(code){
+  const d=await jget("https://m.stock.naver.com/api/stock/"+code+"/basic");
+  const price=numf(d.closePrice); if(!price) throw new Error("noprice");
+  let cr=numf(d.fluctuationsRatio);
+  let change=Math.abs(numf(d.compareToPreviousClosePrice));
+  const dir=(d.compareToPreviousPrice&&d.compareToPreviousPrice.code)||"";
+  if(cr<0||dir==="4"||dir==="5") change=-change;
+  return {change,changePct:cr,prevClose:price-change};
+}
 async function qUS(sym){
   const raw=await jget("https://query1.finance.yahoo.com/v8/finance/chart/"+encodeURIComponent(sym)+"?interval=1d&range=1d");
   const res=raw.chart&&raw.chart.result&&raw.chart.result[0]; if(!res) throw new Error("nores");
@@ -628,6 +638,10 @@ async function loadQuotes(){
   await Promise.all(miss.map(async s=>{ try{ const q=await qKR(s); q.symbol=s; out[s]=q; okCount++; }catch(e){ out[s]=fallback(s); } }));
   // 3) 해외: 개별(야후)
   await Promise.all(us.map(async s=>{ try{ const q=await qUS(s); q.symbol=s; out[s]=q; okCount++; }catch(e){ out[s]=fallback(s); } }));
+  // 4) 국내 전일대비(어제대비)가 0인 종목만 네이버 모바일로 보강 — 가격은 유지
+  const needCh=dom.filter(s=>out[s]&&out[s].source==="naver"&&!out[s].change);
+  await Promise.all(needCh.map(async s=>{ const c=s.toUpperCase().replace(/\.(KS|KQ)$/,"");
+    try{ const ch=await qKRchange(c); if(ch.change){ out[s].change=ch.change; out[s].changePct=ch.changePct; out[s].prevClose=ch.prevClose; } }catch(e){} }));
   let fx=0; try{ fx=(await qUS("USDKRW=X")).price||0; }catch(e){ fx=(cache&&cache.FX)||SNAP_FX; }
   QUOTES=out; FX=fx||SNAP_FX;
   try{ localStorage.setItem(CACHE_KEY, JSON.stringify({QUOTES,FX,t:Date.now()})); }catch(e){}
