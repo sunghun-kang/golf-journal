@@ -467,7 +467,8 @@ function renderAcct(){
     const items=[...sorted.filter(isDomItem), ...sorted.filter(o=>!isDomItem(o))]; // 국내 먼저, 해외 다음
     const rows=items.map(({h,c})=>{
       const curSym=c.cur==="USD"?"$":"";
-      const price=c.source==="error"?"—":curSym+(c.cur==="USD"?usd(c.price):won(c.price));
+      const pcls=c.changePct>0?"up":(c.changePct<0?"dn":""); // 전일대비 오름=빨강/내림=파랑/모름=기본
+      const price=c.source==="error"?"—":`<span class="${pcls}">${curSym+(c.cur==="USD"?usd(c.price):won(c.price))}</span>`;
       const buy=c.fixed?"—":curSym+(c.cur==="USD"?usd(c.avg):won(c.avg));
       const sub=c.fixed?esc(c.kind):`${esc(h.symbol)} · ${c.qty.toLocaleString()}주`;
       const curCell=c.fixed?`<span class="pill">${esc(c.kind)}</span>`:price;
@@ -503,7 +504,8 @@ function renderSym(){
   const card=document.createElement("div"); card.className="card";
   const rows=arr.map(m=>{
     const curSym=m.cur==="USD"?"$":"";
-    const price=m.source==="error"?"—":curSym+(m.cur==="USD"?usd(m.price):won(m.price));
+    const pcls=m.changePct>0?"up":(m.changePct<0?"dn":""); // 전일대비 색
+    const price=m.source==="error"?"—":`<span class="${pcls}">${curSym+(m.cur==="USD"?usd(m.price):won(m.price))}</span>`;
     const avgNative=m.qty?(m.cost/(m.cur==="USD"?(FX||1):1))/m.qty:0;
     const buy=m.fixed?"—":curSym+(m.cur==="USD"?usd(avgNative):won(avgNative));
     const pnl=m.val-m.cost, pnlPct=m.cost?(pnl/m.cost*100):0, w=m.val/tot*100;
