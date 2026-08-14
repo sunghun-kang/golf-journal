@@ -588,15 +588,42 @@ async function qUS(sym){
 }
 function snapQuote(s){ const p=SNAP[s]; if(p==null) return null;
   return {symbol:s,price:p,prevClose:p,change:0,changePct:0,currency:isDom(s)?"KRW":"USD",source:"snapshot"}; }
+// 국내 종목을 콤마로 묶어 한 번에 조회(개별 40회 → 1~2회) → 프록시 rate-limit 회피
+async function qKRbatch(codes){
+  const out={};
+  for(let i=0;i<codes.length;i+=30){
+    const grp=codes.slice(i,i+30);
+    try{
+      const raw=await jget("https://polling.finance.naver.com/api/realtime/domestic/stock/"+grp.join(","));
+      let datas=raw.datas||(raw.result&&raw.result.areas&&raw.result.areas[0]&&raw.result.areas[0].datas)||[];
+      for(const d of datas){
+        const code=String(d.cd||"").toUpperCase(); if(!code) continue;
+        const num=(...k)=>{for(const x of k){const v=d[x];if(v!=null&&v!=="")return numf(v);}return 0;};
+        let price=num("nv","now","closePrice"), prev=num("sv","prev","prevClosePrice"), change=num("cv","change"), cr=num("cr","changeRate");
+        const rf=String(d.rf||"3"); if(change&&(rf==="4"||rf==="5")){change=-Math.abs(change);cr=-Math.abs(cr);}
+        if(!prev&&price&&change) prev=price-change;
+        if(price&&!change&&prev){change=price-prev;cr=prev?change/prev*100:0;}
+        if(price) out[code]={price,prevClose:prev,change,changePct:cr,currency:"KRW",source:"naver"};
+      }
+    }catch(e){}
+  }
+  return out;
+}
 async function loadQuotes(){
   const syms=allSymbols(); if(!syms.length){QUOTES={};FX=0;return;}
   $("#updated").innerHTML='시세 조회 중 <span class="spin"></span>';
   const cache=(()=>{try{return JSON.parse(localStorage.getItem(CACHE_KEY)||"null");}catch(e){return null;}})();
+  const fallback=s=>(cache&&cache.QUOTES&&cache.QUOTES[s]) || snapQuote(s) || {symbol:s,price:0,prevClose:0,change:0,changePct:0,currency:isDom(s)?"KRW":"USD",source:"error"};
+  const dom=syms.filter(isDom), us=syms.filter(s=>!isDom(s));
   const out={}; let okCount=0;
-  await Promise.all(syms.map(async s=>{
-    try{ const q=isDom(s)?await qKR(s):await qUS(s); q.symbol=s; out[s]=q; okCount++; }
-    catch(e){ out[s]=(cache&&cache.QUOTES&&cache.QUOTES[s]) || snapQuote(s) || {symbol:s,price:0,prevClose:0,change:0,changePct:0,currency:isDom(s)?"KRW":"USD",source:"error"}; }
-  }));
+  // 1) 국내: 묶음 조회
+  const kr=await qKRbatch(dom.map(s=>s.toUpperCase().replace(/\.(KS|KQ)$/,"")));
+  dom.forEach(s=>{ const c=s.toUpperCase().replace(/\.(KS|KQ)$/,""); if(kr[c]){ out[s]={...kr[c],symbol:s}; okCount++; } });
+  // 2) 국내 실패분만 개별 재시도
+  const miss=dom.filter(s=>!out[s]);
+  await Promise.all(miss.map(async s=>{ try{ const q=await qKR(s); q.symbol=s; out[s]=q; okCount++; }catch(e){ out[s]=fallback(s); } }));
+  // 3) 해외: 개별(야후)
+  await Promise.all(us.map(async s=>{ try{ const q=await qUS(s); q.symbol=s; out[s]=q; okCount++; }catch(e){ out[s]=fallback(s); } }));
   let fx=0; try{ fx=(await qUS("USDKRW=X")).price||0; }catch(e){ fx=(cache&&cache.FX)||SNAP_FX; }
   QUOTES=out; FX=fx||SNAP_FX;
   try{ localStorage.setItem(CACHE_KEY, JSON.stringify({QUOTES,FX,t:Date.now()})); }catch(e){}
