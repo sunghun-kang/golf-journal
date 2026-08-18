@@ -221,7 +221,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <div class="top">
   <div style="min-width:0">
     <h1 id="app-title"><img class="title-ic" src="icon-family.png" alt="">랴쟈가족</h1>
-    <div class="subline"><span class="user-badge" id="user-badge"></span><span class="ver">v0.45 · 26-6-24</span></div>
+    <div class="subline"><span class="user-badge" id="user-badge"></span><span class="ver">v0.46 · 26-6-24</span></div>
   </div>
   <div class="top-right">
     <div style="display:flex;gap:4px">
@@ -705,10 +705,10 @@ function hilite(s){
   });
   // 부분 강조 마커
   // 짧은 형식: ㅃX ㅃ(빨강), ㅍX ㅍ(파랑), ㄴX ㄴ(녹색), **X**(굵게)
-  html=html.replace(/\*\*([^\*\n][^\*\n]*?)\*\*/g, '<b>$1</b>');
-  html=html.replace(/ㅃ([^ㅃ\n]+?)ㅃ/g, '<span style="color:#d42020;font-weight:600">$1</span>');
-  html=html.replace(/ㅍ([^ㅍ\n]+?)ㅍ/g, '<span style="color:#1a4d9e;font-weight:600">$1</span>');
-  html=html.replace(/ㄴ([^ㄴ\n]+?)ㄴ/g, '<span style="color:#1a7a1a;font-weight:600">$1</span>');
+  html=html.replace(/\*\*([^\*]+?)\*\*/g, '<b>$1</b>');
+  html=html.replace(/ㅃ([^ㅃ]+?)ㅃ/g, '<span style="color:#d42020;font-weight:600">$1</span>');
+  html=html.replace(/ㅍ([^ㅍ]+?)ㅍ/g, '<span style="color:#1a4d9e;font-weight:600">$1</span>');
+  html=html.replace(/ㄴ([^ㄴ]+?)ㄴ/g, '<span style="color:#1a7a1a;font-weight:600">$1</span>');
   // 긴 형식(이전 호환): ''Rred''X''Rred'' 등 - 중첩 가능
   html=html.replace(/''BBold''([\s\S]*?)''BBold''/g, '<b>$1</b>');
   html=html.replace(/''Rred''([\s\S]*?)''Rred''/g, '<span style="color:#d42020;font-weight:600">$1</span>');
