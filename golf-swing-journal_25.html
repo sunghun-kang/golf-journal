@@ -152,7 +152,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.00 · 26-6-24</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.01 · 26-6-24</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">달력</button>
@@ -170,6 +170,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
         <button onclick="exportFile();toggleMore()">💾 보냄</button>
         <button onclick="migrateToPosts();toggleMore()">🔁 새 동기화로 이전</button>
         <button onclick="resyncAll();toggleMore()">📥 전체 다시받기</button>
+        <button onclick="openTheme();toggleMore()">🎬 테마모음집</button>
       </div>
     </div>
     <button class="btn-add" onclick="openAdd()">+ 추가</button>
@@ -1449,6 +1450,89 @@ idbOpen(function(){
 <script>
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js');
+}
+</script>
+
+<!-- 🎬 테마 모음집 -->
+<div id="theme-ov" style="display:none;position:fixed;inset:0;background:#f4f4ef;z-index:10000;overflow:auto">
+  <div style="position:sticky;top:0;background:#1b3a1b;color:#fff;padding:10px 12px;display:flex;align-items:center;gap:8px;z-index:2">
+    <b style="font-size:1rem">🎬 테마 모음집</b>
+    <button onclick="closeTheme()" style="margin-left:auto;background:none;border:1px solid rgba(255,255,255,0.4);color:#fff;border-radius:6px;padding:3px 10px;font-size:0.9rem">✕ 닫기</button>
+  </div>
+  <div style="padding:10px 12px;background:#fff;border-bottom:1px solid #ddd;display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+    <label style="font-size:0.85rem;font-weight:700">기간</label>
+    <input type="date" id="thFrom" style="font-size:0.85rem;padding:3px 5px">
+    <span>~</span>
+    <input type="date" id="thTo" style="font-size:0.85rem;padding:3px 5px">
+    <input type="text" id="thKw" placeholder="키워드(쉼표로 여러개): 어깨틀기, 오른팔펴기" style="flex:1;min-width:150px;font-size:0.85rem;padding:4px 7px;border:1px solid #ccc;border-radius:6px">
+    <button onclick="runTheme()" style="background:#2d7a2d;color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:0.85rem;font-weight:700">🔍 찾기</button>
+    <button onclick="saveTheme()" style="background:#1a4d9e;color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:0.85rem;font-weight:700">💾 파일저장</button>
+  </div>
+  <div id="thInfo" style="padding:6px 12px;font-size:0.82rem;color:#555"></div>
+  <div id="thBody" style="padding:0 10px 40px"></div>
+</div>
+<script>
+function openTheme(){
+  var t=new Date(new Date().getTime()+9*3600*1000).toISOString().slice(0,10);
+  document.getElementById('thTo').value=t;
+  document.getElementById('thFrom').value=t.slice(0,8)+'01';
+  document.getElementById('thBody').innerHTML='';
+  document.getElementById('thInfo').textContent='기간과 키워드를 정하고 🔍찾기를 누르세요. (키워드 비우면 기간 전체)';
+  document.getElementById('theme-ov').style.display='block';
+}
+function closeTheme(){ document.getElementById('theme-ov').style.display='none'; try{document.querySelectorAll('#thBody video').forEach(function(v){v.pause();});}catch(e){} }
+function themeMatch(){
+  var from=document.getElementById('thFrom').value, to=document.getElementById('thTo').value;
+  var kws=document.getElementById('thKw').value.split(',').map(function(s){return s.trim().toLowerCase();}).filter(Boolean);
+  var res=data.filter(function(r){
+    if(from && (r.date||'')<from) return false;
+    if(to && (r.date||'')>to) return false;
+    if(kws.length){
+      var text=((r.title||'')+' '+(r.memo||'')+' '+(r.venue||'')+' '+(r.members||'')).toLowerCase();
+      if(!kws.some(function(k){return text.indexOf(k)>=0;})) return false;
+    }
+    return true;
+  });
+  res.sort(function(a,b){ return (a.date||'').localeCompare(b.date||''); });
+  return {res:res, kws:kws, from:from, to:to};
+}
+function themeItemHtml(r){
+  var h='<div style="background:#fff;border-radius:10px;border-left:4px solid #2d7a2d;margin:8px 0;padding:8px 10px;box-shadow:0 1px 3px rgba(0,0,0,0.08)">';
+  h+='<div style="font-weight:700;color:#1a7a1a;font-size:0.9rem;margin-bottom:2px">'+esc(r.date||'')+(r.venue?' · '+esc(r.venue):'')+(r.members?' · '+esc(r.members):'')+'</div>';
+  if(r.title) h+='<div style="font-weight:700;line-height:1.5;margin-bottom:3px">'+hilite(r.title)+'</div>';
+  if(r.memo) h+='<div style="line-height:1.7;color:#333;white-space:pre-wrap;font-size:0.9rem">'+hilite(r.memo)+'</div>';
+  if(r.media && r.media.length){
+    h+='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">';
+    r.media.forEach(function(m){
+      if(m.type==='image'){ h+='<img src="'+m.data+'" style="max-width:180px;max-height:150px;border-radius:6px;border:1px solid #ddd">'; }
+      else { h+='<div><video src="'+m.data+'" controls playsinline style="max-width:280px;max-height:200px;border-radius:6px;border:1px solid #ddd;display:block"></video>'
+        +'<div style="display:flex;gap:4px;margin-top:3px">'
+        +['0.25','0.5','1'].map(function(sp){ return '<button onclick="this.closest(\'div\').querySelector(\'video\').playbackRate='+sp+'" style="font-size:0.75rem;padding:2px 8px;border:1px solid #bbb;border-radius:4px;background:#f5f5f5">'+sp+'x</button>'; }).join('')
+        +'</div></div>'; }
+    });
+    h+='</div>';
+  }
+  h+='</div>';
+  return h;
+}
+function renderTheme(m){
+  document.getElementById('thInfo').textContent='📅 '+(m.from||'처음')+' ~ '+(m.to||'끝')+' / 키워드: '+(m.kws.length?m.kws.join(', '):'(전체)')+'  → '+m.res.length+'건';
+  var body=document.getElementById('thBody');
+  if(!m.res.length){ body.innerHTML='<div style="padding:20px;text-align:center;color:#999">조건에 맞는 기록이 없어요. 기간·키워드를 바꿔보세요.</div>'; return; }
+  body.innerHTML=m.res.map(themeItemHtml).join('');
+}
+function runTheme(){ renderTheme(themeMatch()); }
+function saveTheme(){
+  var m=themeMatch();
+  if(!m.res.length){ alert('저장할 내용이 없어요. 먼저 🔍찾기로 결과를 만들어주세요.'); return; }
+  var title='골프 테마모음 '+(m.kws.join('_')||'전체')+' '+(m.from||'')+'~'+(m.to||'');
+  var html='<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(title)+'</title>'
+    +'<style>body{font-family:sans-serif;background:#efefea;margin:0;padding:10px;color:#222}h1{font-size:1.1rem}img,video{max-width:100%}</style></head><body>'
+    +'<h1>🎬 '+esc(title)+'</h1><div style="color:#555;font-size:0.85rem;margin-bottom:10px">'+m.res.length+'건 · '+esc((m.from||'')+' ~ '+(m.to||''))+'</div>'
+    +m.res.map(themeItemHtml).join('')
+    +'</body></html>';
+  var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));
+  a.download='golf-theme-'+(m.kws.join('_')||'all')+'-'+(m.from||'')+'.html'; a.click();
 }
 </script>
 </body>
