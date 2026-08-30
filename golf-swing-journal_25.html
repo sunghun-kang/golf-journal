@@ -152,7 +152,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.05 · 26-6-24</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.06 · 26-8-30</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -1481,6 +1481,7 @@ if('serviceWorker' in navigator){
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:6px">
       <button onclick="runTheme()" style="background:#2d7a2d;color:#fff;border:none;border-radius:6px;padding:5px 14px;font-size:0.85rem;font-weight:700">🔍 찾기</button>
+      <button id="thAnalyzeBtn" onclick="thToggleMode()" style="background:#7a3fb8;color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:0.85rem;font-weight:700">📊 분석</button>
       <button onclick="themeAddMedia()" style="background:#b8860b;color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:0.85rem;font-weight:700">➕ 사진/영상 추가</button>
       <button onclick="saveTheme()" style="background:#1a4d9e;color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:0.85rem;font-weight:700">💾 파일저장</button>
     </div>
@@ -1491,7 +1492,10 @@ if('serviceWorker' in navigator){
 <script>
 var themeSort='desc';
 var themeExtra=[];
+var themeMode='list';
 function openTheme(){
+  themeMode='list';
+  var _ab=document.getElementById('thAnalyzeBtn'); if(_ab) _ab.textContent='📊 분석';
   var t=new Date(new Date().getTime()+9*3600*1000).toISOString().slice(0,10);
   document.getElementById('thTo').value=t;
   document.getElementById('thFrom').value='';
@@ -1575,7 +1579,70 @@ function renderTheme(m){
   else { html+=m.res.map(themeItemHtml).join(''); }
   body.innerHTML=html;
 }
-function runTheme(){ renderTheme(themeMatch()); }
+function thStrip(s){ return (s||'').replace(/[ㅃㅍㄴ]/g,'').replace(/\*\*/g,''); }
+function thSplit(s){ return thStrip(s).split(/[,\/·、|]+/).map(function(x){return x.trim();}).filter(Boolean); }
+function themeAgg(res){
+  var causes={}, probs={}, sols=[];
+  res.forEach(function(r){
+    thSplit(r.members).forEach(function(c){ var k=c.toLowerCase(); if(!causes[k]) causes[k]={t:c,n:0}; causes[k].n++; });
+    thSplit(r.venue).forEach(function(p){ var k=p.toLowerCase(); if(!probs[k]) probs[k]={t:p,n:0}; probs[k].n++; });
+    (r.title||'').split('\n').forEach(function(ln){ var t=thStrip(ln).replace(/^[·.\s]+/,'').trim(); if(t) sols.push({t:t,date:r.date||''}); });
+  });
+  var toArr=function(o){ return Object.keys(o).map(function(k){return o[k];}).sort(function(a,b){return b.n-a.n;}); };
+  return {causes:toArr(causes), probs:toArr(probs), sols:sols};
+}
+function thChip(t,n,bg){ return '<span style="display:inline-block;background:'+bg+';border-radius:12px;padding:2px 9px;margin:2px;font-size:0.82rem">'+esc(t)+(n>1?' <b>×'+n+'</b>':'')+'</span>'; }
+function renderAnalyze(m){
+  var res=m.res;
+  document.getElementById('thInfo').textContent='📊 분석 · '+(m.kws.length?m.kws.join(', '):'전체')+' · '+res.length+'건';
+  var body=document.getElementById('thBody');
+  if(!res.length){ body.innerHTML='<div style="padding:20px;text-align:center;color:#999">분석할 기록이 없어요. 기간·키워드를 바꿔보세요.</div>'; return; }
+  var ag=themeAgg(res);
+  var h='';
+  h+='<div style="margin:8px 0"><button onclick="themeAI()" style="background:#7a3fb8;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:0.9rem;font-weight:700">🤖 AI 요약</button> <span style="font-size:0.74rem;color:#999">내 API키 사용 · 소액과금</span></div>';
+  h+='<div id="thAI"></div>';
+  if(ag.probs.length){ h+='<div style="background:#fff;border-radius:10px;padding:8px 10px;margin:8px 0;box-shadow:0 1px 3px rgba(0,0,0,0.06)"><b style="color:#c0392b;font-size:0.9rem">🔴 문제/구장</b><div style="margin-top:5px">'+ag.probs.map(function(x){return thChip(x.t,x.n,'#fdecea');}).join('')+'</div></div>'; }
+  if(ag.causes.length){ h+='<div style="background:#fff;border-radius:10px;padding:8px 10px;margin:8px 0;box-shadow:0 1px 3px rgba(0,0,0,0.06)"><b style="color:#b8860b;font-size:0.9rem">🟡 원인/멤버 (빈출순)</b><div style="margin-top:5px">'+ag.causes.map(function(x){return thChip(x.t,x.n,'#fdf3d8');}).join('')+'</div></div>'; }
+  h+='<div style="background:#fff;border-radius:10px;padding:8px 10px;margin:8px 0;box-shadow:0 1px 3px rgba(0,0,0,0.06)"><b style="color:#1a7a1a;font-size:0.9rem">🟢 대책·핵심 ('+ag.sols.length+')</b><div style="margin-top:6px">';
+  ag.sols.forEach(function(s){ h+='<div style="display:flex;gap:8px;padding:3px 0;border-bottom:1px solid #f2f2f2;font-size:0.9rem;line-height:1.5"><span style="flex-shrink:0;color:#999;font-size:0.76rem;width:76px">'+esc(s.date)+'</span><span style="min-width:0">'+esc(s.t)+'</span></div>'; });
+  h+='</div></div>';
+  body.innerHTML=h;
+}
+function thToggleMode(){ themeMode=(themeMode==='list'?'analyze':'list'); var b=document.getElementById('thAnalyzeBtn'); if(b) b.textContent=(themeMode==='analyze'?'📋 목록':'📊 분석'); runTheme(); }
+function themeAIKey(reset){
+  if(reset){ localStorage.removeItem('anthropicKey'); }
+  var k=localStorage.getItem('anthropicKey')||'';
+  if(!k){ k=prompt('Anthropic API 키를 입력하세요 (sk-ant-...).\n폰에만 저장되며 서버로 안 보냅니다.'); if(k){ k=k.trim(); localStorage.setItem('anthropicKey',k); } }
+  return k;
+}
+function themeAI(){
+  var m=themeMatch();
+  if(!m.res.length){ alert('분석할 기록이 없어요.'); return; }
+  var key=themeAIKey(false); if(!key) return;
+  var ai=document.getElementById('thAI'); if(!ai) return;
+  ai.innerHTML='<div style="background:#f3e9fb;border-radius:10px;padding:12px;margin:8px 0;color:#7a3fb8">🤖 AI가 원인·대책을 정리하는 중… (10~30초)</div>';
+  var src=m.res.map(function(r){
+    return '['+(r.date||'')+']'
+      +(r.venue?(' 문제:'+thStrip(r.venue)):'')
+      +(r.members?(' 원인:'+thStrip(r.members)):'')
+      +(r.title?(' 대책:'+thStrip(r.title).replace(/\n/g,' / ')):'')
+      +(r.memo?(' 메모:'+thStrip(r.memo).replace(/\n/g,' ').slice(0,300)):'');
+  }).join('\n');
+  var kw=m.kws.join(', ')||'전체';
+  var sys='당신은 골프 스윙 코치입니다. 사용자의 골프 일지 기록만을 근거로 특정 주제의 원인과 대책을 한국어로 간결하게 요약합니다. 기록에 없는 내용을 지어내지 마세요.';
+  var user='주제 키워드: '+kw+'\n\n아래는 내 골프 일지 기록들이야. 이 주제에 대해 (1) 반복되는 핵심 원인, (2) 효과가 있었던/권장되는 대책, (3) 한 줄 종합 조언 을 정리해줘. 소제목과 불릿으로 간결하게.\n\n=== 기록 ('+m.res.length+'건) ===\n'+src;
+  fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-opus-5',max_tokens:1500,system:sys,output_config:{effort:'low'},messages:[{role:'user',content:user}]})
+  }).then(function(resp){ return resp.json(); }).then(function(j){
+    if(j.error){ ai.innerHTML='<div style="background:#fdecea;border-radius:10px;padding:12px;color:#c0392b;font-size:0.85rem">⚠️ 오류: '+esc(j.error.message||JSON.stringify(j.error))+'<br><button onclick="themeAIKey(true);themeAI()" style="margin-top:6px;font-size:0.8rem;border:1px solid #c0392b;background:#fff;border-radius:6px;padding:3px 10px">키 다시 입력</button></div>'; return; }
+    var txt=(j.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('\n').trim();
+    if(!txt) txt='(응답이 비었어요. 다시 시도해 주세요.)';
+    ai.innerHTML='<div style="background:#f7f0fc;border:1px solid #d9b8f0;border-radius:10px;padding:12px;margin:8px 0"><div style="font-weight:700;color:#7a3fb8;margin-bottom:6px;font-size:0.9rem">🤖 AI 요약 <button onclick="themeAIKey(true);alert(\'API키를 지웠어요.\')" style="float:right;font-size:0.68rem;background:none;border:1px solid #ccc;border-radius:5px;padding:1px 6px;color:#999">키삭제</button></div><div style="white-space:pre-wrap;line-height:1.7;font-size:0.9rem;color:#222">'+esc(txt)+'</div></div>';
+  }).catch(function(e){ ai.innerHTML='<div style="background:#fdecea;border-radius:10px;padding:12px;color:#c0392b;font-size:0.85rem">⚠️ 통신 실패: '+esc(String(e))+'<br>키 확인 또는 잠시 후 재시도.</div>'; });
+}
+function runTheme(){ var m=themeMatch(); if(themeMode==='analyze') renderAnalyze(m); else renderTheme(m); }
 function saveTheme(){
   var m=themeMatch();
   if(!m.res.length && !themeExtra.length){ alert('저장할 내용이 없어요. 먼저 🔍찾기로 결과를 만들어주세요.'); return; }
