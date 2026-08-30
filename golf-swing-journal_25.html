@@ -152,7 +152,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.02 · 26-6-24</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.03 · 26-6-24</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700">달력</button>
@@ -1463,9 +1463,9 @@ if('serviceWorker' in navigator){
   <div style="padding:8px 12px;background:#fff;border-bottom:1px solid #ddd">
     <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:6px">
       <label style="font-size:0.85rem;font-weight:700">기간</label>
-      <input type="date" id="thFrom" style="font-size:0.85rem;padding:3px 5px">
-      <span>~</span>
       <input type="date" id="thTo" style="font-size:0.85rem;padding:3px 5px">
+      <span>~</span>
+      <input type="date" id="thFrom" style="font-size:0.85rem;padding:3px 5px">
       <input type="text" id="thKw" placeholder="키워드(쉼표): 어깨틀기, 오른팔펴기" style="flex:1;min-width:140px;font-size:0.85rem;padding:4px 7px;border:1px solid #ccc;border-radius:6px" onkeydown="if(event.key==='Enter')runTheme()">
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:0.8rem;margin-bottom:6px">
