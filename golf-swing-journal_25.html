@@ -146,13 +146,15 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .cpop-title.bold{font-weight:700;}
 .cpop-title.imp{font-weight:700;}
 .cpop-memo{font-size:0.8rem;color:#555;line-height:1.75;white-space:pre-wrap;margin-top:6px;border-top:1px solid #eee;padding-top:6px;}
+.thbl{background:#e11d1d;color:#fff;border-radius:2px;padding:0 2px;font-weight:700;animation:thblink 0.7s steps(1,end) infinite;}
+@keyframes thblink{50%{background:transparent;color:#e11d1d;}}
 
 </style>
 </head>
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.06 · 26-8-30</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.07 · 26-8-31</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -1493,6 +1495,16 @@ if('serviceWorker' in navigator){
 var themeSort='desc';
 var themeExtra=[];
 var themeMode='list';
+var themeKws=[];
+function thBlink(html){
+  if(!themeKws||!themeKws.length||!html) return html;
+  var pat=themeKws.map(function(k){return k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}).filter(Boolean);
+  if(!pat.length) return html;
+  var re=new RegExp('('+pat.join('|')+')','gi');
+  var parts=html.split(/(<[^>]*>)/);
+  for(var i=0;i<parts.length;i++){ if(i%2===0){ parts[i]=parts[i].replace(re,'<span class="thbl">$1</span>'); } }
+  return parts.join('');
+}
 function openTheme(){
   themeMode='list';
   var _ab=document.getElementById('thAnalyzeBtn'); if(_ab) _ab.textContent='📊 분석';
@@ -1536,9 +1548,9 @@ function themeMatch(){
 }
 function themeItemHtml(r){
   var h='<div style="background:#fff;border-radius:10px;border-left:4px solid #2d7a2d;margin:8px 0;padding:8px 10px;box-shadow:0 1px 3px rgba(0,0,0,0.08)">';
-  h+='<div style="font-weight:700;color:#1a7a1a;font-size:0.9rem;margin-bottom:2px">'+esc(r.date||'')+(r.venue?' · '+esc(r.venue):'')+(r.members?' · '+esc(r.members):'')+'</div>';
-  if(r.title) h+='<div style="font-weight:700;line-height:1.5;margin-bottom:3px">'+hilite(r.title)+'</div>';
-  if(r.memo) h+='<div style="line-height:1.7;color:#333;white-space:pre-wrap;font-size:0.9rem">'+hilite(r.memo)+'</div>';
+  h+='<div style="font-weight:700;color:#1a7a1a;font-size:0.9rem;margin-bottom:2px">'+esc(r.date||'')+(r.venue?' · '+thBlink(esc(r.venue)):'')+(r.members?' · '+thBlink(esc(r.members)):'')+'</div>';
+  if(r.title) h+='<div style="font-weight:700;line-height:1.5;margin-bottom:3px">'+thBlink(hilite(r.title))+'</div>';
+  if(r.memo) h+='<div style="line-height:1.7;color:#333;white-space:pre-wrap;font-size:0.9rem">'+thBlink(hilite(r.memo))+'</div>';
   if(r.media && r.media.length){
     h+='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">';
     r.media.forEach(function(m){
@@ -1604,7 +1616,7 @@ function renderAnalyze(m){
   if(ag.probs.length){ h+='<div style="background:#fff;border-radius:10px;padding:8px 10px;margin:8px 0;box-shadow:0 1px 3px rgba(0,0,0,0.06)"><b style="color:#c0392b;font-size:0.9rem">🔴 문제/구장</b><div style="margin-top:5px">'+ag.probs.map(function(x){return thChip(x.t,x.n,'#fdecea');}).join('')+'</div></div>'; }
   if(ag.causes.length){ h+='<div style="background:#fff;border-radius:10px;padding:8px 10px;margin:8px 0;box-shadow:0 1px 3px rgba(0,0,0,0.06)"><b style="color:#b8860b;font-size:0.9rem">🟡 원인/멤버 (빈출순)</b><div style="margin-top:5px">'+ag.causes.map(function(x){return thChip(x.t,x.n,'#fdf3d8');}).join('')+'</div></div>'; }
   h+='<div style="background:#fff;border-radius:10px;padding:8px 10px;margin:8px 0;box-shadow:0 1px 3px rgba(0,0,0,0.06)"><b style="color:#1a7a1a;font-size:0.9rem">🟢 대책·핵심 ('+ag.sols.length+')</b><div style="margin-top:6px">';
-  ag.sols.forEach(function(s){ h+='<div style="display:flex;gap:8px;padding:3px 0;border-bottom:1px solid #f2f2f2;font-size:0.9rem;line-height:1.5"><span style="flex-shrink:0;color:#999;font-size:0.76rem;width:76px">'+esc(s.date)+'</span><span style="min-width:0">'+esc(s.t)+'</span></div>'; });
+  ag.sols.forEach(function(s){ h+='<div style="display:flex;gap:8px;padding:3px 0;border-bottom:1px solid #f2f2f2;font-size:0.9rem;line-height:1.5"><span style="flex-shrink:0;color:#999;font-size:0.76rem;width:76px">'+esc(s.date)+'</span><span style="min-width:0">'+thBlink(esc(s.t))+'</span></div>'; });
   h+='</div></div>';
   body.innerHTML=h;
 }
@@ -1642,13 +1654,13 @@ function themeAI(){
     ai.innerHTML='<div style="background:#f7f0fc;border:1px solid #d9b8f0;border-radius:10px;padding:12px;margin:8px 0"><div style="font-weight:700;color:#7a3fb8;margin-bottom:6px;font-size:0.9rem">🤖 AI 요약 <button onclick="themeAIKey(true);alert(\'API키를 지웠어요.\')" style="float:right;font-size:0.68rem;background:none;border:1px solid #ccc;border-radius:5px;padding:1px 6px;color:#999">키삭제</button></div><div style="white-space:pre-wrap;line-height:1.7;font-size:0.9rem;color:#222">'+esc(txt)+'</div></div>';
   }).catch(function(e){ ai.innerHTML='<div style="background:#fdecea;border-radius:10px;padding:12px;color:#c0392b;font-size:0.85rem">⚠️ 통신 실패: '+esc(String(e))+'<br>키 확인 또는 잠시 후 재시도.</div>'; });
 }
-function runTheme(){ var m=themeMatch(); if(themeMode==='analyze') renderAnalyze(m); else renderTheme(m); }
+function runTheme(){ var m=themeMatch(); themeKws=m.kws; if(themeMode==='analyze') renderAnalyze(m); else renderTheme(m); }
 function saveTheme(){
   var m=themeMatch();
   if(!m.res.length && !themeExtra.length){ alert('저장할 내용이 없어요. 먼저 🔍찾기로 결과를 만들어주세요.'); return; }
   var title='골프 테마모음 '+(m.kws.join('_')||'전체')+' '+(m.from||'')+'~'+(m.to||'');
   var html='<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(title)+'</title>'
-    +'<style>body{font-family:sans-serif;background:#efefea;margin:0;padding:10px;color:#222}h1{font-size:1.1rem}img,video{max-width:100%}</style></head><body>'
+    +'<style>body{font-family:sans-serif;background:#efefea;margin:0;padding:10px;color:#222}h1{font-size:1.1rem}img,video{max-width:100%}.thbl{background:#e11d1d;color:#fff;border-radius:2px;padding:0 2px;font-weight:700;animation:thblink 0.7s steps(1,end) infinite}@keyframes thblink{50%{background:transparent;color:#e11d1d}}</style></head><body>'
     +'<h1>🎬 '+esc(title)+'</h1><div style="color:#555;font-size:0.85rem;margin-bottom:10px">'+m.res.length+'건 · '+esc((m.from||'')+' ~ '+(m.to||''))+'</div>'
     +themeExtraHtml(false)
     +m.res.map(themeItemHtml).join('')
