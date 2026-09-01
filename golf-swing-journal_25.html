@@ -154,7 +154,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.09 · 26-8-31</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.10 · 26-8-31</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -1032,6 +1032,15 @@ function idbLoad(cb){
   }catch(e){ cb(null); }
 }
 
+function themeExtraSave(){
+  try{ if(IDB){ IDB.transaction('kv','readwrite').objectStore('kv').put(JSON.stringify(themeExtra),'themeExtra'); return; } }catch(e){}
+  try{ localStorage.setItem('themeExtra', JSON.stringify(themeExtra)); }catch(e){}
+}
+function themeExtraLoad(cb){
+  try{ if(IDB){ var rq=IDB.transaction('kv','readonly').objectStore('kv').get('themeExtra'); rq.onsuccess=function(){ try{ themeExtra=rq.result?(JSON.parse(rq.result)||[]):[]; }catch(e){ themeExtra=[]; } if(cb)cb(); }; rq.onerror=function(){ if(cb)cb(); }; return; } }catch(e){}
+  try{ var s=localStorage.getItem('themeExtra'); themeExtra=s?(JSON.parse(s)||[]):[]; }catch(e){}
+  if(cb)cb();
+}
 function closeOv(){document.getElementById('ov').classList.remove('open');}
 function saveMod(){
   var date=document.getElementById('mDate').value;
@@ -1515,7 +1524,7 @@ function openTheme(){
   document.getElementById('thInfo').textContent='기간·키워드·구분을 정하고 🔍찾기. (기간 비우면 전체)';
   document.getElementById('thBody').innerHTML='';
   document.getElementById('theme-ov').style.display='block';
-  runTheme();
+  themeExtraLoad(function(){ runTheme(); });
 }
 function closeTheme(){ document.getElementById('theme-ov').style.display='none'; try{document.querySelectorAll('#thBody video').forEach(function(v){v.pause();});}catch(e){} }
 function thToggleSort(){ themeSort=(themeSort==='desc'?'asc':'desc'); document.getElementById('thSortBtn').textContent=(themeSort==='desc'?'⬇ 내림차순(최신먼저)':'⬆ 오름차순(과거먼저)'); runTheme(); }
@@ -1577,11 +1586,11 @@ function themeItemHtml(r){
 function themeAddMedia(){
   var inp=document.createElement('input'); inp.type='file'; inp.accept='image/*,video/*'; inp.multiple=true;
   inp.onchange=function(e){ var fs=e.target.files; var left=fs.length; if(!left) return;
-    Array.prototype.forEach.call(fs,function(f){ var rd=new FileReader(); rd.onload=function(ev){ themeExtra.push({type:(f.type.indexOf('video')===0?'video':'image'),data:ev.target.result}); left--; if(left<=0) runTheme(); }; rd.readAsDataURL(f); });
+    Array.prototype.forEach.call(fs,function(f){ var rd=new FileReader(); rd.onload=function(ev){ themeExtra.push({type:(f.type.indexOf('video')===0?'video':'image'),data:ev.target.result}); left--; if(left<=0){ themeExtraSave(); runTheme(); } }; rd.readAsDataURL(f); });
   };
   inp.click();
 }
-function themeDelExtra(i){ themeExtra.splice(i,1); runTheme(); }
+function themeDelExtra(i){ themeExtra.splice(i,1); themeExtraSave(); runTheme(); }
 function themeExtraHtml(withDel){
   if(!themeExtra.length) return '';
   var h='<div style="background:#fff8e6;border:1px solid #f0d98a;border-radius:10px;margin:8px 0;padding:8px 10px"><b style="font-size:0.85rem">➕ 직접 추가한 자료</b><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">';
