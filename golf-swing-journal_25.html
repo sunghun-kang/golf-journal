@@ -154,7 +154,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.10 · 26-8-31</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.11 · 26-9-3</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -1033,13 +1033,34 @@ function idbLoad(cb){
 }
 
 function themeExtraSave(){
-  try{ if(IDB){ IDB.transaction('kv','readwrite').objectStore('kv').put(JSON.stringify(themeExtra),'themeExtra'); return; } }catch(e){}
-  try{ localStorage.setItem('themeExtra', JSON.stringify(themeExtra)); }catch(e){}
+  var payload;
+  try{ payload=JSON.stringify(themeExtra); }catch(e){ return; }
+  function toLS(reason){
+    try{ localStorage.setItem('themeExtra', payload); }
+    catch(e2){ alert('추가 사진 저장 실패 😢\n저장공간이 부족한 것 같아요('+reason+' / '+((e2&&e2.name)||'quota')+').\n사진 용량을 줄이거나 개수를 줄여보세요.'); }
+  }
+  if(IDB){
+    try{
+      var tx=IDB.transaction('kv','readwrite');
+      tx.objectStore('kv').put(payload,'themeExtra');
+      tx.onerror=function(){ toLS('IDB오류'); };
+      tx.onabort=function(){ toLS('IDB중단:'+((tx.error&&tx.error.name)||'')); };
+      return;
+    }catch(e){ toLS('IDB예외'); return; }
+  }
+  toLS('IDB없음');
 }
 function themeExtraLoad(cb){
-  try{ if(IDB){ var rq=IDB.transaction('kv','readonly').objectStore('kv').get('themeExtra'); rq.onsuccess=function(){ try{ themeExtra=rq.result?(JSON.parse(rq.result)||[]):[]; }catch(e){ themeExtra=[]; } if(cb)cb(); }; rq.onerror=function(){ if(cb)cb(); }; return; } }catch(e){}
-  try{ var s=localStorage.getItem('themeExtra'); themeExtra=s?(JSON.parse(s)||[]):[]; }catch(e){}
-  if(cb)cb();
+  function fromLS(){ try{ var s=localStorage.getItem('themeExtra'); themeExtra=s?(JSON.parse(s)||[]):[]; }catch(e){ themeExtra=[]; } }
+  if(IDB){
+    try{
+      var rq=IDB.transaction('kv','readonly').objectStore('kv').get('themeExtra');
+      rq.onsuccess=function(){ if(rq.result){ try{ themeExtra=JSON.parse(rq.result)||[]; }catch(e){ themeExtra=[]; } } else { fromLS(); } if(cb)cb(); };
+      rq.onerror=function(){ fromLS(); if(cb)cb(); };
+      return;
+    }catch(e){}
+  }
+  fromLS(); if(cb)cb();
 }
 function closeOv(){document.getElementById('ov').classList.remove('open');}
 function saveMod(){
