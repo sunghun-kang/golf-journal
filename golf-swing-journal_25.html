@@ -154,7 +154,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.11 · 26-9-3</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.12 · 26-9-3</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -347,6 +347,17 @@ function applyServerRows(rows){
     if(row.updated_at && row.updated_at>_syncMax) _syncMax=row.updated_at;
     if(!id && rec) id=rec.id;
     if(!id) return;
+    if(id==='__theme_extra__'){
+      if(rec && Array.isArray(rec.extra)){
+        var _nd=mergeTomb(themeExtraDel, Array.isArray(rec.del)?rec.del:[]);
+        var _m=mergeExtra(themeExtra, rec.extra, _nd);
+        if(_m.length!==themeExtra.length || _nd.length!==themeExtraDel.length){
+          themeExtra=_m; themeExtraDel=_nd; if(!themeExtraAt) themeExtraAt=nowKST(); themeExtraSaveLocal();
+          var _ov=document.getElementById('theme-ov'); if(_ov && _ov.style.display!=='none') runTheme();
+        }
+      }
+      return;
+    }
     if(rec && rec.deleted){ delete byId[id]; return; }
     if(!rec) return;
     var cur=byId[id];
@@ -1032,9 +1043,19 @@ function idbLoad(cb){
   }catch(e){ cb(null); }
 }
 
-function themeExtraSave(){
+var themeExtraAt='';
+var themeExtraDel=[];
+function thExKey(x){ return x&&(x.id||x.data); }
+function mergeExtra(a,b,tomb){
+  var t={}; (tomb||[]).forEach(function(d){ t[d]=1; });
+  var seen={}, out=[];
+  (a||[]).concat(b||[]).forEach(function(x){ var k=thExKey(x); if(k && !seen[k] && !t[k]){ seen[k]=1; out.push(x); } });
+  return out;
+}
+function mergeTomb(a,b){ var s={},o=[]; (a||[]).concat(b||[]).forEach(function(d){ if(d&&!s[d]){ s[d]=1; o.push(d); } }); return o; }
+function themeExtraSaveLocal(){
   var payload;
-  try{ payload=JSON.stringify(themeExtra); }catch(e){ return; }
+  try{ payload=JSON.stringify({extra:themeExtra, del:themeExtraDel, at:themeExtraAt}); }catch(e){ return; }
   function toLS(reason){
     try{ localStorage.setItem('themeExtra', payload); }
     catch(e2){ alert('추가 사진 저장 실패 😢\n저장공간이 부족한 것 같아요('+reason+' / '+((e2&&e2.name)||'quota')+').\n사진 용량을 줄이거나 개수를 줄여보세요.'); }
@@ -1050,18 +1071,49 @@ function themeExtraSave(){
   }
   toLS('IDB없음');
 }
-function themeExtraLoad(cb){
-  function fromLS(){ try{ var s=localStorage.getItem('themeExtra'); themeExtra=s?(JSON.parse(s)||[]):[]; }catch(e){ themeExtra=[]; } }
+function themeExtraPush(){
+  try{
+    postRows([{id:'__theme_extra__', data:{id:'__theme_extra__', extra:themeExtra, del:themeExtraDel, updatedAt:themeExtraAt}, updated_at:new Date().toISOString()}])
+    .catch(function(){});
+  }catch(e){}
+}
+function themeExtraSave(){ themeExtraAt=nowKST(); themeExtraSaveLocal(); themeExtraPush(); }
+function themeExtraLoadLocal(cb){
+  function apply(v){
+    if(v){ if(Array.isArray(v)){ themeExtra=v; } else { themeExtra=v.extra||[]; themeExtraDel=v.del||[]; themeExtraAt=v.at||''; } }
+    if(cb)cb();
+  }
+  function fromLS(){ try{ var s=localStorage.getItem('themeExtra'); apply(s?JSON.parse(s):null); }catch(e){ apply(null); } }
   if(IDB){
     try{
       var rq=IDB.transaction('kv','readonly').objectStore('kv').get('themeExtra');
-      rq.onsuccess=function(){ if(rq.result){ try{ themeExtra=JSON.parse(rq.result)||[]; }catch(e){ themeExtra=[]; } } else { fromLS(); } if(cb)cb(); };
-      rq.onerror=function(){ fromLS(); if(cb)cb(); };
+      rq.onsuccess=function(){ if(rq.result){ try{ apply(JSON.parse(rq.result)); }catch(e){ fromLS(); } } else { fromLS(); } };
+      rq.onerror=function(){ fromLS(); };
       return;
     }catch(e){}
   }
-  fromLS(); if(cb)cb();
+  fromLS();
 }
+function themeExtraPull(cb){
+  try{
+    fetch(SUPABASE_URL+'/rest/v1/golf_posts?id=eq.__theme_extra__&select=data', {headers:sbH()})
+    .then(function(r){ return r.ok?r.json():[]; })
+    .then(function(arr){
+      var d=(arr&&arr[0]&&arr[0].data)?arr[0].data:null;
+      var srvEx=(d&&Array.isArray(d.extra))?d.extra:[];
+      var srvDel=(d&&Array.isArray(d.del))?d.del:[];
+      var newDel=mergeTomb(themeExtraDel, srvDel);
+      var merged=mergeExtra(themeExtra, srvEx, newDel);
+      var changedLocal=(merged.length!==themeExtra.length)||(newDel.length!==themeExtraDel.length);
+      var changedSrv=(merged.length!==srvEx.length)||(newDel.length!==srvDel.length);
+      themeExtra=merged; themeExtraDel=newDel;
+      if(changedLocal){ if(!themeExtraAt) themeExtraAt=nowKST(); themeExtraSaveLocal(); }
+      if(changedSrv){ if(!themeExtraAt) themeExtraAt=nowKST(); themeExtraPush(); }
+      if(cb)cb();
+    }).catch(function(){ if(cb)cb(); });
+  }catch(e){ if(cb)cb(); }
+}
+
 function closeOv(){document.getElementById('ov').classList.remove('open');}
 function saveMod(){
   var date=document.getElementById('mDate').value;
@@ -1545,7 +1597,7 @@ function openTheme(){
   document.getElementById('thInfo').textContent='기간·키워드·구분을 정하고 🔍찾기. (기간 비우면 전체)';
   document.getElementById('thBody').innerHTML='';
   document.getElementById('theme-ov').style.display='block';
-  themeExtraLoad(function(){ runTheme(); });
+  themeExtraLoadLocal(function(){ runTheme(); themeExtraPull(function(){ runTheme(); }); });
 }
 function closeTheme(){ document.getElementById('theme-ov').style.display='none'; try{document.querySelectorAll('#thBody video').forEach(function(v){v.pause();});}catch(e){} }
 function thToggleSort(){ themeSort=(themeSort==='desc'?'asc':'desc'); document.getElementById('thSortBtn').textContent=(themeSort==='desc'?'⬇ 내림차순(최신먼저)':'⬆ 오름차순(과거먼저)'); runTheme(); }
@@ -1607,11 +1659,11 @@ function themeItemHtml(r){
 function themeAddMedia(){
   var inp=document.createElement('input'); inp.type='file'; inp.accept='image/*,video/*'; inp.multiple=true;
   inp.onchange=function(e){ var fs=e.target.files; var left=fs.length; if(!left) return;
-    Array.prototype.forEach.call(fs,function(f){ var rd=new FileReader(); rd.onload=function(ev){ themeExtra.push({type:(f.type.indexOf('video')===0?'video':'image'),data:ev.target.result}); left--; if(left<=0){ themeExtraSave(); runTheme(); } }; rd.readAsDataURL(f); });
+    Array.prototype.forEach.call(fs,function(f){ var rd=new FileReader(); rd.onload=function(ev){ themeExtra.push({id:(Date.now().toString(36)+Math.random().toString(36).slice(2,7)),type:(f.type.indexOf('video')===0?'video':'image'),data:ev.target.result}); left--; if(left<=0){ themeExtraSave(); runTheme(); } }; rd.readAsDataURL(f); });
   };
   inp.click();
 }
-function themeDelExtra(i){ themeExtra.splice(i,1); themeExtraSave(); runTheme(); }
+function themeDelExtra(i){ var it=themeExtra[i]; themeExtra.splice(i,1); var k=it&&(it.id||it.data); if(k) themeExtraDel.push(k); themeExtraSave(); runTheme(); }
 function themeExtraHtml(withDel){
   if(!themeExtra.length) return '';
   var h='<div style="background:#fff8e6;border:1px solid #f0d98a;border-radius:10px;margin:8px 0;padding:8px 10px"><b style="font-size:0.85rem">➕ 직접 추가한 자료</b><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">';
