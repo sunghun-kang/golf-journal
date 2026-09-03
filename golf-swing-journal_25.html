@@ -154,7 +154,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.12 · 26-9-3</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.13 · 26-9-3</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -1054,22 +1054,10 @@ function mergeExtra(a,b,tomb){
 }
 function mergeTomb(a,b){ var s={},o=[]; (a||[]).concat(b||[]).forEach(function(d){ if(d&&!s[d]){ s[d]=1; o.push(d); } }); return o; }
 function themeExtraSaveLocal(){
-  var payload;
-  try{ payload=JSON.stringify({extra:themeExtra, del:themeExtraDel, at:themeExtraAt}); }catch(e){ return; }
-  function toLS(reason){
-    try{ localStorage.setItem('themeExtra', payload); }
-    catch(e2){ alert('추가 사진 저장 실패 😢\n저장공간이 부족한 것 같아요('+reason+' / '+((e2&&e2.name)||'quota')+').\n사진 용량을 줄이거나 개수를 줄여보세요.'); }
-  }
-  if(IDB){
-    try{
-      var tx=IDB.transaction('kv','readwrite');
-      tx.objectStore('kv').put(payload,'themeExtra');
-      tx.onerror=function(){ toLS('IDB오류'); };
-      tx.onabort=function(){ toLS('IDB중단:'+((tx.error&&tx.error.name)||'')); };
-      return;
-    }catch(e){ toLS('IDB예외'); return; }
-  }
-  toLS('IDB없음');
+  // ⚠️ 테마 사진은 로컬에 저장하지 않음(기기 저장공간 보호). 서버(themeExtraPush)에만 저장.
+  // 이전 버전이 남긴 로컬 캐시가 있으면 삭제해 공간을 즉시 확보.
+  try{ if(IDB) IDB.transaction('kv','readwrite').objectStore('kv').delete('themeExtra'); }catch(e){}
+  try{ localStorage.removeItem('themeExtra'); }catch(e){}
 }
 function themeExtraPush(){
   try{
@@ -1079,20 +1067,9 @@ function themeExtraPush(){
 }
 function themeExtraSave(){ themeExtraAt=nowKST(); themeExtraSaveLocal(); themeExtraPush(); }
 function themeExtraLoadLocal(cb){
-  function apply(v){
-    if(v){ if(Array.isArray(v)){ themeExtra=v; } else { themeExtra=v.extra||[]; themeExtraDel=v.del||[]; themeExtraAt=v.at||''; } }
-    if(cb)cb();
-  }
-  function fromLS(){ try{ var s=localStorage.getItem('themeExtra'); apply(s?JSON.parse(s):null); }catch(e){ apply(null); } }
-  if(IDB){
-    try{
-      var rq=IDB.transaction('kv','readonly').objectStore('kv').get('themeExtra');
-      rq.onsuccess=function(){ if(rq.result){ try{ apply(JSON.parse(rq.result)); }catch(e){ fromLS(); } } else { fromLS(); } };
-      rq.onerror=function(){ fromLS(); };
-      return;
-    }catch(e){}
-  }
-  fromLS();
+  // 로컬 캐시는 쓰지 않음 → 서버에서만 병합(themeExtraPull). 남아있던 로컬 캐시는 정리.
+  themeExtraSaveLocal();
+  if(cb)cb();
 }
 function themeExtraPull(cb){
   try{
@@ -1504,6 +1481,8 @@ document.getElementById('ov').addEventListener('click',function(e){if(e.target==
 
 // 저장 데이터 로드: IndexedDB 우선(사진 포함 전체) → 없으면 localStorage에서 자동 이전
 idbOpen(function(){
+  try{ if(IDB) IDB.transaction('kv','readwrite').objectStore('kv').delete('themeExtra'); }catch(e){}  // 테마사진 로컬캐시 제거 → 저장공간 확보
+  try{ localStorage.removeItem('themeExtra'); }catch(e){}
   idbLoad(function(d){
     if(Array.isArray(d)&&d.length>0){ data=d; }
     else {
