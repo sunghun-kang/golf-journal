@@ -154,7 +154,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.13 · 26-9-3</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.14 · 26-9-3</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -1491,6 +1491,8 @@ idbOpen(function(){
         if(lsData){ var parsed=JSON.parse(lsData); if(Array.isArray(parsed)&&parsed.length>0){ data=parsed; idbSave(data); } }
       }catch(e){}
     }
+    // 🆘 로컬이 비었거나 거의 없으면(=기기 저장이 지워짐) 서버에서 전체 자동 복구
+    if(!data || data.length < 5){ try{ localStorage.removeItem('golfSyncAt2'); }catch(e){} }
     loadFilters();
     render();
     loadFromServer();
