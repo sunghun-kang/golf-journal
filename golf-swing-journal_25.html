@@ -155,7 +155,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.25 · 26-9-6</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.26 · 26-9-6</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -1724,7 +1724,7 @@ function renderAnalyze(m){
   var ag=themeAgg(res);
   var h='';
   h+='<div style="margin:8px 0;display:flex;gap:6px;flex-wrap:wrap;align-items:center">'
-    +'<button onclick="themeSaveAnalysis()" style="background:#1a7a1a;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:0.9rem;font-weight:700">📌 이 AI정리를 기록으로 저장</button>'
+    +'<button onclick="themeSaveAnalysis()" style="background:#1a7a1a;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:0.9rem;font-weight:700">📌 이 정리를 기록으로 저장</button>'
     +'<button onclick="themeAI()" style="background:#7a3fb8;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:0.9rem;font-weight:700">🤖 AI 요약</button>'
     +'<span style="font-size:0.72rem;color:#999">AI는 API키 필요 · 저장은 키 없이 OK</span></div>';
   h+='<div id="thAI"></div>';
@@ -1751,10 +1751,10 @@ function themeSaveAnalysis(){
   var memo=lines.join('\n');
   memo=thColorize(dashDate(memo), m.kws);       // 날짜 하이픈 + 키워드 색강조
   var titleKw=thColorize(kw, m.kws);            // 제목 키워드도 색강조
-  if(!confirm('이 AI정리를 새 기록 1개로 저장할까요?\n(키워드: '+kw+' · '+m.res.length+'건)')) return;
+  if(!confirm('이 정리를 새 기록 1개로 저장할까요?\n(키워드: '+kw+' · '+m.res.length+'건)')) return;
   var now=nowKST();
   var today=(new Date(new Date().getTime()+9*3600*1000)).toISOString().slice(0,10);
-  var rec={ date:today, vt:'A', venue:'', members:kw, title:'📊 AI정리 · '+titleKw, memo:memo,
+  var rec={ date:today, vt:'A', venue:'', members:kw, title:'📊 정리 · '+titleKw, memo:memo,
     important:false, pinned:false, color:'', bold:false, media:[], updatedAt:now, createdAt:now };
   rec.id = today+'_SUM_'+Math.random().toString(36).substr(2,5);
   data.push(rec);
@@ -1774,7 +1774,7 @@ function themeSaveAsEntry(){
   var today=(new Date(new Date().getTime()+9*3600*1000)).toISOString().slice(0,10);
   var kw=themeLastKw||'AI요약';
   var kwArr=kw.split(/,\s*/).filter(Boolean);
-  var titleTxt = themeLastOneLine ? ('🤖 '+thColorize(themeLastOneLine,kwArr)) : ('🤖 AI요약 · '+thColorize(kw,kwArr));
+  var titleTxt = '🤖 AI정리 · ' + (themeLastOneLine ? thColorize(themeLastOneLine,kwArr) : thColorize(kw,kwArr));
   var rec={ date:today, vt:'A', venue:'', members:kw, title:titleTxt, memo:thColorize(themeLastAI,kwArr),
             important:false, pinned:false, color:'', bold:false, media:[], updatedAt:now, createdAt:now };
   rec.id = today+'_AI_'+Math.random().toString(36).substr(2,5);
