@@ -155,7 +155,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.22 · 26-9-6</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.23 · 26-9-6</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -649,6 +649,8 @@ function hilite(s){
   html=html.replace(/''GGreen''([\s\S]*?)''GGreen''/g, '<span style="color:#1a7a1a;font-weight:600">$1</span>');
   // 유레카 강조
   html=html.replace(/유레카/g,'<span style="color:#d42020;font-weight:700">유레카</span>');
+  // 날짜 표시: 26.09.05 / 2026.09.05 → 26-09-05 (태그 밖 텍스트만, 데이터는 안 바뀜)
+  html=html.split(/(<[^>]*>)/).map(function(p,i){ return (i%2===0)? p.replace(/\b(\d{2}|\d{4})\.(\d{1,2})\.(\d{1,2})\b/g,'$1-$2-$3') : p; }).join('');
   return html;
 }
 
@@ -1763,6 +1765,7 @@ function themeSaveAnalysis(){
 function thToggleMode(){ themeMode=(themeMode==='list'?'analyze':'list'); var b=document.getElementById('thAnalyzeBtn'); if(b) b.textContent=(themeMode==='analyze'?'📋 목록':'📊 분석'); runTheme(); }
 var themeLastAI='';
 var themeLastKw='';
+var themeLastOneLine='';
 function themeSaveAsEntry(){
   if(!themeLastAI){ alert('먼저 🤖AI 요약을 만들어 주세요.'); return; }
   if(!confirm('이 AI 요약을 새 기록 1개로 저장할까요?\n(구분: 🔍분석 · 서버에도 저장되어 다른 기기에서도 보임)')) return;
@@ -1770,7 +1773,8 @@ function themeSaveAsEntry(){
   var today=(new Date(new Date().getTime()+9*3600*1000)).toISOString().slice(0,10);
   var kw=themeLastKw||'AI요약';
   var kwArr=kw.split(/,\s*/).filter(Boolean);
-  var rec={ date:today, vt:'A', venue:'', members:kw, title:'🤖 AI요약 · '+thColorize(kw,kwArr), memo:thColorize(themeLastAI,kwArr),
+  var titleTxt = themeLastOneLine ? ('🤖 '+thColorize(themeLastOneLine,kwArr)) : ('🤖 AI요약 · '+thColorize(kw,kwArr));
+  var rec={ date:today, vt:'A', venue:'', members:kw, title:titleTxt, memo:thColorize(themeLastAI,kwArr),
             important:false, pinned:false, color:'', bold:false, media:[], updatedAt:now, createdAt:now };
   rec.id = today+'_AI_'+Math.random().toString(36).substr(2,5);
   data.push(rec);
@@ -1800,7 +1804,7 @@ function themeAI(){
   }).join('\n');
   var kw=m.kws.join(', ')||'전체';
   var sys='당신은 골프 스윙 코치입니다. 사용자의 골프 일지 기록만을 근거로 특정 주제의 원인과 대책을 한국어로 간결하게 요약합니다. 기록에 없는 내용을 지어내지 마세요.';
-  var user='주제 키워드: '+kw+'\n\n아래는 내 골프 일지 기록들이야. 이 주제에 대해 (1) 반복되는 핵심 원인, (2) 효과가 있었던/권장되는 대책, (3) 한 줄 종합 조언 을 정리해줘. 소제목과 불릿으로 간결하게.\n\n=== 기록 ('+m.res.length+'건) ===\n'+src;
+  var user='주제 키워드: '+kw+'\n\n아래는 내 골프 일지 기록들이야. 이 주제에 대해 (1) 반복되는 핵심 원인, (2) 효과가 있었던/권장되는 대책, (3) 한 줄 종합 조언 을 정리해줘. 소제목과 불릿으로 간결하게.\n그리고 맨 마지막 줄에 반드시 "한줄요약: <핵심을 한 문장으로>" 형식으로 써줘.\n\n=== 기록 ('+m.res.length+'건) ===\n'+src;
   fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
     headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
@@ -1810,6 +1814,7 @@ function themeAI(){
     var txt=(j.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('\n').trim();
     if(!txt) txt='(응답이 비었어요. 다시 시도해 주세요.)';
     themeLastAI=txt; themeLastKw=kw;
+    var _one=txt.match(/한줄요약\s*[:：]\s*(.+)\s*$/m); themeLastOneLine=_one?_one[1].trim():'';
     ai.innerHTML='<div style="background:#f7f0fc;border:1px solid #d9b8f0;border-radius:10px;padding:12px;margin:8px 0"><div style="font-weight:700;color:#7a3fb8;margin-bottom:6px;font-size:0.9rem">🤖 AI 요약 <button onclick="themeAIKey(true);alert(\'API키를 지웠어요.\')" style="float:right;font-size:0.68rem;background:none;border:1px solid #ccc;border-radius:5px;padding:1px 6px;color:#999">키삭제</button></div><div style="white-space:pre-wrap;line-height:1.7;font-size:0.9rem;color:#222">'+esc(txt)+'</div><div style="margin-top:10px;text-align:center"><button onclick="themeSaveAsEntry()" style="background:#1a7a1a;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:0.9rem;font-weight:700">📌 이 분석을 기록으로 저장</button></div></div>';
   }).catch(function(e){ ai.innerHTML='<div style="background:#fdecea;border-radius:10px;padding:12px;color:#c0392b;font-size:0.85rem">⚠️ 통신 실패: '+esc(String(e))+'<br>키 확인 또는 잠시 후 재시도.</div>'; });
 }
