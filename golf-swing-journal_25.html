@@ -155,7 +155,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.34 · 26-9-6</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.35 · 26-9-6</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -237,6 +237,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
     </div>
     <div class="mbtns">
       <button class="bc" id="mDelBtn" onclick="delModal()" style="display:none;background:#d42020;color:#fff;border-color:#d42020">삭제</button>
+      <button class="bc" id="mRegenBtn" onclick="regenAI()" style="display:none;background:#7a3fb8;color:#fff;border-color:#7a3fb8">🔄 AI 재요약</button>
       <button class="bc" onclick="if(confirm('취소할까요?'))closeOv()">취소</button>
       <button class="bs" onclick="saveMod()">저장</button>
       <button class="bx" onclick="exportExcel()">📊 Excel</button>
@@ -945,6 +946,7 @@ function openAdd(){
   document.getElementById('mMediaPreview').innerHTML='';
   pendingMedia=[];
   document.getElementById('mDelBtn').style.display='none';
+  document.getElementById('mRegenBtn').style.display='none';
   document.getElementById('ov').classList.add('open');
 }
 function ed(i){
@@ -965,7 +967,51 @@ function ed(i){
   pendingMedia=r.media?r.media.slice():[];
   renderMediaPreview();
   document.getElementById('mDelBtn').style.display='';
+  var _isAI = r.ai || /^\s*(?:🤖|📊)/.test(r.title||'');
+  document.getElementById('mRegenBtn').style.display = _isAI ? '' : 'none';
   document.getElementById('ov').classList.add('open');
+}
+function regenAI(){
+  var kwRaw=(document.getElementById('mMembers').value||'').trim();
+  if(!kwRaw){ var t=document.getElementById('mTitle').value||''; var mm=t.match(/·\s*(.+)$/); kwRaw=mm?mm[1].trim():''; }
+  if(!kwRaw){ alert('키워드(멤버/원인 칸)가 비어있어요. 키워드를 넣고 다시 시도하세요.'); return; }
+  var key=themeAIKey(false); if(!key) return;
+  var groups=kwRaw.split(',').map(function(g){return g.split(/[&^]/).map(function(s){return s.trim();}).filter(Boolean);}).filter(function(g){return g.length;});
+  var flat=[]; groups.forEach(function(g){g.forEach(function(t){if(flat.indexOf(t)<0)flat.push(t);});});
+  var low=groups.map(function(g){return g.map(function(t){return t.toLowerCase();});});
+  var selfId = (editIdx>=0 && data[editIdx]) ? data[editIdx].id : null;
+  var res=data.filter(function(r){
+    if(selfId && r.id===selfId) return false;
+    if(/^\s*(?:🤖|📊)/.test(r.title||'')) return false;   // 다른 AI글도 제외
+    if(!low.length) return true;
+    var text=((r.title||'')+' '+(r.memo||'')+' '+(r.venue||'')+' '+(r.members||'')).toLowerCase();
+    return low.some(function(g){return g.every(function(t){return text.indexOf(t)>=0;});});
+  });
+  if(!res.length){ alert('그 키워드에 맞는 기록이 없어요.'); return; }
+  var btn=document.getElementById('mRegenBtn'); var old=btn.textContent; btn.textContent='요약중…'; btn.disabled=true;
+  var src=res.map(function(r){
+    return '['+(r.date||'')+']'
+      +(r.venue?(' 문제:'+thStrip(r.venue)):'')
+      +(r.members?(' 원인:'+thStrip(r.members)):'')
+      +(r.title?(' 대책:'+thStrip(r.title).replace(/\n/g,' / ')):'')
+      +(r.memo?(' 메모:'+thStrip(r.memo).replace(/\n/g,' ').slice(0,300)):'');
+  }).join('\n');
+  var kw=flat.join(', ');
+  var sys='당신은 골프 스윙 코치입니다. 사용자의 골프 일지 기록만을 근거로 특정 주제의 원인과 대책을 한국어로 간결하게 요약합니다. 기록에 없는 내용을 지어내지 마세요.';
+  var user='주제 키워드: '+kw+'\n\n아래는 내 골프 일지 기록들이야. 이 주제에 대해 (1) 반복되는 핵심 원인, (2) 효과가 있었던/권장되는 대책, (3) 한 줄 종합 조언 을 정리해줘. 소제목과 불릿으로 간결하게.\n그리고 맨 마지막 줄에 반드시 "한줄요약: <핵심을 한 문장으로>" 형식으로 써줘.\n\n=== 기록 ('+res.length+'건) ===\n'+src;
+  fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-opus-5',max_tokens:1500,system:sys,output_config:{effort:'low'},messages:[{role:'user',content:user}]})})
+  .then(function(r){return r.json();}).then(function(j){
+    btn.textContent=old; btn.disabled=false;
+    if(j.error){ alert('오류: '+(j.error.message||JSON.stringify(j.error))); return; }
+    var txt=(j.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('\n').trim();
+    if(!txt){ alert('응답이 비었어요. 다시 시도하세요.'); return; }
+    txt=dashDate(txt);
+    var oneline=thExtractOneLine(txt);
+    document.getElementById('mMemo').value=thColorize(txt,flat);
+    document.getElementById('mTitle').value='🤖 AI요약 · '+(oneline?thColorize(oneline,flat):thColorize(kw,flat));
+    document.getElementById('mVt').value='A';
+    alert('✅ AI 재요약 완료! 내용 확인 후 저장을 누르세요.');
+  }).catch(function(e){ btn.textContent=old; btn.disabled=false; alert('통신 실패: '+e); });
 }
 function delModal(){if(editIdx<0)return;if(!confirm('삭제할까요?'))return;if(!confirm('정말 삭제합니다!'))return;var i=editIdx;closeOv();dl(i);}
 var pendingMedia=[];
