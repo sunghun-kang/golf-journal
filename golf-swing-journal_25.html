@@ -155,7 +155,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.19 · 26-9-6</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.20 · 26-9-6</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -1533,7 +1533,7 @@ if('serviceWorker' in navigator){
       <input type="date" id="thTo" style="font-size:0.8rem;padding:3px 3px;width:118px">
       <span>~</span>
       <input type="date" id="thFrom" style="font-size:0.8rem;padding:3px 3px;width:118px">
-      <input type="text" id="thKw" list="thKwList" placeholder="키워드(쉼표): 어깨틀기, 오른팔펴기" style="flex:1;min-width:140px;font-size:0.85rem;padding:4px 7px;border:1px solid #ccc;border-radius:6px" onkeydown="if(event.key==='Enter'){thKwSave();runTheme();}">
+      <input type="text" id="thKw" list="thKwList" placeholder="키워드  ,=또는  &=그리고  (예: 엎어침&아웃인, 치킨윙)" style="flex:1;min-width:140px;font-size:0.85rem;padding:4px 7px;border:1px solid #ccc;border-radius:6px" onkeydown="if(event.key==='Enter'){thKwSave();runTheme();}">
       <datalist id="thKwList"></datalist>
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:0.8rem;margin-bottom:6px">
@@ -1628,19 +1628,24 @@ function thCatPass(r){
 }
 function themeMatch(){
   var from=document.getElementById('thFrom').value, to=document.getElementById('thTo').value;
-  var kws=document.getElementById('thKw').value.split(',').map(function(s){return s.trim().toLowerCase();}).filter(Boolean);
+  // 쉼표(,)=또는(OR) 그룹, 그룹 안 &또는^=그리고(AND)
+  var raw=document.getElementById('thKw').value||'';
+  var groups=raw.split(',').map(function(g){ return g.split(/[&^]/).map(function(s){return s.trim();}).filter(Boolean); }).filter(function(g){return g.length;});
+  var flat=[]; groups.forEach(function(g){ g.forEach(function(t){ if(flat.indexOf(t)<0) flat.push(t); }); });
+  var lowGroups=groups.map(function(g){ return g.map(function(t){return t.toLowerCase();}); });
   var res=data.filter(function(r){
     if(from && (r.date||'')<from) return false;
     if(to && (r.date||'')>to) return false;
     if(!thCatPass(r)) return false;
-    if(kws.length){
+    if(lowGroups.length){
       var text=((r.title||'')+' '+(r.memo||'')+' '+(r.venue||'')+' '+(r.members||'')).toLowerCase();
-      if(!kws.some(function(k){return text.indexOf(k)>=0;})) return false;
+      var ok=lowGroups.some(function(g){ return g.every(function(t){ return text.indexOf(t)>=0; }); });
+      if(!ok) return false;
     }
     return true;
   });
   res.sort(function(a,b){ var c=(a.date||'').localeCompare(b.date||''); return themeSort==='desc'?-c:c; });
-  return {res:res, kws:kws, from:from, to:to};
+  return {res:res, kws:flat, from:from, to:to};
 }
 function themePhoto(src){
   if(!src) return;
