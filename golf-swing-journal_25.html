@@ -155,7 +155,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.37 · 26-9-6</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.38 · 26-9-6</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -195,6 +195,11 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <div id="list-sec">
 <div class="searchbar" style="display:none">
   <input type="text" style="display:none">
+</div>
+<div id="backupBanner" style="display:none;margin:8px 10px;padding:10px 12px;background:#fff8e6;border:1px solid #f0d98a;border-radius:8px;font-size:0.85rem;align-items:center;gap:8px;flex-wrap:wrap">
+  <span id="backupMsg" style="flex:1;min-width:150px;color:#8a6d1a;line-height:1.4"></span>
+  <button onclick="exportFile()" style="background:#1a7a1a;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-weight:700;font-size:0.85rem">💾 지금 백업</button>
+  <button onclick="backupDismiss()" style="background:none;border:1px solid #ccc;border-radius:6px;padding:6px 10px;color:#888;font-size:0.85rem">나중에</button>
 </div>
 <div class="list" id="list"></div>
 </div>
@@ -294,6 +299,7 @@ function loadFromServer() {
     if(_syncMax) localStorage.setItem('golfSyncAt2', _syncMax);
     showSyncStatus('✅ 동기화완료 (받음 '+total+' · 총 '+data.length+'개)');
     render();
+    checkBackupReminder();
     retryPending();
   })
   .catch(function(){
@@ -1187,6 +1193,22 @@ function exportFile(){
   a.href=URL.createObjectURL(blob);
   a.download='golf-log-'+todayKST()+'.json';
   a.click();
+  try{ localStorage.setItem('lastBackup', String(Date.now())); localStorage.removeItem('backupSnooze'); }catch(e){}
+  var _b=document.getElementById('backupBanner'); if(_b) _b.style.display='none';
+}
+// ===== 자동 백업 도우미 =====
+function backupDays(){ try{ var t=localStorage.getItem('lastBackup'); if(!t) return null; return Math.floor((Date.now()-parseInt(t))/86400000); }catch(e){ return null; } }
+function backupDismiss(){ try{ localStorage.setItem('backupSnooze', String(Date.now())); }catch(e){} var b=document.getElementById('backupBanner'); if(b) b.style.display='none'; }
+function checkBackupReminder(){
+  var b=document.getElementById('backupBanner'); if(!b) return;
+  if(!data || !data.length){ b.style.display='none'; return; }        // 데이터 없으면 알림 안 함
+  try{ var sn=localStorage.getItem('backupSnooze'); if(sn && (Date.now()-parseInt(sn))<7*86400000){ b.style.display='none'; return; } }catch(e){}  // '나중에' 누르면 7일 숨김
+  var d=backupDays(), THRESH=30, msg='';
+  if(d===null){ msg='📦 아직 백업파일을 저장한 적이 없어요. 소중한 기록을 파일로도 백업해두세요.'; }
+  else if(d>=THRESH){ msg='📦 마지막 백업 '+d+'일 전이에요. 다시 백업할 때가 됐어요.'; }
+  else { b.style.display='none'; return; }
+  document.getElementById('backupMsg').textContent=msg;
+  b.style.display='flex';
 }
 // 파일에서 불러오기
 function importFile(){
@@ -1548,6 +1570,7 @@ idbOpen(function(){
     if(!data || data.length < 5){ try{ localStorage.removeItem('golfSyncAt2'); }catch(e){} }
     loadFilters();
     render();
+    checkBackupReminder();
     loadFromServer();
   });
 });
