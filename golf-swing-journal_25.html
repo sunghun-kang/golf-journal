@@ -155,7 +155,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.26 · 26-9-6</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.27 · 26-9-6</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -1575,6 +1575,19 @@ function thBlink(html){
   return parts.join('');
 }
 function dashDate(t){ return (t||'').replace(/\b(\d{2}|\d{4})\.(\d{1,2})\.(\d{1,2})\b/g,'$1-$2-$3'); }
+function thExtractOneLine(txt){
+  if(!txt) return '';
+  // 1) "한줄요약:/종합조언:" 등 라벨이 있는 줄 우선
+  var m=txt.match(/^\s*\**\s*(?:한\s*줄\s*요약|한\s*줄\s*조언|종합\s*조언|핵심\s*조언|요약|핵심)\s*[:：\-][ \t]*(.+?)\s*$/m);
+  var line = m ? m[1] : '';
+  // 2) 없으면 마지막 비어있지 않은 줄
+  if(!line){
+    var lines=txt.split('\n').map(function(x){return x.trim();}).filter(Boolean);
+    line = lines.length ? lines[lines.length-1] : '';
+    line = line.replace(/^\**\s*(?:한\s*줄\s*요약|한\s*줄\s*조언|종합\s*조언|핵심\s*조언|요약|핵심)\s*[:：\-]?[ \t]*/,'');
+  }
+  return line.replace(/\*\*/g,'').replace(/^[\-•·*#>\s]+/,'').trim();
+}
 function thColorize(text, kws){
   // 저장 본문에 키워드별 색강조 마크 삽입(ㅃ빨강·ㅍ파랑·ㄴ녹색, 4번째부터 **굵게**)
   if(!text||!kws||!kws.length) return text;
@@ -1816,7 +1829,7 @@ function themeAI(){
     if(!txt) txt='(응답이 비었어요. 다시 시도해 주세요.)';
     txt=dashDate(txt);                        // 날짜 26.09.05 → 26-09-05
     themeLastAI=txt; themeLastKw=kw;
-    var _one=txt.match(/한줄요약\s*[:：]\s*(.+)\s*$/m); themeLastOneLine=_one?_one[1].trim():'';
+    themeLastOneLine=thExtractOneLine(txt);   // 한줄요약(핵심) 추출
     ai.innerHTML='<div style="background:#f7f0fc;border:1px solid #d9b8f0;border-radius:10px;padding:12px;margin:8px 0"><div style="font-weight:700;color:#7a3fb8;margin-bottom:6px;font-size:0.9rem">🤖 AI 요약 <button onclick="themeAIKey(true);alert(\'API키를 지웠어요.\')" style="float:right;font-size:0.68rem;background:none;border:1px solid #ccc;border-radius:5px;padding:1px 6px;color:#999">키삭제</button></div><div style="white-space:pre-wrap;line-height:1.7;font-size:0.9rem;color:#222">'+esc(txt)+'</div><div style="margin-top:10px;text-align:center"><button onclick="themeSaveAsEntry()" style="background:#1a7a1a;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:0.9rem;font-weight:700">📌 이 분석을 기록으로 저장</button></div></div>';
   }).catch(function(e){ ai.innerHTML='<div style="background:#fdecea;border-radius:10px;padding:12px;color:#c0392b;font-size:0.85rem">⚠️ 통신 실패: '+esc(String(e))+'<br>키 확인 또는 잠시 후 재시도.</div>'; });
 }
