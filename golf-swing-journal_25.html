@@ -155,7 +155,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.36 · 26-9-6</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.37 · 26-9-6</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -169,11 +169,11 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
     <div class="more-menu">
       <button class="btn-io" onclick="toggleMore()" title="더보기">⋮</button>
       <div class="more-dropdown" id="more-dropdown">
-        <button onclick="openSettings();toggleMore()">⚙️ 연동</button>
-        <button onclick="importFile();toggleMore()">📂 가져오기</button>
-        <button onclick="exportFile();toggleMore()">💾 보냄</button>
-        <button onclick="migrateToPosts();toggleMore()">🔁 새 동기화로 이전</button>
-        <button onclick="resyncAll();toggleMore()">📥 전체 다시받기</button>
+        <button onclick="exportFile();toggleMore()">💾 백업파일 저장 (앱→파일)</button>
+        <button onclick="importFile();toggleMore()">📂 파일에서 불러오기 (파일→앱)</button>
+        <button onclick="resyncAll();toggleMore()">📥 서버에서 전체받기 (클라우드→앱)</button>
+        <button onclick="openSettings();toggleMore()">⚙️ 연동 설정</button>
+        <button onclick="migrateToPosts();toggleMore()" style="opacity:0.6;font-size:0.85em">🔁 예전자료 이전 (1회·안써도됨)</button>
       </div>
     </div>
     <button class="btn-add" onclick="openAdd()">+ 추가</button>
