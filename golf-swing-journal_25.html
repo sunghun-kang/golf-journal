@@ -154,7 +154,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.15 · 26-9-5</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.16 · 26-9-6</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -1683,7 +1683,10 @@ function renderAnalyze(m){
   if(!res.length){ body.innerHTML='<div style="padding:20px;text-align:center;color:#999">분석할 기록이 없어요. 기간·키워드를 바꿔보세요.</div>'; return; }
   var ag=themeAgg(res);
   var h='';
-  h+='<div style="margin:8px 0"><button onclick="themeAI()" style="background:#7a3fb8;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:0.9rem;font-weight:700">🤖 AI 요약</button> <span style="font-size:0.74rem;color:#999">내 API키 사용 · 소액과금</span></div>';
+  h+='<div style="margin:8px 0;display:flex;gap:6px;flex-wrap:wrap;align-items:center">'
+    +'<button onclick="themeSaveAnalysis()" style="background:#1a7a1a;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:0.9rem;font-weight:700">📌 이 정리를 기록으로 저장</button>'
+    +'<button onclick="themeAI()" style="background:#7a3fb8;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:0.9rem;font-weight:700">🤖 AI 요약</button>'
+    +'<span style="font-size:0.72rem;color:#999">AI는 API키 필요 · 저장은 키 없이 OK</span></div>';
   h+='<div id="thAI"></div>';
   if(ag.probs.length){ h+='<div style="background:#fff;border-radius:10px;padding:8px 10px;margin:8px 0;box-shadow:0 1px 3px rgba(0,0,0,0.06)"><b style="color:#c0392b;font-size:0.9rem">🔴 문제/구장</b><div style="margin-top:5px">'+ag.probs.map(function(x){return thChip(x.t,x.n,'#fdecea');}).join('')+'</div></div>'; }
   if(ag.causes.length){ h+='<div style="background:#fff;border-radius:10px;padding:8px 10px;margin:8px 0;box-shadow:0 1px 3px rgba(0,0,0,0.06)"><b style="color:#b8860b;font-size:0.9rem">🟡 원인/멤버 (빈출순)</b><div style="margin-top:5px">'+ag.causes.map(function(x){return thChip(x.t,x.n,'#fdf3d8');}).join('')+'</div></div>'; }
@@ -1691,6 +1694,32 @@ function renderAnalyze(m){
   ag.sols.forEach(function(s){ h+='<div style="display:flex;gap:8px;padding:3px 0;border-bottom:1px solid #f2f2f2;font-size:0.9rem;line-height:1.5"><span style="flex-shrink:0;color:#999;font-size:0.76rem;width:76px">'+esc(s.date)+'</span><span style="min-width:0">'+thBlink(esc(s.t))+'</span></div>'; });
   h+='</div></div>';
   body.innerHTML=h;
+}
+function themeSaveAnalysis(){
+  var m=themeMatch();
+  if(!m.res.length){ alert('저장할 내용이 없어요. 키워드로 먼저 찾아주세요.'); return; }
+  if(m.kws.length===0 && !confirm('키워드 없이 전체('+m.res.length+'건)를 저장하면 내용이 아주 길어요.\n키워드를 넣는 걸 권해요. 그래도 저장할까요?')) return;
+  var ag=themeAgg(m.res);
+  var kw=m.kws.join(', ')||'전체';
+  var lines=[];
+  lines.push('■ 문제/구장: '+(ag.probs.length?ag.probs.map(function(x){return x.t+(x.n>1?'×'+x.n:'');}).join(', '):'-'));
+  lines.push('■ 원인/멤버(빈출): '+(ag.causes.length?ag.causes.map(function(x){return x.t+(x.n>1?'×'+x.n:'');}).join(', '):'-'));
+  lines.push('■ 대책·핵심 ('+ag.sols.length+'):');
+  var cap=ag.sols.slice(0,60);
+  cap.forEach(function(s){ lines.push('· '+(s.date?('['+s.date+'] '):'')+s.t); });
+  if(ag.sols.length>cap.length) lines.push('… 외 '+(ag.sols.length-cap.length)+'개');
+  var memo=lines.join('\n');
+  if(!confirm('이 정리를 새 기록 1개로 저장할까요?\n(키워드: '+kw+' · '+m.res.length+'건)')) return;
+  var now=nowKST();
+  var today=(new Date(new Date().getTime()+9*3600*1000)).toISOString().slice(0,10);
+  var rec={ date:today, vt:'A', venue:'', members:kw, title:'📊 정리 · '+kw, memo:memo,
+    important:false, pinned:false, color:'', bold:false, media:[], updatedAt:now, createdAt:now };
+  rec.id = today+'_SUM_'+Math.random().toString(36).substr(2,5);
+  data.push(rec);
+  data.sort(function(a,b){ var dc=(b.date||'').localeCompare(a.date||''); if(dc!==0)return dc; return (b.createdAt||b.updatedAt||'').localeCompare(a.createdAt||a.updatedAt||''); });
+  pushRecord(rec);
+  alert('✅ 저장했어요! 목록에서 🔍분석 글로 볼 수 있어요.');
+  render();
 }
 function thToggleMode(){ themeMode=(themeMode==='list'?'analyze':'list'); var b=document.getElementById('thAnalyzeBtn'); if(b) b.textContent=(themeMode==='analyze'?'📋 목록':'📊 분석'); runTheme(); }
 var themeLastAI='';
