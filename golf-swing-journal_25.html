@@ -154,7 +154,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.14 · 26-9-3</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.15 · 26-9-5</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -1693,6 +1693,23 @@ function renderAnalyze(m){
   body.innerHTML=h;
 }
 function thToggleMode(){ themeMode=(themeMode==='list'?'analyze':'list'); var b=document.getElementById('thAnalyzeBtn'); if(b) b.textContent=(themeMode==='analyze'?'📋 목록':'📊 분석'); runTheme(); }
+var themeLastAI='';
+var themeLastKw='';
+function themeSaveAsEntry(){
+  if(!themeLastAI){ alert('먼저 🤖AI 요약을 만들어 주세요.'); return; }
+  if(!confirm('이 AI 요약을 새 기록 1개로 저장할까요?\n(구분: 🔍분석 · 서버에도 저장되어 다른 기기에서도 보임)')) return;
+  var now=nowKST();
+  var today=(new Date(new Date().getTime()+9*3600*1000)).toISOString().slice(0,10);
+  var kw=themeLastKw||'AI요약';
+  var rec={ date:today, vt:'A', venue:'', members:kw, title:'🤖 AI요약 · '+kw, memo:themeLastAI,
+            important:false, pinned:false, color:'', bold:false, media:[], updatedAt:now, createdAt:now };
+  rec.id = today+'_AI_'+Math.random().toString(36).substr(2,5);
+  data.push(rec);
+  data.sort(function(a,b){ var dc=(b.date||'').localeCompare(a.date||''); if(dc!==0)return dc; return (b.createdAt||b.updatedAt||'').localeCompare(a.createdAt||a.updatedAt||''); });
+  pushRecord(rec);
+  alert('✅ 저장했어요! 목록에서 🔍분석 글로 볼 수 있어요.');
+  render();
+}
 function themeAIKey(reset){
   if(reset){ localStorage.removeItem('anthropicKey'); }
   var k=localStorage.getItem('anthropicKey')||'';
@@ -1723,7 +1740,8 @@ function themeAI(){
     if(j.error){ ai.innerHTML='<div style="background:#fdecea;border-radius:10px;padding:12px;color:#c0392b;font-size:0.85rem">⚠️ 오류: '+esc(j.error.message||JSON.stringify(j.error))+'<br><button onclick="themeAIKey(true);themeAI()" style="margin-top:6px;font-size:0.8rem;border:1px solid #c0392b;background:#fff;border-radius:6px;padding:3px 10px">키 다시 입력</button></div>'; return; }
     var txt=(j.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('\n').trim();
     if(!txt) txt='(응답이 비었어요. 다시 시도해 주세요.)';
-    ai.innerHTML='<div style="background:#f7f0fc;border:1px solid #d9b8f0;border-radius:10px;padding:12px;margin:8px 0"><div style="font-weight:700;color:#7a3fb8;margin-bottom:6px;font-size:0.9rem">🤖 AI 요약 <button onclick="themeAIKey(true);alert(\'API키를 지웠어요.\')" style="float:right;font-size:0.68rem;background:none;border:1px solid #ccc;border-radius:5px;padding:1px 6px;color:#999">키삭제</button></div><div style="white-space:pre-wrap;line-height:1.7;font-size:0.9rem;color:#222">'+esc(txt)+'</div></div>';
+    themeLastAI=txt; themeLastKw=kw;
+    ai.innerHTML='<div style="background:#f7f0fc;border:1px solid #d9b8f0;border-radius:10px;padding:12px;margin:8px 0"><div style="font-weight:700;color:#7a3fb8;margin-bottom:6px;font-size:0.9rem">🤖 AI 요약 <button onclick="themeAIKey(true);alert(\'API키를 지웠어요.\')" style="float:right;font-size:0.68rem;background:none;border:1px solid #ccc;border-radius:5px;padding:1px 6px;color:#999">키삭제</button></div><div style="white-space:pre-wrap;line-height:1.7;font-size:0.9rem;color:#222">'+esc(txt)+'</div><div style="margin-top:10px;text-align:center"><button onclick="themeSaveAsEntry()" style="background:#1a7a1a;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:0.9rem;font-weight:700">📌 이 분석을 기록으로 저장</button></div></div>';
   }).catch(function(e){ ai.innerHTML='<div style="background:#fdecea;border-radius:10px;padding:12px;color:#c0392b;font-size:0.85rem">⚠️ 통신 실패: '+esc(String(e))+'<br>키 확인 또는 잠시 후 재시도.</div>'; });
 }
 function runTheme(){ var m=themeMatch(); blinkKws=m.kws; if(themeMode==='analyze') renderAnalyze(m); else renderTheme(m); }
