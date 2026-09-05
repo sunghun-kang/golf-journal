@@ -155,7 +155,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.28 · 26-9-6</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.29 · 26-9-6</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -1737,8 +1737,8 @@ function renderAnalyze(m){
   var ag=themeAgg(res);
   var h='';
   h+='<div style="margin:8px 0;display:flex;gap:6px;flex-wrap:wrap;align-items:center">'
-    +'<button onclick="themeSaveAnalysis()" style="background:#1a7a1a;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:0.9rem;font-weight:700">📌 이 정리를 기록으로 저장</button>'
-    +'<button onclick="themeAI()" style="background:#7a3fb8;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:0.9rem;font-weight:700">🤖 AI정리</button>'
+    +'<button onclick="themeSaveAnalysis()" style="background:#1a7a1a;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:0.9rem;font-weight:700">📌 이 AI정리를 기록으로 저장</button>'
+    +'<button onclick="themeAI()" style="background:#7a3fb8;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:0.9rem;font-weight:700">🤖 AI요약</button>'
     +'<span style="font-size:0.72rem;color:#999">AI는 API키 필요 · 저장은 키 없이 OK</span></div>';
   h+='<div id="thAI"></div>';
   if(ag.probs.length){ h+='<div style="background:#fff;border-radius:10px;padding:8px 10px;margin:8px 0;box-shadow:0 1px 3px rgba(0,0,0,0.06)"><b style="color:#c0392b;font-size:0.9rem">🔴 문제/구장</b><div style="margin-top:5px">'+ag.probs.map(function(x){return thChip(x.t,x.n,'#fdecea');}).join('')+'</div></div>'; }
@@ -1764,10 +1764,10 @@ function themeSaveAnalysis(){
   var memo=lines.join('\n');
   memo=thColorize(dashDate(memo), m.kws);       // 날짜 하이픈 + 키워드 색강조
   var titleKw=thColorize(kw, m.kws);            // 제목 키워드도 색강조
-  if(!confirm('이 정리를 새 기록 1개로 저장할까요?\n(키워드: '+kw+' · '+m.res.length+'건)')) return;
+  if(!confirm('이 AI정리를 새 기록 1개로 저장할까요?\n(키워드: '+kw+' · '+m.res.length+'건)')) return;
   var now=nowKST();
   var today=(new Date(new Date().getTime()+9*3600*1000)).toISOString().slice(0,10);
-  var rec={ date:today, vt:'A', venue:'', members:kw, title:'📊 정리 · '+titleKw, memo:memo,
+  var rec={ date:today, vt:'A', venue:'', members:kw, title:'📊 AI정리 · '+titleKw, memo:memo,
     important:false, pinned:false, color:'', bold:false, media:[], updatedAt:now, createdAt:now };
   rec.id = today+'_SUM_'+Math.random().toString(36).substr(2,5);
   data.push(rec);
@@ -1781,13 +1781,13 @@ var themeLastAI='';
 var themeLastKw='';
 var themeLastOneLine='';
 function themeSaveAsEntry(){
-  if(!themeLastAI){ alert('먼저 🤖AI정리을 만들어 주세요.'); return; }
-  if(!confirm('이 AI정리을 새 기록 1개로 저장할까요?\n(구분: 🔍분석 · 서버에도 저장되어 다른 기기에서도 보임)')) return;
+  if(!themeLastAI){ alert('먼저 🤖AI요약을 만들어 주세요.'); return; }
+  if(!confirm('이 AI요약을 새 기록 1개로 저장할까요?\n(구분: 🔍분석 · 서버에도 저장되어 다른 기기에서도 보임)')) return;
   var now=nowKST();
   var today=(new Date(new Date().getTime()+9*3600*1000)).toISOString().slice(0,10);
-  var kw=themeLastKw||'AI정리';
+  var kw=themeLastKw||'AI요약';
   var kwArr=kw.split(/,\s*/).filter(Boolean);
-  var titleTxt = '🤖 AI정리 · ' + (themeLastOneLine ? thColorize(themeLastOneLine,kwArr) : thColorize(kw,kwArr));
+  var titleTxt = '🤖 AI요약 · ' + (themeLastOneLine ? thColorize(themeLastOneLine,kwArr) : thColorize(kw,kwArr));
   var rec={ date:today, vt:'A', venue:'', members:kw, title:titleTxt, memo:thColorize(themeLastAI,kwArr),
             important:false, pinned:false, color:'', bold:false, media:[], updatedAt:now, createdAt:now };
   rec.id = today+'_AI_'+Math.random().toString(36).substr(2,5);
@@ -1830,7 +1830,7 @@ function themeAI(){
     txt=dashDate(txt);                        // 날짜 26.09.05 → 26-09-05
     themeLastAI=txt; themeLastKw=kw;
     themeLastOneLine=thExtractOneLine(txt);   // 한줄요약(핵심) 추출
-    ai.innerHTML='<div style="background:#f7f0fc;border:1px solid #d9b8f0;border-radius:10px;padding:12px;margin:8px 0"><div style="font-weight:700;color:#7a3fb8;margin-bottom:6px;font-size:0.9rem">🤖 AI정리 <button onclick="themeAIKey(true);alert(\'API키를 지웠어요.\')" style="float:right;font-size:0.68rem;background:none;border:1px solid #ccc;border-radius:5px;padding:1px 6px;color:#999">키삭제</button></div><div style="white-space:pre-wrap;line-height:1.7;font-size:0.9rem;color:#222">'+esc(txt)+'</div><div style="margin-top:10px;text-align:center"><button onclick="themeSaveAsEntry()" style="background:#1a7a1a;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:0.9rem;font-weight:700">📌 이 AI정리를 기록으로 저장</button></div></div>';
+    ai.innerHTML='<div style="background:#f7f0fc;border:1px solid #d9b8f0;border-radius:10px;padding:12px;margin:8px 0"><div style="font-weight:700;color:#7a3fb8;margin-bottom:6px;font-size:0.9rem">🤖 AI요약 <button onclick="themeAIKey(true);alert(\'API키를 지웠어요.\')" style="float:right;font-size:0.68rem;background:none;border:1px solid #ccc;border-radius:5px;padding:1px 6px;color:#999">키삭제</button></div><div style="white-space:pre-wrap;line-height:1.7;font-size:0.9rem;color:#222">'+esc(txt)+'</div><div style="margin-top:10px;text-align:center"><button onclick="themeSaveAsEntry()" style="background:#1a7a1a;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:0.9rem;font-weight:700">📌 이 AI요약을 기록으로 저장</button></div></div>';
   }).catch(function(e){ ai.innerHTML='<div style="background:#fdecea;border-radius:10px;padding:12px;color:#c0392b;font-size:0.85rem">⚠️ 통신 실패: '+esc(String(e))+'<br>키 확인 또는 잠시 후 재시도.</div>'; });
 }
 function runTheme(){ var m=themeMatch(); blinkKws=m.kws; if(themeMode==='analyze') renderAnalyze(m); else renderTheme(m); }
