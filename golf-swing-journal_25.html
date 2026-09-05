@@ -155,7 +155,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.18 · 26-9-6</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.19 · 26-9-6</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -1572,6 +1572,20 @@ function thBlink(html){
   for(var i=0;i<parts.length;i++){ if(i%2===0){ parts[i]=parts[i].replace(re,function(mm){ var idx=idxMap[mm.toLowerCase()]; if(idx==null) idx=0; return '<span class="thbl thbl'+(idx%6)+'">'+mm+'</span>'; }); } }
   return parts.join('');
 }
+function thColorize(text, kws){
+  // 저장 본문에 키워드별 색강조 마크 삽입(ㅃ빨강·ㅍ파랑·ㄴ녹색, 4번째부터 **굵게**)
+  if(!text||!kws||!kws.length) return text;
+  var marks=['ㅃ','ㅍ','ㄴ'];
+  var arr=kws.map(function(k,i){return {k:(k||'').trim(),i:i};}).filter(function(o){return o.k;});
+  arr.sort(function(a,b){return b.k.length-a.k.length;});  // 긴 키워드 먼저(부분겹침 방지)
+  arr.forEach(function(o){
+    var e=o.k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    var re=new RegExp(e,'g');
+    var mk=(o.i<3)?marks[o.i]:'**';
+    text=text.replace(re, mk+o.k+mk);
+  });
+  return text;
+}
 function thKwSave(){
   var v=(document.getElementById('thKw').value||'').trim();
   if(!v) return;
@@ -1727,10 +1741,12 @@ function themeSaveAnalysis(){
   cap.forEach(function(s){ lines.push('· '+(s.date?('['+s.date+'] '):'')+s.t); });
   if(ag.sols.length>cap.length) lines.push('… 외 '+(ag.sols.length-cap.length)+'개');
   var memo=lines.join('\n');
+  memo=thColorize(memo, m.kws);                 // 본문 키워드 색강조
+  var titleKw=thColorize(kw, m.kws);            // 제목 키워드도 색강조
   if(!confirm('이 정리를 새 기록 1개로 저장할까요?\n(키워드: '+kw+' · '+m.res.length+'건)')) return;
   var now=nowKST();
   var today=(new Date(new Date().getTime()+9*3600*1000)).toISOString().slice(0,10);
-  var rec={ date:today, vt:'A', venue:'', members:kw, title:'📊 정리 · '+kw, memo:memo,
+  var rec={ date:today, vt:'A', venue:'', members:kw, title:'📊 정리 · '+titleKw, memo:memo,
     important:false, pinned:false, color:'', bold:false, media:[], updatedAt:now, createdAt:now };
   rec.id = today+'_SUM_'+Math.random().toString(36).substr(2,5);
   data.push(rec);
@@ -1748,7 +1764,8 @@ function themeSaveAsEntry(){
   var now=nowKST();
   var today=(new Date(new Date().getTime()+9*3600*1000)).toISOString().slice(0,10);
   var kw=themeLastKw||'AI요약';
-  var rec={ date:today, vt:'A', venue:'', members:kw, title:'🤖 AI요약 · '+kw, memo:themeLastAI,
+  var kwArr=kw.split(/,\s*/).filter(Boolean);
+  var rec={ date:today, vt:'A', venue:'', members:kw, title:'🤖 AI요약 · '+thColorize(kw,kwArr), memo:thColorize(themeLastAI,kwArr),
             important:false, pinned:false, color:'', bold:false, media:[], updatedAt:now, createdAt:now };
   rec.id = today+'_AI_'+Math.random().toString(36).substr(2,5);
   data.push(rec);
