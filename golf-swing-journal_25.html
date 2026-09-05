@@ -146,15 +146,16 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .cpop-title.bold{font-weight:700;}
 .cpop-title.imp{font-weight:700;}
 .cpop-memo{font-size:0.8rem;color:#555;line-height:1.75;white-space:pre-wrap;margin-top:6px;border-top:1px solid #eee;padding-top:6px;}
-.thbl{background:#e11d1d;color:#fff;border-radius:2px;padding:0 2px;font-weight:700;animation:thblink 0.7s steps(1,end) infinite;}
-@keyframes thblink{50%{background:transparent;color:#e11d1d;}}
+.thbl{color:#fff;border-radius:2px;padding:0 2px;font-weight:700;animation:thblink 0.7s steps(1,end) infinite;}
+@keyframes thblink{50%{opacity:0.3;}}
+.thbl0{background:#e11d1d;}.thbl1{background:#1a4d9e;}.thbl2{background:#1a7a1a;}.thbl3{background:#7a3fb8;}.thbl4{background:#c76a00;}.thbl5{background:#0d8a8a;}
 
 </style>
 </head>
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.16 · 26-9-6</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.17 · 26-9-6</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -1562,11 +1563,12 @@ var themeMode='list';
 var blinkKws=[];
 function thBlink(html){
   if(!blinkKws||!blinkKws.length||!html) return html;
-  var pat=blinkKws.map(function(k){return k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}).filter(Boolean);
+  var pat=[], idxMap={};
+  blinkKws.forEach(function(k,i){ if(k){ pat.push(k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')); idxMap[k.toLowerCase()]=i; } });
   if(!pat.length) return html;
   var re=new RegExp('('+pat.join('|')+')','gi');
   var parts=html.split(/(<[^>]*>)/);
-  for(var i=0;i<parts.length;i++){ if(i%2===0){ parts[i]=parts[i].replace(re,'<span class="thbl">$1</span>'); } }
+  for(var i=0;i<parts.length;i++){ if(i%2===0){ parts[i]=parts[i].replace(re,function(mm){ var idx=idxMap[mm.toLowerCase()]; if(idx==null) idx=0; return '<span class="thbl thbl'+(idx%6)+'">'+mm+'</span>'; }); } }
   return parts.join('');
 }
 function openTheme(){
@@ -1779,7 +1781,7 @@ function saveTheme(){
   if(!m.res.length && !themeExtra.length){ alert('저장할 내용이 없어요. 먼저 🔍찾기로 결과를 만들어주세요.'); return; }
   var title='골프 테마모음 '+(m.kws.join('_')||'전체')+' '+(m.from||'')+'~'+(m.to||'');
   var html='<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(title)+'</title>'
-    +'<style>body{font-family:sans-serif;background:#efefea;margin:0;padding:10px;color:#222}h1{font-size:1.1rem}img,video{max-width:100%}.thbl{background:#e11d1d;color:#fff;border-radius:2px;padding:0 2px;font-weight:700;animation:thblink 0.7s steps(1,end) infinite}@keyframes thblink{50%{background:transparent;color:#e11d1d}}</style></head><body>'
+    +'<style>body{font-family:sans-serif;background:#efefea;margin:0;padding:10px;color:#222}h1{font-size:1.1rem}img,video{max-width:100%}.thbl{color:#fff;border-radius:2px;padding:0 2px;font-weight:700;animation:thblink 0.7s steps(1,end) infinite}@keyframes thblink{50%{opacity:0.3}}.thbl0{background:#e11d1d}.thbl1{background:#1a4d9e}.thbl2{background:#1a7a1a}.thbl3{background:#7a3fb8}.thbl4{background:#c76a00}.thbl5{background:#0d8a8a}</style></head><body>'
     +'<h1>🎬 '+esc(title)+'</h1><div style="color:#555;font-size:0.85rem;margin-bottom:10px">'+m.res.length+'건 · '+esc((m.from||'')+' ~ '+(m.to||''))+'</div>'
     +themeExtraHtml(false)
     +m.res.map(themeItemHtml).join('')
