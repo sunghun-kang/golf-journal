@@ -155,7 +155,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.39 · 26-9-6</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.40 · 26-9-6</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -262,6 +262,10 @@ function todayKST() {
   var d = new Date();
   var kst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
   return kst.toISOString().slice(0, 10);
+}
+function stampKST() {   // 파일명용: 2026-09-06_1830 (날짜+시분) → 이전 파일 안 덮어씀
+  var kst = new Date(Date.now() + 9*60*60*1000).toISOString();
+  return kst.slice(0,10)+'_'+kst.slice(11,13)+kst.slice(14,16);
 }
 
 // =============================================
@@ -1194,7 +1198,7 @@ function exportFile(){
   var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   var a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
-  a.download='golf-log-'+todayKST()+'.json';
+  a.download='golf-log-'+stampKST()+'.json';
   a.click();
   try{ localStorage.setItem('lastBackup', String(Date.now())); localStorage.removeItem('backupSnooze'); }catch(e){}
   var _b=document.getElementById('backupBanner'); if(_b) _b.style.display='none';
@@ -1204,7 +1208,7 @@ function exportApp(){   // 프로그램(앱 HTML) 파일로 저장
   try{
     fetch(location.pathname, {cache:'no-store'}).then(function(r){return r.text();}).then(function(html){
       var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));
-      a.download='golf-app-'+todayKST()+'.html'; a.click();
+      a.download='golf-app-'+stampKST()+'.html'; a.click();
     }).catch(function(){});
   }catch(e){}
 }
