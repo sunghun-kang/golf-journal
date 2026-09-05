@@ -155,7 +155,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.33 · 26-9-6</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.34 · 26-9-6</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -651,7 +651,7 @@ function hilite(s){
   // 유레카 강조
   html=html.replace(/유레카/g,'<span style="color:#d42020;font-weight:700">유레카</span>');
   // 날짜 표시: 26.09.05 / 2026.09.05 → 26-09-05 (태그 밖 텍스트만, 데이터는 안 바뀜)
-  html=html.split(/(<[^>]*>)/).map(function(p,i){ return (i%2===0)? p.replace(/\b(\d{2}|\d{4})\.(\d{1,2})\.(\d{1,2})\b/g,'$1-$2-$3') : p; }).join('');
+  html=html.split(/(<[^>]*>)/).map(function(p,i){ return (i%2===0)? p.replace(/\b(\d{2}|\d{4})[.\/](\d{1,2})[.\/](\d{1,2})\b/g,'$1-$2-$3') : p; }).join('');
   return html;
 }
 
@@ -1578,7 +1578,7 @@ function thBlink(html){
   for(var i=0;i<parts.length;i++){ if(i%2===0){ parts[i]=parts[i].replace(re,function(mm){ var idx=idxMap[mm.toLowerCase()]; if(idx==null) idx=0; return '<span class="thbl thbl'+(idx%6)+'">'+mm+'</span>'; }); } }
   return parts.join('');
 }
-function dashDate(t){ return (t||'').replace(/\b(\d{2}|\d{4})\.(\d{1,2})\.(\d{1,2})\b/g,'$1-$2-$3'); }
+function dashDate(t){ return (t||'').replace(/\b(\d{2}|\d{4})[.\/](\d{1,2})[.\/](\d{1,2})\b/g,'$1-$2-$3'); }
 function thExtractOneLine(txt){
   if(!txt) return '';
   // 1) "한줄요약:/종합조언:" 등 라벨이 있는 줄 우선
