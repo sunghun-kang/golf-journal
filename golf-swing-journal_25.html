@@ -155,7 +155,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.29 · 26-9-6</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.30 · 26-9-6</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -791,7 +791,9 @@ function cardHtml(r, i){
   var dateStr=r.date+'('+dow(r.date)+(holName?', '+holName:'')+')';
 
   var cardCls='card'+(r.important?' important':r.vt==='F'?' field':r.vt==='S'?' screen':'');
+  var isAI = r.ai || /^\s*(?:🤖|📊)\s*AI(?:요약|정리)/.test(r.title||'');
   var vtHtml=r.vt==='F'?'<span style="font-size:0.95rem;letter-spacing:-4px;white-space:nowrap;display:inline-block;flex-shrink:0;vertical-align:middle">⛳🏌️</span>':r.vt==='S'?'<span style="font-size:1rem;background:#d6e4f7;border-radius:4px;padding:1px 4px;vertical-align:middle">🏌️‍♀️</span>':r.vt==='L'?'<span class="vt vt-l">人</span>':r.vt==='E'?'<span class="vt vt-e">E</span>':r.vt==='C'?'<span class="vt vt-c">C</span>':r.vt==='A'?'<span style="font-size:1.05rem;vertical-align:middle">🔍</span>':'';
+  if(isAI) vtHtml='<span style="font-size:1.05rem;vertical-align:middle" title="AI가 만든 기록">🤖</span>';
   var venueHtml=r.venue?'<span class="venue" style="font-weight:700">🧩'+thBlink(esc(r.venue))+'</span>':'';
   var member1=r.members?r.members.trim():'';
   var memberHtml=member1?'<span class="venue" style="background:#e8f0e8;color:#2d6a2d;font-weight:700">'+thBlink(esc(member1))+'</span>':'';
@@ -1767,7 +1769,7 @@ function themeSaveAnalysis(){
   if(!confirm('이 AI정리를 새 기록 1개로 저장할까요?\n(키워드: '+kw+' · '+m.res.length+'건)')) return;
   var now=nowKST();
   var today=(new Date(new Date().getTime()+9*3600*1000)).toISOString().slice(0,10);
-  var rec={ date:today, vt:'A', venue:'', members:kw, title:'📊 AI정리 · '+titleKw, memo:memo,
+  var rec={ date:today, vt:'A', ai:true, venue:'', members:kw, title:'📊 AI정리 · '+titleKw, memo:memo,
     important:false, pinned:false, color:'', bold:false, media:[], updatedAt:now, createdAt:now };
   rec.id = today+'_SUM_'+Math.random().toString(36).substr(2,5);
   data.push(rec);
@@ -1788,7 +1790,7 @@ function themeSaveAsEntry(){
   var kw=themeLastKw||'AI요약';
   var kwArr=kw.split(/,\s*/).filter(Boolean);
   var titleTxt = '🤖 AI요약 · ' + (themeLastOneLine ? thColorize(themeLastOneLine,kwArr) : thColorize(kw,kwArr));
-  var rec={ date:today, vt:'A', venue:'', members:kw, title:titleTxt, memo:thColorize(themeLastAI,kwArr),
+  var rec={ date:today, vt:'A', ai:true, venue:'', members:kw, title:titleTxt, memo:thColorize(themeLastAI,kwArr),
             important:false, pinned:false, color:'', bold:false, media:[], updatedAt:now, createdAt:now };
   rec.id = today+'_AI_'+Math.random().toString(36).substr(2,5);
   data.push(rec);
