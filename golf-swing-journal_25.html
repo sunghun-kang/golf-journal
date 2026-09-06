@@ -156,7 +156,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.54 · 26-9-6</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.55 · 26-9-6</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -1694,6 +1694,7 @@ if('serviceWorker' in navigator){
   </div>
   <div id="thInfo" style="padding:6px 12px;font-size:0.82rem;color:#555"></div>
   <div id="thBody" style="padding:0 10px 40px"></div>
+  <button onclick="closeTheme()" title="닫기" style="position:fixed;bottom:18px;right:18px;z-index:5;background:#1b3a1b;color:#fff;border:none;border-radius:24px;padding:10px 18px;font-size:0.95rem;font-weight:700;box-shadow:0 3px 10px rgba(0,0,0,0.35)">✕ 닫기</button>
 </div>
 <script>
 var themeSort='desc';
