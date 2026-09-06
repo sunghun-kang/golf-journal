@@ -157,7 +157,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.51 · 26-9-6</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.52 · 26-9-6</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -637,6 +637,7 @@ function dowN(ds){
   return d.getDay(); // 0=일,6=토
 }
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function shortY(d){ return (d||'').replace(/\b(\d{2})(\d{2})-(\d{1,2})-(\d{1,2})\b/g,'$2-$3-$4'); }  // 2026-09-06 → 26-09-06
 var AI_SVG='<span title="AI가 만든 기록" style="display:inline-flex;align-items:center;vertical-align:middle;flex-shrink:0"><svg width="22" height="16" viewBox="0 0 30 22" aria-label="AI"><g stroke="#9b7fe0" stroke-width="0.7" opacity="0.5"><line x1="4" y1="5" x2="15" y2="4"/><line x1="4" y1="5" x2="15" y2="11"/><line x1="4" y1="5" x2="15" y2="18"/><line x1="4" y1="11" x2="15" y2="4"/><line x1="4" y1="11" x2="15" y2="11"/><line x1="4" y1="11" x2="15" y2="18"/><line x1="4" y1="17" x2="15" y2="4"/><line x1="4" y1="17" x2="15" y2="11"/><line x1="4" y1="17" x2="15" y2="18"/></g><g stroke="#4bb6c6" stroke-width="0.7" opacity="0.55"><line x1="15" y1="4" x2="26" y2="8"/><line x1="15" y1="4" x2="26" y2="14"/><line x1="15" y1="11" x2="26" y2="8"/><line x1="15" y1="11" x2="26" y2="14"/><line x1="15" y1="18" x2="26" y2="8"/><line x1="15" y1="18" x2="26" y2="14"/></g><circle cx="4" cy="5" r="2.1" fill="#b04bd6"/><circle cx="4" cy="11" r="2.1" fill="#b04bd6"/><circle cx="4" cy="17" r="2.1" fill="#b04bd6"/><circle cx="15" cy="4" r="2.1" fill="#2aa9c4"/><circle cx="15" cy="11" r="2.1" fill="#2aa9c4"/><circle cx="15" cy="18" r="2.1" fill="#2aa9c4"/><circle cx="26" cy="8" r="2.1" fill="#e8722c"/><circle cx="26" cy="14" r="2.1" fill="#e8722c"/></svg></span>';
 var AI_SVG2='<span title="AI가 정리한 기록" style="display:inline-flex;align-items:center;vertical-align:middle;flex-shrink:0"><svg width="20" height="16" viewBox="0 0 22 20" aria-label="AI정리"><line x1="1.5" y1="18.6" x2="21" y2="18.6" stroke="#888" stroke-width="0.8"/><rect x="3" y="11" width="4.5" height="7" rx="1" fill="#b04bd6"/><rect x="9" y="7" width="4.5" height="11" rx="1" fill="#2aa9c4"/><rect x="15" y="3" width="4.5" height="15" rx="1" fill="#e8722c"/></svg></span>';
 function hilite(s){
@@ -669,7 +670,7 @@ function hilite(s){
   // 유레카 강조
   html=html.replace(/유레카/g,'<span style="color:#d42020;font-weight:700">유레카</span>');
   // 날짜 표시: 26.09.05 / 2026.09.05 → 26-09-05 (태그 밖 텍스트만, 데이터는 안 바뀜)
-  html=html.split(/(<[^>]*>)/).map(function(p,i){ return (i%2===0)? p.replace(/\b(\d{2}|\d{4})[.\/](\d{1,2})[.\/](\d{1,2})\b/g,'$1-$2-$3') : p; }).join('');
+  html=html.split(/(<[^>]*>)/).map(function(p,i){ return (i%2===0)? p.replace(/\b(\d{2}|\d{4})[.\/](\d{1,2})[.\/](\d{1,2})\b/g,'$1-$2-$3').replace(/\b(\d{2})(\d{2})-(\d{1,2})-(\d{1,2})\b/g,'$2-$3-$4') : p; }).join('');
   return html;
 }
 
@@ -809,7 +810,7 @@ function cardHtml(r, i){
   var isHol=HOLIDAYS.has(r.date);
   var holName=isHol?HOLIDAYS.get(r.date):'';
   var dateColor=(dw===0||isHol)?'sun':(dw===6?'sat':'');
-  var dateStr=r.date+'('+dow(r.date)+(holName?', '+holName:'')+')';
+  var dateStr=shortY(r.date)+'('+dow(r.date)+(holName?', '+holName:'')+')';
 
   var cardCls='card'+(r.important?' important':r.vt==='F'?' field':r.vt==='S'?' screen':'');
   var _tt = r.title||'';
@@ -1339,7 +1340,7 @@ function exportExcel(){
     var dw=r.date?dowN(r.date):1;
     var isHolXl=HOLIDAYS.has(r.date);
     var dateSIdx=(dw===0||isHolXl)?14:(dw===6?15:0); // 일/공휴=빨강, 토=파랑
-    var dateStr=r.date ? r.date+'('+dows[dw]+')' : '';
+    var dateStr=r.date ? shortY(r.date)+'('+dows[dw]+')' : '';
     sheetRows+=buildRow(rowNum,[
       dateStr,
       VT_LBL[vt]||vt||'',
@@ -1813,7 +1814,7 @@ function themePhoto(src){
 }
 function themeItemHtml(r){
   var h='<div style="background:#fff;border-radius:10px;border-left:4px solid #2d7a2d;margin:8px 0;padding:8px 10px;box-shadow:0 1px 3px rgba(0,0,0,0.08)">';
-  h+='<div style="font-weight:700;color:#1a7a1a;font-size:0.9rem;margin-bottom:2px">'+esc(r.date||'')+(r.venue?' · '+thBlink(esc(r.venue)):'')+(r.members?' · '+thBlink(esc(r.members)):'')+'</div>';
+  h+='<div style="font-weight:700;color:#1a7a1a;font-size:0.9rem;margin-bottom:2px">'+esc(shortY(r.date||''))+(r.venue?' · '+thBlink(esc(r.venue)):'')+(r.members?' · '+thBlink(esc(r.members)):'')+'</div>';
   if(r.title) h+='<div style="font-weight:700;line-height:1.5;margin-bottom:3px">'+thBlink(hilite(r.title))+'</div>';
   if(r.memo) h+='<div style="line-height:1.7;color:#333;white-space:pre-wrap;font-size:0.9rem">'+thBlink(hilite(r.memo))+'</div>';
   if(r.media && r.media.length){
