@@ -155,7 +155,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.45 · 26-9-6</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.46 · 26-9-6</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -1608,6 +1608,8 @@ document.getElementById('ov').addEventListener('click',function(e){if(e.target==
 idbOpen(function(){
   try{ if(IDB) IDB.transaction('kv','readwrite').objectStore('kv').delete('themeExtra'); }catch(e){}  // 테마사진 로컬캐시 제거 → 저장공간 확보
   try{ localStorage.removeItem('themeExtra'); }catch(e){}
+  // API 키 복구: localStorage에 없고 IDB에 있으면 되살림
+  try{ if(IDB){ var _rqk=IDB.transaction('kv','readonly').objectStore('kv').get('anthropicKey'); _rqk.onsuccess=function(){ try{ if(_rqk.result && !localStorage.getItem('anthropicKey')) localStorage.setItem('anthropicKey', _rqk.result); }catch(e){} }; } }catch(e){}
   idbLoad(function(d){
     if(Array.isArray(d)&&d.length>0){ data=d; }
     else {
@@ -1921,10 +1923,12 @@ function themeSaveAsEntry(){
   alert('✅ 저장했어요! 목록에서 🔍분석 글로 볼 수 있어요.');
   render();
 }
+function idbKeyPut(v){ try{ if(IDB) IDB.transaction('kv','readwrite').objectStore('kv').put(v,'anthropicKey'); }catch(e){} }
+function idbKeyDel(){ try{ if(IDB) IDB.transaction('kv','readwrite').objectStore('kv').delete('anthropicKey'); }catch(e){} }
 function themeAIKey(reset){
-  if(reset){ localStorage.removeItem('anthropicKey'); }
+  if(reset){ localStorage.removeItem('anthropicKey'); idbKeyDel(); }
   var k=localStorage.getItem('anthropicKey')||'';
-  if(!k){ k=prompt('Anthropic API 키를 입력하세요 (sk-ant-...).\n폰에만 저장되며 서버로 안 보냅니다.'); if(k){ k=k.trim(); localStorage.setItem('anthropicKey',k); } }
+  if(!k){ k=prompt('Anthropic API 키를 입력하세요 (sk-ant-...).\n이 기기에만 저장되며 서버로 안 보냅니다.'); if(k){ k=k.trim(); localStorage.setItem('anthropicKey',k); idbKeyPut(k); } }
   return k;
 }
 function themeAI(){
