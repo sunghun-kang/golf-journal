@@ -155,7 +155,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.46 · 26-9-6</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.48 · 26-9-6</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -1024,7 +1024,7 @@ function regenAI(){
   var kw=flat.join(', ');
   var sys='당신은 골프 스윙 코치입니다. 사용자의 골프 일지 기록만을 근거로 특정 주제의 원인과 대책을 한국어로 간결하게 요약합니다. 기록에 없는 내용을 지어내지 마세요.';
   var user='주제 키워드: '+kw+'\n\n아래는 내 골프 일지 기록들이야. 이 주제에 대해 (1) 반복되는 핵심 원인, (2) 효과가 있었던/권장되는 대책, (3) 한 줄 종합 조언 을 정리해줘. 소제목과 불릿으로 간결하게.\n그리고 맨 마지막 줄에 반드시 "한줄요약: <핵심을 한 문장으로>" 형식으로 써줘.\n\n=== 기록 ('+res.length+'건) ===\n'+src;
-  fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-opus-5',max_tokens:1500,system:sys,output_config:{effort:'low'},messages:[{role:'user',content:user}]})})
+  fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-opus-5',max_tokens:3000,system:sys,output_config:{effort:'low'},messages:[{role:'user',content:user}]})})
   .then(function(r){return r.json();}).then(function(j){
     btn.textContent=old; btn.disabled=false;
     if(j.error){ alert('오류: '+(j.error.message||JSON.stringify(j.error))); return; }
@@ -1701,18 +1701,20 @@ function thBlink(html){
   return parts.join('');
 }
 function dashDate(t){ return (t||'').replace(/\b(\d{2}|\d{4})[.\/](\d{1,2})[.\/](\d{1,2})\b/g,'$1-$2-$3'); }
+function thClean1(s){ return (s||'').replace(/^\**\s*(?:한\s*줄\s*요약|한\s*줄\s*조언|종합\s*조언|핵심\s*조언|요약|핵심)\s*[:：\-]?[ \t]*/,'').replace(/\*\*/g,'').replace(/^[\-•·*#>\s]+/,'').replace(/[·\s]+$/,'').trim(); }
 function thExtractOneLine(txt){
   if(!txt) return '';
-  // 1) "한줄요약:/종합조언:" 등 라벨이 있는 줄 우선
-  var m=txt.match(/^\s*\**\s*(?:한\s*줄\s*요약|한\s*줄\s*조언|종합\s*조언|핵심\s*조언|요약|핵심)\s*[:：\-][ \t]*(.+?)\s*$/m);
-  var line = m ? m[1] : '';
-  // 2) 없으면 마지막 비어있지 않은 줄
-  if(!line){
-    var lines=txt.split('\n').map(function(x){return x.trim();}).filter(Boolean);
-    line = lines.length ? lines[lines.length-1] : '';
-    line = line.replace(/^\**\s*(?:한\s*줄\s*요약|한\s*줄\s*조언|종합\s*조언|핵심\s*조언|요약|핵심)\s*[:：\-]?[ \t]*/,'');
+  // 1) "한줄요약: ~" / "종합 조언: ~" 처럼 라벨+콜론이 있는 줄
+  var m=txt.match(/(?:한\s*줄\s*요약|한\s*줄\s*조언|종합\s*조언|핵심\s*조언)\s*[:：\-][ \t]*(.+)/);
+  if(m){ var c1=thClean1(m[1]); if(c1.length>=4) return c1; }
+  var lines=txt.split('\n').map(function(x){return x.trim();});
+  // 2) '조언/요약' 헤더(## 3) 한 줄 종합 조언 등) 다음의 첫 실질 줄
+  for(var i=0;i<lines.length;i++){
+    if(/(?:한\s*줄|종합)\s*조언|한\s*줄\s*요약/.test(lines[i]) && !/[:：\-]\s*\S+\s*$/.test(lines[i])){
+      for(var j=i+1;j<lines.length;j++){ if(!lines[j]) continue; if(/^#/.test(lines[j])) break; var c=thClean1(lines[j]); if(c.length>=5) return c; break; }
+    }
   }
-  return line.replace(/\*\*/g,'').replace(/^[\-•·*#>\s]+/,'').trim();
+  return '';   // 제대로 된 요약을 못 찾으면 빈 값 → 제목은 키워드로 폴백
 }
 function thColorize(text, kws){
   // 저장 본문에 키워드별 색강조 마크 삽입(ㅃ빨강·ㅍ파랑·ㄴ녹색, 4번째부터 **굵게**)
@@ -1950,7 +1952,7 @@ function themeAI(){
   fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
     headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-    body:JSON.stringify({model:'claude-opus-5',max_tokens:1500,system:sys,output_config:{effort:'low'},messages:[{role:'user',content:user}]})
+    body:JSON.stringify({model:'claude-opus-5',max_tokens:3000,system:sys,output_config:{effort:'low'},messages:[{role:'user',content:user}]})
   }).then(function(resp){ return resp.json(); }).then(function(j){
     if(j.error){ ai.innerHTML='<div style="background:#fdecea;border-radius:10px;padding:12px;color:#c0392b;font-size:0.85rem">⚠️ 오류: '+esc(j.error.message||JSON.stringify(j.error))+'<br><button onclick="themeAIKey(true);themeAI()" style="margin-top:6px;font-size:0.8rem;border:1px solid #c0392b;background:#fff;border-radius:6px;padding:3px 10px">키 다시 입력</button></div>'; return; }
     var txt=(j.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('\n').trim();
