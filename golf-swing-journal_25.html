@@ -155,7 +155,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.41 · 26-9-6</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.42 · 26-9-6</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -635,6 +635,7 @@ function dowN(ds){
 }
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 var AI_SVG='<span title="AI가 만든 기록" style="display:inline-flex;align-items:center;vertical-align:middle;flex-shrink:0"><svg width="22" height="16" viewBox="0 0 30 22" aria-label="AI"><g stroke="#9b7fe0" stroke-width="0.7" opacity="0.5"><line x1="4" y1="5" x2="15" y2="4"/><line x1="4" y1="5" x2="15" y2="11"/><line x1="4" y1="5" x2="15" y2="18"/><line x1="4" y1="11" x2="15" y2="4"/><line x1="4" y1="11" x2="15" y2="11"/><line x1="4" y1="11" x2="15" y2="18"/><line x1="4" y1="17" x2="15" y2="4"/><line x1="4" y1="17" x2="15" y2="11"/><line x1="4" y1="17" x2="15" y2="18"/></g><g stroke="#4bb6c6" stroke-width="0.7" opacity="0.55"><line x1="15" y1="4" x2="26" y2="8"/><line x1="15" y1="4" x2="26" y2="14"/><line x1="15" y1="11" x2="26" y2="8"/><line x1="15" y1="11" x2="26" y2="14"/><line x1="15" y1="18" x2="26" y2="8"/><line x1="15" y1="18" x2="26" y2="14"/></g><circle cx="4" cy="5" r="2.1" fill="#b04bd6"/><circle cx="4" cy="11" r="2.1" fill="#b04bd6"/><circle cx="4" cy="17" r="2.1" fill="#b04bd6"/><circle cx="15" cy="4" r="2.1" fill="#2aa9c4"/><circle cx="15" cy="11" r="2.1" fill="#2aa9c4"/><circle cx="15" cy="18" r="2.1" fill="#2aa9c4"/><circle cx="26" cy="8" r="2.1" fill="#e8722c"/><circle cx="26" cy="14" r="2.1" fill="#e8722c"/></svg></span>';
+var AI_SVG2='<span title="AI가 정리한 기록" style="display:inline-flex;align-items:center;vertical-align:middle;flex-shrink:0"><svg width="20" height="16" viewBox="0 0 22 20" aria-label="AI정리"><line x1="1.5" y1="18.6" x2="21" y2="18.6" stroke="#888" stroke-width="0.8"/><rect x="3" y="11" width="4.5" height="7" rx="1" fill="#b04bd6"/><rect x="9" y="7" width="4.5" height="11" rx="1" fill="#2aa9c4"/><rect x="15" y="3" width="4.5" height="15" rx="1" fill="#e8722c"/></svg></span>';
 function hilite(s){
   var html=esc(s);
   // URL 자동 링크화 (유튜브는 썸네일 포함)
@@ -806,9 +807,12 @@ function cardHtml(r, i){
   var dateStr=r.date+'('+dow(r.date)+(holName?', '+holName:'')+')';
 
   var cardCls='card'+(r.important?' important':r.vt==='F'?' field':r.vt==='S'?' screen':'');
-  var isAI = r.ai || /^\s*(?:🤖|📊)/.test(r.title||'');  // 옛 "📊 정리"/"🤖 요약"도 인식
+  var _tt = r.title||'';
+  var isSum = /^\s*🤖/.test(_tt) || /AI요약/.test(_tt);      // 🤖 AI요약(LLM)
+  var isTidy = /^\s*📊/.test(_tt) || /AI정리/.test(_tt);     // 📊 AI정리(자동)
+  var isAI = r.ai || isSum || isTidy;
   var vtHtml=r.vt==='F'?'<span style="font-size:0.95rem;letter-spacing:-4px;white-space:nowrap;display:inline-block;flex-shrink:0;vertical-align:middle">⛳🏌️</span>':r.vt==='S'?'<span style="font-size:1rem;background:#d6e4f7;border-radius:4px;padding:1px 4px;vertical-align:middle">🏌️‍♀️</span>':r.vt==='L'?'<span class="vt vt-l">人</span>':r.vt==='E'?'<span class="vt vt-e">E</span>':r.vt==='C'?'<span class="vt vt-c">C</span>':r.vt==='A'?'<span style="font-size:1.05rem;vertical-align:middle">🔍</span>':'';
-  if(isAI) vtHtml=AI_SVG;
+  if(isTidy) vtHtml=AI_SVG2; else if(isAI) vtHtml=AI_SVG;
   var venueHtml=r.venue?'<span class="venue" style="font-weight:700">🧩'+thBlink(esc(r.venue))+'</span>':'';
   var member1=r.members?r.members.trim():'';
   var memberHtml=member1?'<span class="venue" style="background:#e8f0e8;color:#2d6a2d;font-weight:700">'+thBlink(esc(member1))+'</span>':'';
@@ -872,7 +876,7 @@ function cardHtml(r, i){
     }
     var titleLines=(r.title||'').split('\n').map(function(x){return x.trim();}).filter(Boolean).slice(0,2);
     var titleHtml=titleLines.map(function(ln){return '<div style="display:flex;align-items:flex-start;overflow:hidden"><span style="flex-shrink:0;font-size:1.3rem;font-weight:700;line-height:1;margin-top:-0.08em;margin-right:2px">·</span><span style="white-space:normal;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;min-width:0;line-height:1.4">'+thBlink(hilite(ln))+'</span></div>';}).join('');
-    if(isAI) titleHtml=titleHtml.replace(/🤖|📊/g, AI_SVG);   // 제목 앞 🤖/📊 → 신경망 아이콘
+    if(isAI){ titleHtml=titleHtml.replace(/🤖/g, AI_SVG).replace(/📊/g, AI_SVG2); }   // 제목 🤖→신경망, 📊→막대그래프
     return '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:4px"><div class="title" style="'+s+'">'+titleHtml+'</div>'+(thumbs?'<div style="display:flex;gap:3px;flex-shrink:0">'+thumbs+'</div>':'')+'</div>';
   })()
     +'</div>'
