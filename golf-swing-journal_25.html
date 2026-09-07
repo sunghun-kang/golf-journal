@@ -126,6 +126,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .cal-cell.csat .cal-dn{color:#1a8a1a;}
 .ctag{font-size:0.67rem;font-weight:700;color:#fff;border-radius:3px;padding:1px 5px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;display:block;}
 .ctag:hover{filter:brightness(1.15);}
+.ccore{font-size:0.62rem;line-height:1.25;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 3px;margin:-1px 0 3px;cursor:pointer;}
 .ctag.tf{background:#2d7a2d;}
 .ctag.ts{background:#1a4d9e;}
 .ctag.tn{background:#777;}
@@ -156,7 +157,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.75 · 26-9-7</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.76 · 26-9-7</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -765,6 +766,8 @@ function renderCal(){
         }
         if(member1) tagTxt+=' '+esc(member1);
         h+='<span class="ctag '+tc+'" data-date="'+ds+'">'+tagTxt+'</span>';
+        var core=(r.title||'').split('\n')[0].trim();
+        if(core && r.vt!=='A') h+='<div class="ccore" data-date="'+ds+'">'+thBlink(hilite(core))+'</div>';
       });
     }
     h+='</div>';
@@ -775,7 +778,7 @@ function renderCal(){
   grid.innerHTML=h;
   // 이벤트 위임으로 클릭 처리
   grid.onclick=function(e){
-    var tag=e.target.closest('.ctag');
+    var tag=e.target.closest('.ctag, .ccore');
     if(tag) showCpop(tag.dataset.date);
   };
 }
