@@ -156,7 +156,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.65 · 26-9-7</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.66 · 26-9-7</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -2142,10 +2142,15 @@ function mtgRenderCal(){
     h+='<div onclick="mtgAdd(\''+ds+'\')" style="background:#fff;min-height:170px;padding:3px 4px;cursor:pointer;position:relative;vertical-align:top">';
     h+='<div style="font-size:0.78rem;font-weight:700;color:'+(dow===0?'#d42020':dow===6?'#1a6ac0':'#444')+'">'+day+'</div>';
     list.forEach(function(mt){
-      var info=((mt.report||'').split('\n')[0]||'').trim();
-      h+='<div onclick="event.stopPropagation();mtgEdit(\''+mt.id+'\')" style="margin-top:2px;background:'+mtgColor(mt.type)+';color:#fff;border-radius:4px;padding:2px 4px;font-size:0.66rem;line-height:1.3;word-break:break-word">'
-        +'<b>'+esc(mt.type)+'</b>'
-        +(info?'<div style="font-weight:400;font-size:0.63rem;opacity:0.95;margin-top:1px">'+esc(info)+'</div>':'')
+      var c=mtgColor(mt.type);
+      var parts=[];
+      if((mt.attendees||'').trim()) parts.push('👥 '+mt.attendees.trim());
+      if((mt.report||'').trim()) parts.push(mt.report.trim());
+      if((mt.orders||'').trim()) parts.push('📢 '+mt.orders.trim());
+      var body=parts.join('\n');
+      h+='<div onclick="event.stopPropagation();mtgEdit(\''+mt.id+'\')" style="margin-top:2px;cursor:pointer">'
+        +'<div style="background:'+c+';color:#fff;border-radius:4px 4px 0 0;padding:2px 5px;font-size:0.66rem;font-weight:700">'+esc(mt.type)+'</div>'
+        +(body?'<div style="background:#f8f8f3;border:1px solid '+c+';border-top:none;border-radius:0 0 4px 4px;padding:3px 5px;font-size:0.64rem;line-height:1.4;white-space:pre-wrap;word-break:break-word;color:#333">'+esc(body)+'</div>':'')
         +'</div>';
     });
     h+='</div>';
