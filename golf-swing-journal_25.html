@@ -156,7 +156,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.62 · 26-9-7</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.63 · 26-9-7</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -2030,6 +2030,7 @@ function saveTheme(){
     <button onclick="mtgAdd('')" style="background:#2d7a2d;color:#fff;border:none;border-radius:6px;padding:3px 11px;font-size:0.78rem;font-weight:700">+ 회의</button>
     <button onclick="mtgAutoFill()" style="background:rgba(255,255,255,0.16);color:#fff;border:1px solid rgba(255,255,255,0.35);border-radius:6px;padding:3px 9px;font-size:0.78rem;font-weight:700">정기 자동채우기</button>
     <button onclick="mtgImport()" style="background:rgba(255,255,255,0.16);color:#fff;border:1px solid rgba(255,255,255,0.35);border-radius:6px;padding:3px 9px;font-size:0.78rem;font-weight:700">📥 가져오기</button>
+    <button onclick="gcalConnect()" style="background:#1a73e8;color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:0.78rem;font-weight:700">📅 구글캘린더</button>
     <button onclick="closeMtg()" style="margin-left:auto;background:none;border:1px solid rgba(255,255,255,0.4);color:#fff;border-radius:6px;padding:3px 10px;font-size:0.85rem">✕ 닫기</button>
   </div>
   <div style="padding:6px 12px;font-size:0.74rem;color:#555;display:flex;gap:12px;flex-wrap:wrap"><span><b style="color:#1a4d9e">●</b> 월간회의</span><span><b style="color:#7a3fb8">●</b> AI회의</span><span><b style="color:#2d7a2d">●</b> 주간회의</span><span><b style="color:#c76a00">●</b> 업무회의</span></div>
@@ -2050,6 +2051,25 @@ function saveTheme(){
         <button id="mtgDelBtn" onclick="mtgDelForm()" style="background:#d42020;color:#fff;border:none;border-radius:7px;padding:8px 14px;font-weight:700">삭제</button>
         <button onclick="mtgFormClose()" style="background:#eee;border:1px solid #ccc;border-radius:7px;padding:8px 14px">취소</button>
         <button onclick="mtgSaveForm()" style="background:#2d7a2d;color:#fff;border:none;border-radius:7px;padding:8px 18px;font-weight:700">저장</button>
+      </div>
+    </div>
+  </div>
+  <!-- 구글 캘린더 선택 가져오기 -->
+  <div id="gcalModal" style="display:none;position:fixed;inset:0;z-index:10003;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;padding:12px">
+    <div style="background:#fff;border-radius:12px;max-width:560px;width:100%;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 6px 24px rgba(0,0,0,0.3)">
+      <div style="padding:14px 16px 8px;border-bottom:1px solid #eee">
+        <h3 style="margin:0;font-size:1.05rem">📅 구글 캘린더에서 회의 가져오기</h3>
+        <div id="gcalSub" style="font-size:0.78rem;color:#888;margin-top:3px">불러오는 중…</div>
+      </div>
+      <div style="padding:6px 12px;display:flex;gap:8px;align-items:center;border-bottom:1px solid #f2f2f2;flex-wrap:wrap">
+        <label style="font-size:0.8rem;font-weight:700"><input type="checkbox" id="gcalAll" onchange="gcalToggleAll(this.checked)" style="vertical-align:middle"> 전체선택</label>
+        <span style="font-size:0.74rem;color:#aaa">각 항목 종류를 골라 체크 → 가져오기</span>
+      </div>
+      <div id="gcalList" style="overflow:auto;padding:6px 12px;flex:1;min-height:60px"></div>
+      <div style="display:flex;gap:6px;justify-content:flex-end;padding:10px 16px;border-top:1px solid #eee">
+        <button onclick="gcalKeyReset()" style="background:none;border:1px solid #ccc;border-radius:7px;padding:7px 12px;font-size:0.78rem;color:#888;margin-right:auto">키재설정</button>
+        <button onclick="gcalClose()" style="background:#eee;border:1px solid #ccc;border-radius:7px;padding:8px 14px">취소</button>
+        <button onclick="gcalImport()" style="background:#1a73e8;color:#fff;border:none;border-radius:7px;padding:8px 18px;font-weight:700">가져오기</button>
       </div>
     </div>
   </div>
@@ -2191,6 +2211,108 @@ function mtgImport(){
     rd.readAsText(f);
   };
   input.click();
+}
+// ===== 구글 캘린더 연동 가져오기 =====
+var gcalItems=[];
+function gcalPad(n){ return (n<10?'0':'')+n; }
+function gcalClientId(reset){
+  if(reset){ try{ localStorage.removeItem('gcalClientId'); }catch(e){} }
+  var cid=''; try{ cid=localStorage.getItem('gcalClientId')||''; }catch(e){}
+  if(!cid){
+    cid=prompt('구글 OAuth 클라이언트 ID를 입력하세요 (xxxxx.apps.googleusercontent.com).\n\n[처음 한 번만 설정]\n1) Google Cloud Console → API 및 서비스 → 사용자 인증 정보\n2) "OAuth 클라이언트 ID 만들기" → 웹 애플리케이션\n3) 승인된 JavaScript 원본에 아래 주소를 추가:\n   '+location.origin+'\n4) Calendar API 사용 설정\n5) 만들어진 클라이언트 ID를 여기에 붙여넣기\n\n(폰/PC에만 저장되며 서버로 안 보냅니다.)');
+    if(cid){ cid=cid.trim(); try{ localStorage.setItem('gcalClientId',cid); }catch(e){} }
+  }
+  return cid;
+}
+function gcalKeyReset(){ gcalClientId(true); alert('구글 클라이언트 ID를 지웠어요. 다시 [📅 구글캘린더]를 누르면 새로 입력합니다.'); gcalClose(); }
+function gcalLoadGIS(cb){
+  if(window.google && google.accounts && google.accounts.oauth2){ cb(true); return; }
+  var s=document.createElement('script'); s.src='https://accounts.google.com/gsi/client'; s.async=true; s.defer=true;
+  s.onload=function(){ cb(!!(window.google&&google.accounts&&google.accounts.oauth2)); };
+  s.onerror=function(){ cb(false); };
+  document.head.appendChild(s);
+}
+function gcalConnect(){
+  var cid=gcalClientId(false); if(!cid) return;
+  gcalLoadGIS(function(ok){
+    if(!ok){ alert('구글 로그인 모듈을 불러오지 못했어요. 인터넷 연결을 확인하세요.'); return; }
+    try{
+      var tc=google.accounts.oauth2.initTokenClient({
+        client_id:cid,
+        scope:'https://www.googleapis.com/auth/calendar.readonly',
+        callback:function(resp){ if(resp && resp.access_token){ gcalFetch(resp.access_token); } else { alert('구글 인증에 실패했어요.'); } },
+        error_callback:function(err){ alert('구글 인증 오류: '+((err&&err.type)||'')+'\n승인된 JavaScript 원본에\n'+location.origin+'\n이 등록됐는지, 클라이언트 ID가 맞는지 확인하세요.'); }
+      });
+      tc.requestAccessToken();
+    }catch(e){ alert('구글 인증 초기화 실패: '+e); }
+  });
+}
+function gcalGuessType(t){
+  t=t||'';
+  if(/월간/.test(t)) return '월간회의';
+  if(/\bAI\b|AI/.test(t)) return 'AI회의';
+  if(/주간/.test(t)) return '주간회의';
+  return '업무회의';
+}
+function gcalFetch(token){
+  document.getElementById('gcalModal').style.display='flex';
+  document.getElementById('gcalSub').textContent=mtgY+'년 '+(mtgM+1)+'월 일정 불러오는 중…';
+  document.getElementById('gcalList').innerHTML='<div style="padding:16px;text-align:center;color:#999">불러오는 중…</div>';
+  var gA=document.getElementById('gcalAll'); if(gA) gA.checked=false;
+  var nY=(mtgM===11)?mtgY+1:mtgY, nMnum=(mtgM===11)?1:mtgM+2;
+  var tmin=mtgY+'-'+gcalPad(mtgM+1)+'-01T00:00:00+09:00';
+  var tmax=nY+'-'+gcalPad(nMnum)+'-01T00:00:00+09:00';
+  var url='https://www.googleapis.com/calendar/v3/calendars/primary/events?singleEvents=true&orderBy=startTime&maxResults=250'
+    +'&timeMin='+encodeURIComponent(tmin)+'&timeMax='+encodeURIComponent(tmax);
+  fetch(url,{headers:{'Authorization':'Bearer '+token}})
+  .then(function(r){ return r.json(); })
+  .then(function(j){
+    if(j.error){ document.getElementById('gcalList').innerHTML='<div style="padding:16px;color:#c0392b">오류: '+esc(j.error.message||'')+'</div>'; return; }
+    var items=(j.items||[]).filter(function(e){ return e.status!=='cancelled' && (e.start&&(e.start.dateTime||e.start.date)); });
+    gcalRender(items);
+  }).catch(function(e){ document.getElementById('gcalList').innerHTML='<div style="padding:16px;color:#c0392b">통신 실패: '+esc(String(e))+'</div>'; });
+}
+function gcalRender(items){
+  gcalItems=items.map(function(e){
+    var st=e.start.dateTime?e.start.dateTime.slice(0,10):e.start.date;
+    return { id:e.id, date:st, title:e.summary||'(제목없음)', desc:e.description||'' };
+  });
+  document.getElementById('gcalSub').textContent=mtgY+'년 '+(mtgM+1)+'월 · 일정 '+gcalItems.length+'개';
+  var box=document.getElementById('gcalList');
+  if(!gcalItems.length){ box.innerHTML='<div style="padding:20px;text-align:center;color:#999">이 달에 일정이 없어요. 위 ◀▶로 달을 바꿔보세요.</div>'; return; }
+  var h='';
+  gcalItems.forEach(function(it,i){
+    var g=gcalGuessType(it.title);
+    var opts=MTG_TYPES.map(function(t){ return '<option'+(t.k===g?' selected':'')+'>'+t.k+'</option>'; }).join('');
+    var chk=/회의|미팅|회장|보고/.test(it.title)?' checked':'';
+    h+='<label style="display:flex;gap:7px;align-items:flex-start;padding:7px 2px;border-bottom:1px solid #f2f2f2">'
+      +'<input type="checkbox" class="gcalChk" data-idx="'+i+'"'+chk+' style="margin-top:4px">'
+      +'<span style="flex:1;min-width:0"><span style="font-size:0.72rem;color:#888">'+esc(it.date)+'</span>'
+      +'<span style="font-size:0.9rem;display:block;word-break:break-all">'+esc(it.title)+'</span></span>'
+      +'<select class="gcalType" data-idx="'+i+'" style="font-size:0.78rem;padding:4px;border:1px solid #ccc;border-radius:5px;flex-shrink:0">'+opts+'</select>'
+      +'</label>';
+  });
+  box.innerHTML=h;
+}
+function gcalToggleAll(on){ var cs=document.querySelectorAll('#gcalList .gcalChk'); for(var i=0;i<cs.length;i++){ cs[i].checked=on; } }
+function gcalClose(){ document.getElementById('gcalModal').style.display='none'; }
+function gcalImport(){
+  var chks=document.querySelectorAll('#gcalList .gcalChk');
+  var types=document.querySelectorAll('#gcalList .gcalType');
+  var picked=[];
+  for(var i=0;i<chks.length;i++){
+    if(!chks[i].checked) continue;
+    var idx=parseInt(chks[i].getAttribute('data-idx'),10);
+    var it=gcalItems[idx]; if(!it) continue;
+    var type=types[i]?types[i].value:'업무회의';
+    picked.push({ id:'gcal_'+String(it.id).replace(/[^A-Za-z0-9_]/g,''), type:type, date:it.date,
+      attendees:'', report:(it.title||'')+(it.desc?('\n'+it.desc):''), orders:'', updatedAt:nowKST() });
+  }
+  if(!picked.length){ alert('가져올 일정을 체크하세요.'); return; }
+  var before=meetings.filter(function(z){return !z.deleted;}).length;
+  meetings=mtgMerge(meetings, picked);
+  mtgSaveLocal(); mtgPush(); gcalClose(); mtgRenderCal();
+  alert('구글 캘린더에서 '+picked.length+'개 가져왔어요. (총 '+before+' → '+meetings.filter(function(z){return !z.deleted;}).length+'개)');
 }
 
 </script>
