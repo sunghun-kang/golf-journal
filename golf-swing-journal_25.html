@@ -111,16 +111,16 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .flt-n-lbl input{accent-color:#0a7d7d}
 .flt-l-lbl{color:#b0208c;font-weight:700}
 .flt-l-lbl input{accent-color:#b0208c}
-/* 필터칩 켜짐(리버스) = 분류별 배지색과 일치 */
-.vt-filter label.flt-f-lbl.on{background:#2d7a2d;color:#fff;box-shadow:none}
-.vt-filter label.flt-s-lbl.on{background:#1a4d9e;color:#fff;box-shadow:none}
-.vt-filter label.flt-n-lbl.on{background:#0a7d7d;color:#fff;box-shadow:none}
-.vt-filter label.flt-ai-lbl.on{background:#159957;color:#fff;box-shadow:none}
-.vt-filter label.flt-l-lbl.on{background:#b0208c;color:#fff;box-shadow:none}
-.vt-filter label.flt-e-lbl.on{background:#8b4513;color:#fff;box-shadow:none}
-.vt-filter label.flt-c-lbl.on{background:#dc6400;color:#fff;box-shadow:none}
-.vt-filter label.flt-star-lbl.on{background:#d42020;color:#fff;box-shadow:none}
-.vt-filter label.flt-pin-lbl.on{background:#1a6ac0;color:#fff;box-shadow:none}
+/* 필터칩 켜짐 = 분류색 아주 연하게(파스텔 배경 + 분류색 글씨) */
+.vt-filter label.flt-f-lbl.on{background:#e4f2e4;color:#2d7a2d;box-shadow:inset 0 0 0 1px #b6dbb6}
+.vt-filter label.flt-s-lbl.on{background:#e3ecf8;color:#1a4d9e;box-shadow:inset 0 0 0 1px #b7c9ea}
+.vt-filter label.flt-n-lbl.on{background:#ddf0f0;color:#0a7d7d;box-shadow:inset 0 0 0 1px #a9dcdc}
+.vt-filter label.flt-ai-lbl.on{background:#ddf2e7;color:#159957;box-shadow:inset 0 0 0 1px #a9e0c4}
+.vt-filter label.flt-l-lbl.on{background:#f7e2f1;color:#b0208c;box-shadow:inset 0 0 0 1px #e6b6d8}
+.vt-filter label.flt-e-lbl.on{background:#f0e6da;color:#8b4513;box-shadow:inset 0 0 0 1px #d9c3aa}
+.vt-filter label.flt-c-lbl.on{background:#f9ecd9;color:#c76a00;box-shadow:inset 0 0 0 1px #eacfa5}
+.vt-filter label.flt-star-lbl.on{background:#f9e0e0;color:#d42020;box-shadow:inset 0 0 0 1px #eeb5b5}
+.vt-filter label.flt-pin-lbl.on{background:#e2ecf8;color:#1a6ac0;box-shadow:inset 0 0 0 1px #b7cdea}
 /* 달력 */
 .cal-wrap{display:none;padding:10px 12px;}
 .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
@@ -167,7 +167,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.83 · 26-9-7</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.84 · 26-9-7</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
