@@ -156,7 +156,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.57 · 26-9-6</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.58 · 26-9-7</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -1679,6 +1679,7 @@ if('serviceWorker' in navigator){
       <label><input type="checkbox" class="thcat" data-k="F" checked onchange="thSyncAll();runTheme()"> ⛳🏌️</label>
       <label><input type="checkbox" class="thcat" data-k="S" checked onchange="thSyncAll();runTheme()"> 🏌️‍♀️</label>
       <label><input type="checkbox" class="thcat" data-k="A" checked onchange="thSyncAll();runTheme()"> 🔍</label>
+      <label><input type="checkbox" class="thcat" data-k="ai" checked onchange="thSyncAll();runTheme()"> <svg width="20" height="14" viewBox="0 0 30 22" style="vertical-align:middle"><g stroke="#9b7fe0" stroke-width="0.7" opacity="0.5"><line x1="4" y1="5" x2="15" y2="4"/><line x1="4" y1="5" x2="15" y2="11"/><line x1="4" y1="5" x2="15" y2="18"/><line x1="4" y1="11" x2="15" y2="4"/><line x1="4" y1="11" x2="15" y2="11"/><line x1="4" y1="11" x2="15" y2="18"/><line x1="4" y1="17" x2="15" y2="4"/><line x1="4" y1="17" x2="15" y2="11"/><line x1="4" y1="17" x2="15" y2="18"/></g><g stroke="#4bb6c6" stroke-width="0.7" opacity="0.55"><line x1="15" y1="4" x2="26" y2="8"/><line x1="15" y1="4" x2="26" y2="14"/><line x1="15" y1="11" x2="26" y2="8"/><line x1="15" y1="11" x2="26" y2="14"/><line x1="15" y1="18" x2="26" y2="8"/><line x1="15" y1="18" x2="26" y2="14"/></g><circle cx="4" cy="5" r="2.1" fill="#b04bd6"/><circle cx="4" cy="11" r="2.1" fill="#b04bd6"/><circle cx="4" cy="17" r="2.1" fill="#b04bd6"/><circle cx="15" cy="4" r="2.1" fill="#2aa9c4"/><circle cx="15" cy="11" r="2.1" fill="#2aa9c4"/><circle cx="15" cy="18" r="2.1" fill="#2aa9c4"/><circle cx="26" cy="8" r="2.1" fill="#e8722c"/><circle cx="26" cy="14" r="2.1" fill="#e8722c"/></svg></label>
       <label><input type="checkbox" class="thcat" data-k="L" checked onchange="thSyncAll();runTheme()"> 人生</label>
       <label><input type="checkbox" class="thcat" data-k="E" checked onchange="thSyncAll();runTheme()"> 영어</label>
       <label><input type="checkbox" class="thcat" data-k="C" checked onchange="thSyncAll();runTheme()"> 회사</label>
@@ -1780,7 +1781,7 @@ function thCatPass(r){
   if(allChecked) return true;
   var ok=false;
   boxes.forEach(function(b){ if(!b.checked) return; var k=b.getAttribute('data-k');
-    if((k==='F'&&r.vt==='F')||(k==='S'&&r.vt==='S')||(k==='A'&&r.vt==='A')||(k==='L'&&r.vt==='L')||(k==='E'&&r.vt==='E')||(k==='C'&&r.vt==='C')||(k==='star'&&r.important)||(k==='pin'&&r.pinned)) ok=true;
+    if((k==='F'&&r.vt==='F')||(k==='S'&&r.vt==='S')||(k==='A'&&r.vt==='A'&&!isAIRec(r))||(k==='ai'&&isAIRec(r))||(k==='L'&&r.vt==='L')||(k==='E'&&r.vt==='E')||(k==='C'&&r.vt==='C')||(k==='star'&&r.important)||(k==='pin'&&r.pinned)) ok=true;
   });
   return ok;
 }
