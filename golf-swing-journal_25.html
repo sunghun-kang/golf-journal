@@ -157,7 +157,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.79 · 26-9-7</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.80 · 26-9-7</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -378,8 +378,13 @@ function applyServerRows(rows){
     }
     if(id==='__meetings__'){
       if(rec && Array.isArray(rec.list) && typeof mtgMerge==='function'){
-        var _mm=mtgMerge(meetings, rec.list);
-        if(_mm.length!==meetings.length){
+        // 아직 메모리에 로드 안됐을 수 있으니 로컬(localStorage, 동기)도 병합해 손실 방지
+        var _base=meetings;
+        try{ var _ls=localStorage.getItem('meetings'); if(_ls){ _base=mtgMerge(meetings, JSON.parse(_ls)||[]); } }catch(e){}
+        var _mm=mtgMerge(_base, rec.list);
+        var _b=''; try{_b=JSON.stringify(meetings);}catch(e){}
+        var _a=''; try{_a=JSON.stringify(_mm);}catch(e){}
+        if(_a!==_b){
           meetings=_mm; if(typeof mtgSaveLocal==='function') mtgSaveLocal();
           var _mo=document.getElementById('mtg-ov'); if(_mo && _mo.style.display!=='none' && typeof mtgRenderCal==='function') mtgRenderCal();
         }
@@ -2119,9 +2124,12 @@ function mtgPull(cb){
     .then(function(arr){
       var srv=(arr&&arr[0]&&arr[0].data&&Array.isArray(arr[0].data.list))?arr[0].data.list:[];
       var merged=mtgMerge(meetings, srv);
-      var changed=(merged.length!==meetings.length);
+      var _b=''; try{_b=JSON.stringify(meetings);}catch(e){}
+      var _sv=''; try{_sv=JSON.stringify(srv);}catch(e){}
+      var _a=''; try{_a=JSON.stringify(merged);}catch(e){}
       meetings=merged;
-      if(changed){ mtgSaveLocal(); mtgPush(); }
+      if(_a!==_b) mtgSaveLocal();       // 로컬 반영
+      if(_a!==_sv) mtgPush();           // 서버에 없던 내용 올림
       if(cb)cb();
     }).catch(function(){ if(cb)cb(); });
   }catch(e){ if(cb)cb(); }
@@ -2372,7 +2380,8 @@ function gcalImport(){
   mtgSaveLocal(); mtgPush(); gcalClose(); mtgRenderCal();
   alert('구글 캘린더에서 '+picked.length+'개 가져왔어요. (총 '+before+' → '+meetings.filter(function(z){return !z.deleted;}).length+'개)');
 }
-
+// 시작 시 회의 로컬 로드(메모리 확보 → 동기화 병합 안전) + 서버 최신 반영
+try{ mtgLoadLocal(function(){ try{ mtgPull(); }catch(e){} }); }catch(e){}
 </script>
 
 </body>
