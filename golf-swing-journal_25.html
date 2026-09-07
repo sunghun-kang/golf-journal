@@ -157,7 +157,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.77 · 26-9-7</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.78 · 26-9-7</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -766,9 +766,11 @@ function renderCal(){
         }
         if(member1) tagTxt+=' '+esc(member1);
         h+='<span class="ctag '+tc+'" data-date="'+ds+'">'+tagTxt+'</span>';
-        if(r.vt!=='A'){
-          var tlines=(r.title||'').split('\n').map(function(x){return x.trim();}).filter(Boolean).slice(0,2);
-          tlines.forEach(function(ln){ h+='<div class="ccore" data-date="'+ds+'">'+thBlink(hilite(ln))+'</div>'; });
+        if(!isAIRec(r)){
+          var clines=(r.title||'').split('\n').map(function(x){return x.trim();}).filter(Boolean);
+          var mm=(r.members||'').trim();
+          if(clines.length<2 && mm && clines.indexOf(mm)<0) clines.unshift(mm);
+          clines.slice(0,2).forEach(function(ln){ h+='<div class="ccore" data-date="'+ds+'">'+thBlink(hilite(ln))+'</div>'; });
         }
       });
     }
