@@ -156,7 +156,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.58 · 26-9-7</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.59 · 26-9-7</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -1660,10 +1660,12 @@ if('serviceWorker' in navigator){
 
 <!-- 🎬 테마 모음집 -->
 <div id="theme-ov" style="display:none;position:fixed;inset:0;background:#f4f4ef;z-index:10000;overflow:auto">
-  <div style="position:sticky;top:0;background:#1b3a1b;color:#fff;padding:10px 12px;display:flex;align-items:center;gap:8px;z-index:2">
-    <b style="font-size:1rem">🎬 테마 모음집</b>
-    <button id="thSortBtn" onclick="thToggleSort()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.4);color:#fff;border-radius:6px;padding:3px 9px;font-size:0.8rem">⬇ 내림차순(최신먼저)</button>
-    <button onclick="closeTheme()" style="margin-left:auto;background:none;border:1px solid rgba(255,255,255,0.4);color:#fff;border-radius:6px;padding:3px 10px;font-size:0.9rem">✕ 닫기</button>
+  <div style="position:sticky;top:0;background:#1b3a1b;color:#fff;padding:8px 12px;display:flex;align-items:center;gap:6px;z-index:2;flex-wrap:wrap">
+    <b style="font-size:0.95rem;margin-right:2px">🎬</b>
+    <button onclick="closeTheme();swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;font-weight:700;min-width:3.2em;text-align:center">목록</button>
+    <button onclick="closeTheme();swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;font-weight:700;min-width:3.2em;text-align:center">달력</button>
+    <button onclick="runTheme()" style="background:rgba(255,255,255,0.4);color:#fff;border:1px solid rgba(255,255,255,0.5);border-radius:6px;padding:4px 10px;font-size:0.78rem;font-weight:700;min-width:3.2em;text-align:center">테마</button>
+    <button id="thSortBtn" onclick="thToggleSort()" style="margin-left:auto;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.4);color:#fff;border-radius:6px;padding:3px 9px;font-size:0.8rem">⬇ 내림차순(최신먼저)</button>
   </div>
   <div style="padding:8px 12px;background:#fff;border-bottom:1px solid #ddd">
     <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:6px">
