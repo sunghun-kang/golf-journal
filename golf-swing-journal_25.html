@@ -118,7 +118,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .cal-nav span{font-size:0.95rem;font-weight:700;color:#1b3a1b;}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
 .cal-dow{text-align:center;font-size:0.72rem;font-weight:700;color:#888;padding:4px 0;}
-.cal-cell{min-height:62px;background:#fff;border-radius:6px;padding:3px 4px;border:1px solid #eee;overflow:hidden;}
+.cal-cell{min-height:200px;background:#fff;border-radius:6px;padding:3px 4px;border:1px solid #eee;overflow:hidden;}
 .cal-cell.other{background:#f5f5f3;opacity:0.45;}
 .cal-cell.today{border:2px solid #4a9a4a;}
 .cal-dn{font-size:0.74rem;font-weight:700;color:#333;margin-bottom:2px;}
@@ -156,7 +156,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.71 · 26-9-7</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.72 · 26-9-7</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -748,7 +748,6 @@ function renderCal(){
     if(dm[ds]){
       var recs=dm[ds];
       recs.forEach(function(r,i){
-        if(i>=3){ if(i===3) h+='<span style="font-size:0.65rem;color:#999;padding:0 2px">+'+(recs.length-3)+'개</span>'; return; }
         var tc=r.vt==='F'?'tf':r.important?'ti':r.vt==='S'?'ts':'tn';
         var member1=r.members?r.members.trim():'';
         var tagTxt;
@@ -2340,9 +2339,9 @@ function gcalImport(){
     if(!chks[i].checked) continue;
     var idx=parseInt(chks[i].getAttribute('data-idx'),10);
     var it=gcalItems[idx]; if(!it) continue;
-    var type=types[i]?types[i].value:'업무회의';
+    var type=types[i]?types[i].value:'업무';
     picked.push({ id:'gcal_'+String(it.id).replace(/[^A-Za-z0-9_]/g,''), type:type, date:it.date,
-      attendees:'', report:(it.title||'')+(it.desc?('\n'+it.desc):''), orders:'', updatedAt:nowKST() });
+      attendees:'회장님', report:(it.title||'')+(it.desc?('\n'+it.desc):''), orders:'', updatedAt:nowKST() });
   }
   if(!picked.length){ alert('가져올 일정을 체크하세요.'); return; }
   var before=meetings.filter(function(z){return !z.deleted;}).length;
