@@ -156,7 +156,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.69 · 26-9-7</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.70 · 26-9-7</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -2033,7 +2033,7 @@ function saveTheme(){
     <button onclick="gcalConnect()" style="background:#1a73e8;color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:0.78rem;font-weight:700">📅 구글캘린더</button>
     <button onclick="closeMtg()" style="margin-left:auto;background:none;border:1px solid rgba(255,255,255,0.4);color:#fff;border-radius:6px;padding:3px 10px;font-size:0.85rem">✕ 닫기</button>
   </div>
-  <div style="padding:6px 12px;font-size:0.74rem;color:#555;display:flex;gap:12px;flex-wrap:wrap"><span><b style="color:#1a4d9e">●</b> 월간회의</span><span><b style="color:#7a3fb8">●</b> AI회의</span><span><b style="color:#2d7a2d">●</b> 주간회의</span><span><b style="color:#c76a00">●</b> 업무회의</span></div>
+  <div style="padding:6px 12px;font-size:0.74rem;color:#555;display:flex;gap:12px;flex-wrap:wrap"><span><b style="color:#1a4d9e">●</b> 월간회의</span><span><b style="color:#7a3fb8">●</b> AI회의</span><span><b style="color:#2d7a2d">●</b> 주간회의</span><span><b style="color:#0d8a8a">●</b> 품질회의</span><span><b style="color:#c76a00">●</b> 업무회의</span></div>
   <div id="mtgCal" style="padding:4px 8px 50px"></div>
   <button onclick="closeMtg()" title="닫기" style="position:fixed;bottom:16px;right:16px;z-index:3;background:rgba(38,50,74,0.9);color:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:0.9rem;box-shadow:0 2px 6px rgba(0,0,0,0.3)">✕</button>
   <!-- 회의 입력 폼 -->
@@ -2076,7 +2076,7 @@ function saveTheme(){
 </div>
 <script>
 // ===== 기산전자 회의록 =====
-var MTG_TYPES=[{k:'월간회의',c:'#1a4d9e'},{k:'AI회의',c:'#7a3fb8'},{k:'주간회의',c:'#2d7a2d'},{k:'업무회의',c:'#c76a00'}];
+var MTG_TYPES=[{k:'월간회의',c:'#1a4d9e'},{k:'AI회의',c:'#7a3fb8'},{k:'주간회의',c:'#2d7a2d'},{k:'품질회의',c:'#0d8a8a'},{k:'업무회의',c:'#c76a00'}];
 var meetings=[];
 var mtgY=new Date(new Date().getTime()+9*3600*1000).getFullYear();
 var mtgM=new Date(new Date().getTime()+9*3600*1000).getMonth(); // 0-11
@@ -2128,6 +2128,7 @@ function mtgNext(){ mtgM++; if(mtgM>11){mtgM=0;mtgY++;} mtgRenderCal(); }
 function mtg2(n){ return (n<10?'0':'')+n; }
 function mtgDateStr(y,m,d){ return y+'-'+mtg2(m+1)+'-'+mtg2(d); }
 function mtgForDate(ds){ return meetings.filter(function(x){ return !x.deleted && x.date===ds; }); }
+function mtgWeekNo(y,m,d){ var dt=new Date(y,m,d); var jan1=new Date(y,0,1); var doy=Math.floor((dt-jan1)/86400000)+1; return Math.ceil((doy+jan1.getDay())/7); }
 function mtgRenderCal(){
   var head=document.getElementById('mtgTitle'); if(head) head.textContent=mtgY+'년 '+(mtgM+1)+'월';
   var first=new Date(mtgY,mtgM,1); var startDow=first.getDay(); var days=new Date(mtgY,mtgM+1,0).getDate();
@@ -2145,6 +2146,7 @@ function mtgRenderCal(){
     // 날짜 + 회의이름(같은 줄)
     h+='<div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">';
     h+='<span style="font-size:0.78rem;font-weight:700;color:'+dcol+'">'+day+'</span>';
+    if(dow===0){ h+='<span style="font-size:0.6rem;color:#c98;font-weight:700">'+mtgWeekNo(mtgY,mtgM,day)+'주</span>'; }
     if(mt){ h+='<span onclick="event.stopPropagation();mtgEdit(\''+mt.id+'\')" style="background:'+mtgColor(mt.type)+';color:#fff;border-radius:4px;padding:1px 6px;font-size:0.68rem;font-weight:700;cursor:pointer">'+esc(mt.type)+'</span>'; }
     h+='</div>';
     if(mt){
@@ -2161,12 +2163,12 @@ function mtgRenderCal(){
   document.getElementById('mtgCal').innerHTML=h;
 }
 function mtgAutoFill(){
-  if(!confirm(mtgY+'년 '+(mtgM+1)+'월의 정기회의(월간=첫 월요일, AI=둘째 월요일, 주간=매주 수요일)를 빈 양식으로 추가할까요?')) return;
+  if(!confirm(mtgY+'년 '+(mtgM+1)+'월의 정기회의(월간=첫 월요일, AI=둘째 월요일, 주간=매주 수요일, 품질=매주 목요일)를 빈 양식으로 추가할까요?')) return;
   var days=new Date(mtgY,mtgM+1,0).getDate(); var firstMon=0;
   for(var d=1;d<=days;d++){ if(new Date(mtgY,mtgM,d).getDay()===1){ firstMon=d; break; } }
   function addIf(ds,type){ if(!meetings.some(function(x){return !x.deleted&&x.date===ds&&x.type===type;})){ meetings.push({id:'mtg_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),type:type,date:ds,attendees:'회장님',report:'',orders:'',updatedAt:nowKST()}); } }
   if(firstMon){ addIf(mtgDateStr(mtgY,mtgM,firstMon),'월간회의'); var ai=firstMon+7; if(ai<=days) addIf(mtgDateStr(mtgY,mtgM,ai),'AI회의'); }
-  for(var d2=1;d2<=days;d2++){ if(new Date(mtgY,mtgM,d2).getDay()===3) addIf(mtgDateStr(mtgY,mtgM,d2),'주간회의'); }
+  for(var d2=1;d2<=days;d2++){ var dw=new Date(mtgY,mtgM,d2).getDay(); if(dw===3) addIf(mtgDateStr(mtgY,mtgM,d2),'주간회의'); if(dw===4) addIf(mtgDateStr(mtgY,mtgM,d2),'품질회의'); }
   mtgSaveLocal(); mtgPush(); mtgRenderCal();
 }
 function mtgOpts(sel){ return MTG_TYPES.map(function(t){ return '<option'+(t.k===sel?' selected':'')+'>'+t.k+'</option>'; }).join(''); }
@@ -2277,6 +2279,7 @@ function gcalConnect(){
 }
 function gcalGuessType(t){
   t=t||'';
+  if(/품질/.test(t)) return '품질회의';
   if(/월간/.test(t)) return '월간회의';
   if(/\bAI\b|AI/.test(t)) return 'AI회의';
   if(/주간/.test(t)) return '주간회의';
