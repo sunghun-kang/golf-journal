@@ -51,7 +51,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .date.sat{color:#1a8a1a}
 
 .vt{font-size:0.71rem;font-weight:700;color:#fff;padding:2px 7px;border-radius:4px;flex-shrink:0}
-.vt-f{background:#2d7a2d}.vt-s{background:#1a4d9e}.vt-l{background:#7b2fa8}.vt-e{background:#8b4513}.vt-c{background:rgb(220,100,0)}.vt-l{background:#7b2fa8}
+.vt-f{background:#2d7a2d}.vt-s{background:#1a4d9e}.vt-l{background:#b0208c}.vt-e{background:#8b4513}.vt-c{background:rgb(220,100,0)}.vt-l{background:#b0208c}
 .venue{font-size:0.82rem;color:#555;background:#eee;padding:2px 7px;border-radius:4px;flex-shrink:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 .title{font-size:0.87rem;line-height:1.4;flex:1;min-width:0;word-break:keep-all}
@@ -99,8 +99,8 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .flt-s-lbl input{accent-color:#1a4d9e}
 .flt-e-lbl{color:#8b4513;font-weight:700}
 .flt-e-lbl input{accent-color:#8b4513}
-.flt-l-lbl{color:#7b2fa8;font-weight:700}
-.flt-l-lbl input{accent-color:#7b2fa8}
+.flt-l-lbl{color:#b0208c;font-weight:700}
+.flt-l-lbl input{accent-color:#b0208c}
 .flt-star-lbl{color:#d42020;font-weight:700}
 .flt-star-lbl input{accent-color:#d42020}
 .flt-pin-lbl{color:#1a4d9e;font-weight:700}
@@ -109,8 +109,18 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .flt-c-lbl input{accent-color:rgb(220,100,0)}
 .flt-n-lbl{color:#0a7d7d;font-weight:700}
 .flt-n-lbl input{accent-color:#0a7d7d}
-.flt-l-lbl{color:#7b2fa8;font-weight:700}
-.flt-l-lbl input{accent-color:#7b2fa8}
+.flt-l-lbl{color:#b0208c;font-weight:700}
+.flt-l-lbl input{accent-color:#b0208c}
+/* 필터칩 켜짐(리버스) = 분류별 배지색과 일치 */
+.vt-filter label.flt-f-lbl.on{background:#2d7a2d;color:#fff;box-shadow:none}
+.vt-filter label.flt-s-lbl.on{background:#1a4d9e;color:#fff;box-shadow:none}
+.vt-filter label.flt-n-lbl.on{background:#0a7d7d;color:#fff;box-shadow:none}
+.vt-filter label.flt-ai-lbl.on{background:#7a3fb8;color:#fff;box-shadow:none}
+.vt-filter label.flt-l-lbl.on{background:#b0208c;color:#fff;box-shadow:none}
+.vt-filter label.flt-e-lbl.on{background:#8b4513;color:#fff;box-shadow:none}
+.vt-filter label.flt-c-lbl.on{background:#dc6400;color:#fff;box-shadow:none}
+.vt-filter label.flt-star-lbl.on{background:#d42020;color:#fff;box-shadow:none}
+.vt-filter label.flt-pin-lbl.on{background:#1a6ac0;color:#fff;box-shadow:none}
 /* 달력 */
 .cal-wrap{display:none;padding:10px 12px;}
 .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
@@ -157,7 +167,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.80 · 26-9-7</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.81 · 26-9-7</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -803,7 +813,7 @@ function showCpop(ds){
     var tags='';
     if(r.vt==='F') tags+='<span class="cpop-tag" style="background:#2d7a2d">⛳🏌️ 필드</span>';
     if(r.vt==='S') tags+='<span class="cpop-tag" style="background:#1a4d9e">🏌️‍♀️ 스크린</span>';
-    if(r.vt==='L') tags+='<span class="cpop-tag" style="background:#7b2fa8">人生</span>';
+    if(r.vt==='L') tags+='<span class="cpop-tag" style="background:#b0208c">人生</span>';
     if(r.vt==='E') tags+='<span class="cpop-tag" style="background:#8b4513">E 영어</span>';
     if(r.vt==='C') tags+='<span class="cpop-tag" style="background:rgb(220,100,0)">C 회사</span>';
     if(r.vt==='A') tags+='<span class="cpop-tag" style="background:#0a7d7d">🔍 분석</span>';
