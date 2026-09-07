@@ -147,7 +147,7 @@
   <header class="hero">
     <div class="hero-top">
       <div>
-        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.01</span></div>
+        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.02</span></div>
         <div class="updated" id="updated">준비 중…</div>
       </div>
       <div class="controls">
@@ -647,15 +647,21 @@ async function loadQuotes(){
   const cache=(()=>{try{return JSON.parse(localStorage.getItem(CACHE_KEY)||"null");}catch(e){return null;}})();
   const fallback=s=>(cache&&cache.QUOTES&&cache.QUOTES[s]) || snapQuote(s) || {symbol:s,price:0,prevClose:0,change:0,changePct:0,currency:isDom(s)?"KRW":"USD",source:"error"};
   const dom=syms.filter(isDom), us=syms.filter(s=>!isDom(s));
-  const out={}; let okCount=0;
+  const out={...QUOTES}; let okCount=0;   // 시드(캐시/스냅)에서 시작 → 도착하는 것만 덮어씀
+  let _lp=0,_pt=null;
+  const paint=()=>{ QUOTES={...out}; var now=Date.now();
+    if(now-_lp>500){ _lp=now; try{render();}catch(e){} }
+    else { clearTimeout(_pt); _pt=setTimeout(function(){_lp=Date.now(); try{render();}catch(e){}},500); } };
   // 1) 국내: 묶음 조회
   const kr=await qKRbatch(dom.map(s=>s.toUpperCase().replace(/\.(KS|KQ)$/,"")));
   dom.forEach(s=>{ const c=s.toUpperCase().replace(/\.(KS|KQ)$/,""); if(kr[c]){ out[s]={...kr[c],symbol:s}; okCount++; } });
+  paint();   // 국내 시세 도착 → 즉시 표시
   // 2) 국내 실패분만 개별 재시도
-  const miss=dom.filter(s=>!out[s]);
-  await Promise.all(miss.map(async s=>{ try{ const q=await qKR(s); q.symbol=s; out[s]=q; okCount++; }catch(e){ out[s]=fallback(s); } }));
-  // 3) 해외: 개별(야후)
-  await Promise.all(us.map(async s=>{ try{ const q=await qUS(s); q.symbol=s; out[s]=q; okCount++; }catch(e){ out[s]=fallback(s); } }));
+  const miss=dom.filter(s=>!kr[s.toUpperCase().replace(/\.(KS|KQ)$/,"")]);
+  await Promise.all(miss.map(async s=>{ try{ const q=await qKR(s); q.symbol=s; out[s]=q; okCount++; }catch(e){ if(!out[s]||out[s].source==="error") out[s]=fallback(s); } }));
+  paint();
+  // 3) 해외: 개별(야후) — 하나씩 도착할 때마다 갱신
+  await Promise.all(us.map(async s=>{ try{ const q=await qUS(s); q.symbol=s; out[s]=q; okCount++; paint(); }catch(e){ if(!out[s]||out[s].source==="error") out[s]=fallback(s); } }));
   // 4) 국내 전일대비(어제대비)가 0인 종목만 보강 — 가격은 유지(야후 우선, 실패해도 안전)
   const needCh=dom.filter(s=>out[s]&&out[s].price&&!out[s].change);
   await Promise.all(needCh.map(async s=>{ const c=s.toUpperCase().replace(/\.(KS|KQ)$/,"");
@@ -761,6 +767,16 @@ $("#fltThr").onchange=e=>{ FILTER.thr=Number(e.target.value)||0; render(); };
 document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));t.classList.add("active");VIEW=t.dataset.view;render();});
 
 function loadEmbedded(){ PORT=JSON.parse(JSON.stringify(EMBEDDED)); saveLocal(); }
+// 저장된 시세(캐시)나 스냅샷으로 QUOTES/FX를 즉시 채워 첫 화면을 바로 그림
+function seedQuotes(){
+  const cache=(()=>{try{return JSON.parse(localStorage.getItem(CACHE_KEY)||"null");}catch(e){return null;}})();
+  const out={};
+  allSymbols().forEach(s=>{
+    out[s]=(cache&&cache.QUOTES&&cache.QUOTES[s]) || snapQuote(s)
+      || {symbol:s,price:0,prevClose:0,change:0,changePct:0,currency:isDom(s)?"KRW":"USD",source:"error"};
+  });
+  QUOTES=out; FX=(cache&&cache.FX)||SNAP_FX;
+}
 (function init(){
   const local=loadLocal();
   // 사용자 저장본이 관리자 최신 버전 이상이면 그대로, 아니면 관리자 갱신본으로 자동 교체
@@ -770,6 +786,11 @@ function loadEmbedded(){ PORT=JSON.parse(JSON.stringify(EMBEDDED)); saveLocal();
     loadEmbedded();
   }
   if(PORT.title){document.title=PORT.title;$("#title").textContent=PORT.title;}
+  // ① 종목·매수가·(저장된)현재가를 즉시 표시 — 빈 화면 없이 바로 보임
+  seedQuotes();
+  render();
+  $("#updated").innerHTML='저장된 시세로 먼저 표시 · 최신 불러오는 중 <span class="spin"></span>';
+  // ② 최신 시세는 백그라운드로 받아 도착하는 대로 갱신
   refresh();
 })();
 </script>
