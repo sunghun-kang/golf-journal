@@ -167,7 +167,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.84 · 26-9-7</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.85 · 26-9-7</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -2145,20 +2145,36 @@ function mtgPull(cb){
     }).catch(function(){ if(cb)cb(); });
   }catch(e){ if(cb)cb(); }
 }
+function mtgCountLive(list){ return (list||[]).filter(function(m){return m && !m.deleted;}).length; }
+function mtgReadServer(){
+  return fetch(SUPABASE_URL+'/rest/v1/golf_posts?id=eq.__meetings__&select=data',{headers:sbH()})
+    .then(function(r){ if(!r.ok) throw new Error('읽기 HTTP '+r.status); return r.json(); })
+    .then(function(arr){ return (arr&&arr[0]&&arr[0].data&&Array.isArray(arr[0].data.list))?arr[0].data.list:[]; });
+}
 function mtgSyncNow(){
-  var localN=meetings.filter(function(m){return !m.deleted;}).length;
-  fetch(SUPABASE_URL+'/rest/v1/golf_posts?id=eq.__meetings__&select=data',{headers:sbH()})
-  .then(function(r){ if(!r.ok) throw new Error('읽기 HTTP '+r.status); return r.json(); })
-  .then(function(arr){
-    var srv=(arr&&arr[0]&&arr[0].data&&Array.isArray(arr[0].data.list))?arr[0].data.list:[];
-    var srvN=srv.filter(function(m){return !m.deleted;}).length;
-    var merged=mtgMerge(meetings, srv); meetings=merged; mtgSaveLocal();
-    var myN=meetings.filter(function(m){return !m.deleted;}).length;
+  var myN0=mtgCountLive(meetings);
+  mtgReadServer()
+  .then(function(srv){
+    var srvN=mtgCountLive(srv);
+    meetings=mtgMerge(meetings, srv); mtgSaveLocal();
+    var myN=mtgCountLive(meetings);
+    // 올리기
     return postRows([{id:'__meetings__',data:{id:'__meetings__',list:meetings,updatedAt:nowKST()},updated_at:new Date().toISOString()}])
-      .then(function(){ mtgRenderCal(); alert('✅ 회의 동기화 완료\n\n서버에 있던 회의: '+srvN+'건\n내 기기(합친 뒤): '+myN+'건\n\n서버로 올리기 완료. 다른 기기에서 🔄 동기화 누르면 받아집니다.'); })
-      .catch(function(e){ mtgRenderCal(); alert('⚠️ 서버 저장(올리기) 실패\n'+String(e)+'\n\n읽기는 됐어요(서버 '+srvN+'건). 서버 쓰기 권한 또는 네트워크 문제일 수 있어요.'); });
+      .then(function(){
+        // 올린 뒤 서버 재확인(진짜 저장됐는지)
+        return mtgReadServer().then(function(srv2){
+          var srvN2=mtgCountLive(srv2);
+          mtgRenderCal();
+          if(srvN2>=myN && myN>0){
+            alert('✅ 동기화 완료\n\n올리기 전 서버: '+srvN+'건\n내 기기: '+myN+'건\n올린 뒤 서버 재확인: '+srvN2+'건 ✔\n\n서버에 정상 저장됐어요. 다른 기기에서 🔄 누르면 받아집니다.');
+          } else {
+            alert('⚠️ 올렸는데 서버에 안 남아요!\n\n올린 뒤 서버 재확인: '+srvN2+'건 (기대: '+myN+'건)\n\n→ 서버 쓰기가 거부되는 상태예요(권한/RLS 등). 이 메시지를 그대로 알려주세요.');
+          }
+        });
+      })
+      .catch(function(e){ mtgRenderCal(); alert('⚠️ 서버 저장(올리기) 실패\n'+String(e)+'\n\n읽기는 됨(서버 '+srvN+'건, 내 기기 '+myN+'건). 서버 쓰기 권한/네트워크 문제.'); });
   })
-  .catch(function(e){ alert('⚠️ 서버 읽기 실패\n'+String(e)+'\n\n네트워크 또는 서버 접속 문제. 내 기기 회의: '+localN+'건'); });
+  .catch(function(e){ alert('⚠️ 서버 읽기 실패\n'+String(e)+'\n\n네트워크/서버 접속 문제. 내 기기 회의: '+myN0+'건'); });
 }
 function openMtg(){
   var t=new Date(new Date().getTime()+9*3600*1000);
