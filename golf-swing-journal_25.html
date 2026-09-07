@@ -156,7 +156,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.68 · 26-9-7</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.69 · 26-9-7</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -2132,27 +2132,29 @@ function mtgRenderCal(){
   var head=document.getElementById('mtgTitle'); if(head) head.textContent=mtgY+'년 '+(mtgM+1)+'월';
   var first=new Date(mtgY,mtgM,1); var startDow=first.getDay(); var days=new Date(mtgY,mtgM+1,0).getDate();
   var dows=['일','월','화','수','목','금','토'];
-  var h='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:#ddd;border:1px solid #ddd">';
+  var h='<div style="display:grid;grid-template-columns:0.5fr 1fr 1fr 1fr 1fr 1fr 0.5fr;gap:1px;background:#ddd;border:1px solid #ddd">';
   dows.forEach(function(d,i){ h+='<div style="background:#eef;padding:4px 0;text-align:center;font-weight:700;font-size:0.8rem;color:'+(i===0?'#d42020':i===6?'#1a6ac0':'#333')+'">'+d+'</div>'; });
   for(var b=0;b<startDow;b++){ h+='<div style="background:#fafafa;min-height:170px"></div>'; }
   for(var day=1;day<=days;day++){
     var ds=mtgDateStr(mtgY,mtgM,day);
     var dow=new Date(mtgY,mtgM,day).getDay();
     var list=mtgForDate(ds);
+    var mt=list[0];
+    var dcol=(dow===0?'#d42020':dow===6?'#1a6ac0':'#444');
     h+='<div onclick="mtgAdd(\''+ds+'\')" style="background:#fff;min-height:170px;padding:3px 4px;cursor:pointer;position:relative;vertical-align:top">';
-    h+='<div style="font-size:0.78rem;font-weight:700;color:'+(dow===0?'#d42020':dow===6?'#1a6ac0':'#444')+'">'+day+'</div>';
-    list.forEach(function(mt){
-      var c=mtgColor(mt.type);
+    // 날짜 + 회의이름(같은 줄)
+    h+='<div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">';
+    h+='<span style="font-size:0.78rem;font-weight:700;color:'+dcol+'">'+day+'</span>';
+    if(mt){ h+='<span onclick="event.stopPropagation();mtgEdit(\''+mt.id+'\')" style="background:'+mtgColor(mt.type)+';color:#fff;border-radius:4px;padding:1px 6px;font-size:0.68rem;font-weight:700;cursor:pointer">'+esc(mt.type)+'</span>'; }
+    h+='</div>';
+    if(mt){
       var parts=[];
       if((mt.attendees||'').trim()) parts.push('👥 '+mt.attendees.trim());
       if((mt.report||'').trim()) parts.push(mt.report.trim());
       if((mt.orders||'').trim()) parts.push('📢 '+mt.orders.trim());
       var body=parts.join('\n');
-      h+='<div onclick="event.stopPropagation();mtgEdit(\''+mt.id+'\')" style="margin-top:3px;cursor:pointer">'
-        +'<div><span style="display:inline-block;background:'+c+';color:#fff;border-radius:4px;padding:1px 6px;font-size:0.66rem;font-weight:700">'+esc(mt.type)+'</span></div>'
-        +(body?'<div style="padding:2px 1px 0;font-size:0.64rem;line-height:1.4;white-space:pre-wrap;word-break:break-word;color:#333">'+esc(body)+'</div>':'')
-        +'</div>';
-    });
+      if(body) h+='<div onclick="event.stopPropagation();mtgEdit(\''+mt.id+'\')" style="padding:2px 1px 0;font-size:0.74rem;line-height:1.4;white-space:pre-wrap;word-break:break-word;color:#333;cursor:pointer">'+esc(body)+'</div>';
+    }
     h+='</div>';
   }
   h+='</div>';
