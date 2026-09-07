@@ -156,7 +156,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.63 · 26-9-7</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.64 · 26-9-7</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -2119,6 +2119,7 @@ function openMtg(){
   var t=new Date(new Date().getTime()+9*3600*1000);
   mtgY=t.getFullYear(); mtgM=t.getMonth();
   document.getElementById('mtg-ov').style.display='block';
+  try{ gcalPrewarm(); }catch(e){}
   mtgLoadLocal(function(){ mtgRenderCal(); mtgPull(function(){ mtgRenderCal(); }); });
 }
 function closeMtg(){ document.getElementById('mtg-ov').style.display='none'; }
@@ -2225,27 +2226,43 @@ function gcalClientId(reset){
   return cid;
 }
 function gcalKeyReset(){ gcalClientId(true); alert('구글 클라이언트 ID를 지웠어요. 다시 [📅 구글캘린더]를 누르면 새로 입력합니다.'); gcalClose(); }
+var gcalGISloaded=false, gcalTokenClient=null, gcalTCid='';
 function gcalLoadGIS(cb){
-  if(window.google && google.accounts && google.accounts.oauth2){ cb(true); return; }
+  if(window.google && google.accounts && google.accounts.oauth2){ gcalGISloaded=true; if(cb)cb(true); return; }
   var s=document.createElement('script'); s.src='https://accounts.google.com/gsi/client'; s.async=true; s.defer=true;
-  s.onload=function(){ cb(!!(window.google&&google.accounts&&google.accounts.oauth2)); };
-  s.onerror=function(){ cb(false); };
+  s.onload=function(){ gcalGISloaded=!!(window.google&&google.accounts&&google.accounts.oauth2); if(cb)cb(gcalGISloaded); };
+  s.onerror=function(){ if(cb)cb(false); };
   document.head.appendChild(s);
 }
+function gcalInitClient(cid){
+  if(!(window.google&&google.accounts&&google.accounts.oauth2)) return false;
+  if(gcalTokenClient && gcalTCid===cid) return true;
+  try{
+    gcalTokenClient=google.accounts.oauth2.initTokenClient({
+      client_id:cid,
+      scope:'https://www.googleapis.com/auth/calendar.readonly',
+      callback:function(resp){ if(resp && resp.access_token){ gcalFetch(resp.access_token); } else { alert('구글 인증에 실패했어요.'); } },
+      error_callback:function(err){ var ty=(err&&err.type)||''; if(ty==='popup_failed_to_open'){ alert('팝업이 차단됐어요.\n브라우저 주소창의 팝업 차단을 허용하고 [📅 구글캘린더]를 다시 눌러주세요.'); } else if(ty==='popup_closed'){ /* 사용자가 닫음 */ } else { alert('구글 인증 오류: '+ty+'\n승인된 원본에 '+location.origin+' 이 등록됐는지(반영에 수분~수시간), 클라이언트 ID가 맞는지 확인하세요.'); } }
+    });
+    gcalTCid=cid; return true;
+  }catch(e){ alert('구글 인증 초기화 실패: '+e); return false; }
+}
+// 미리 로드해두면 클릭 즉시 팝업이 열려 popup_failed_to_open 방지
+function gcalPrewarm(){
+  gcalLoadGIS(function(ok){ if(!ok) return; var c=''; try{ c=localStorage.getItem('gcalClientId')||''; }catch(e){} if(c) gcalInitClient(c); });
+}
 function gcalConnect(){
+  var had=false; try{ had=!!localStorage.getItem('gcalClientId'); }catch(e){}
   var cid=gcalClientId(false); if(!cid) return;
-  gcalLoadGIS(function(ok){
-    if(!ok){ alert('구글 로그인 모듈을 불러오지 못했어요. 인터넷 연결을 확인하세요.'); return; }
-    try{
-      var tc=google.accounts.oauth2.initTokenClient({
-        client_id:cid,
-        scope:'https://www.googleapis.com/auth/calendar.readonly',
-        callback:function(resp){ if(resp && resp.access_token){ gcalFetch(resp.access_token); } else { alert('구글 인증에 실패했어요.'); } },
-        error_callback:function(err){ alert('구글 인증 오류: '+((err&&err.type)||'')+'\n승인된 JavaScript 원본에\n'+location.origin+'\n이 등록됐는지, 클라이언트 ID가 맞는지 확인하세요.'); }
-      });
-      tc.requestAccessToken();
-    }catch(e){ alert('구글 인증 초기화 실패: '+e); }
-  });
+  // 모듈이 아직이면 로드만 하고 한 번 더 누르게 안내(클릭 제스처 유지 위해)
+  if(!(window.google&&google.accounts&&google.accounts.oauth2)){
+    gcalLoadGIS(function(ok){ if(ok){ gcalInitClient(cid); alert('구글 로그인 모듈이 준비됐어요.\n[📅 구글캘린더]를 한 번 더 눌러주세요.'); } else { alert('구글 로그인 모듈을 불러오지 못했어요. 인터넷 연결을 확인하세요.'); } });
+    return;
+  }
+  if(!gcalInitClient(cid)){ alert('잠시 후 [📅 구글캘린더]를 다시 눌러주세요.'); return; }
+  // 클라이언트 ID를 방금 처음 입력했다면 제스처가 소모됐을 수 있어 재클릭 안내
+  if(!had){ alert('클라이언트 ID가 저장됐어요.\n[📅 구글캘린더]를 한 번 더 눌러 로그인하세요.'); return; }
+  gcalTokenClient.requestAccessToken();
 }
 function gcalGuessType(t){
   t=t||'';
