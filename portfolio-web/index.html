@@ -159,7 +159,7 @@
   <header class="hero">
     <div class="hero-top">
       <div>
-        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.03</span></div>
+        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.04</span></div>
         <div class="updated" id="updated">준비 중…</div>
       </div>
       <div class="controls">
@@ -690,51 +690,78 @@ async function refresh(){
     try{ recordDailyTotal(); }catch(e){}   // 그날 총액 자동 기록(차트용)
   }catch(e){ $("#updated").textContent="오류: "+e.message; }
 }
-// ---------- 총자산 추이(차트) ----------
-const HIST_KEY="asset_hist_v1";
+// ---------- 총자산 추이(차트) : 4개 기관(내앱 자동 + 네이버·카카오·토스 수동) ----------
+const HKEY="asset_hist_v2";
+const SRC=[{k:"me",label:"내앱",col:"#e5342a"},{k:"naver",label:"네이버",col:"#12a06e"},{k:"kakao",label:"카카오",col:"#d9a400"},{k:"toss",label:"토스",col:"#2f6fed"}];
 function calcTotalKRW(){ let v=0; PORT.accounts.forEach(a=>{ v+=sumAccount(a).val; }); return v; }
-function loadHist(){ try{ const h=JSON.parse(localStorage.getItem(HIST_KEY)||"[]"); return Array.isArray(h)?h:[]; }catch(e){ return []; } }
-function recordDailyTotal(){
-  const v=Math.round(calcTotalKRW()); if(!v) return;
-  const today=new Date(Date.now()+9*3600*1000).toISOString().slice(0,10);
-  let h=loadHist();
-  if(h.length && h[h.length-1].d===today) h[h.length-1].v=v;
-  else h.push({d:today, v:v});
-  if(h.length>500) h=h.slice(-500);
-  try{ localStorage.setItem(HIST_KEY, JSON.stringify(h)); }catch(e){}
+function loadHist(){
+  try{ const h=JSON.parse(localStorage.getItem(HKEY)||"null"); if(Array.isArray(h)) return h; }catch(e){}
+  try{ const old=JSON.parse(localStorage.getItem("asset_hist_v1")||"[]"); if(Array.isArray(old)&&old.length){ const m=old.map(x=>({d:x.d,me:x.v})); localStorage.setItem(HKEY,JSON.stringify(m)); return m; } }catch(e){}
+  return [];
 }
+function saveHist(h){ try{ localStorage.setItem(HKEY, JSON.stringify(h)); }catch(e){} }
+function todayStr(){ return new Date(Date.now()+9*3600*1000).toISOString().slice(0,10); }
+function histToday(h){ const t=todayStr(); let e=h.find(x=>x.d===t); if(!e){ e={d:t}; h.push(e); h.sort((a,b)=>a.d.localeCompare(b.d)); e=h.find(x=>x.d===t); } return e; }
+function recordDailyTotal(){ const v=Math.round(calcTotalKRW()); if(!v) return; const h=loadHist(); histToday(h).me=v; if(h.length>800) h.splice(0,h.length-800); saveHist(h); }
 function fmtShortWon(n){ n=Math.round(n);
   if(Math.abs(n)>=1e8) return (n/1e8).toFixed(2).replace(/\.?0+$/,"")+"억";
   if(Math.abs(n)>=1e4) return Math.round(n/1e4).toLocaleString("ko-KR")+"만";
   return n.toLocaleString("ko-KR"); }
+// 오늘 수동 입력 저장(만원 단위 → 원). 저장 후 차트 다시 그림
+function chartSaveExt(){
+  const h=loadHist(), e=histToday(h);
+  ["naver","kakao","toss"].forEach(function(k){
+    const el=document.getElementById("ext_"+k); if(!el) return;
+    const s=(el.value||"").replace(/,/g,"").trim();
+    if(s===""){ delete e[k]; } else { const n=Number(s); if(isFinite(n)) e[k]=Math.round(n*10000); } // 만원→원
+  });
+  saveHist(h); showChart();
+}
 function showChart(){
   recordDailyTotal();
   const h=loadHist(), box=$("#chartBox");
-  if(h.length<2){ box.innerHTML='<div style="padding:30px 10px;text-align:center;color:var(--sub);line-height:1.7">아직 기록이 '+h.length+'일치예요.<br>내일 또 열면 점이 늘어나 선그래프가 그려져요.<br>(현재 총액: <b>'+won(h.length?h[0].v:calcTotalKRW())+'원</b>)</div>'; $("#chartModal").classList.add("on"); return; }
-  const W=Math.max(560, Math.min(920, h.length*22)), H=300, PL=64, PR=16, PT=18, PB=42;
-  const vs=h.map(x=>x.v), mn=Math.min(...vs), mx=Math.max(...vs), rng=(mx-mn)||1;
+  const eToday=h.find(x=>x.d===todayStr())||{};
+  // 오늘 수동입력 칸(만원)
+  let inp='<div style="background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:10px">'
+    +'<div style="font-size:12px;color:var(--sub);margin-bottom:6px">오늘('+todayStr().slice(5)+') 수동 입력 <b>(만원 단위)</b> — 네이버·카카오·토스 앱의 총자산을 적으세요</div>'
+    +'<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">';
+  [["naver","네이버"],["kakao","카카오"],["toss","토스"]].forEach(function(a){
+    const cur=(eToday[a[0]]!=null)?Math.round(eToday[a[0]]/10000):"";
+    inp+='<label style="font-size:12px;font-weight:700;display:flex;align-items:center;gap:3px">'+a[1]+'<input id="ext_'+a[0]+'" type="number" inputmode="numeric" value="'+cur+'" placeholder="만원" style="width:92px;text-align:right;padding:5px 6px"></label>';
+  });
+  inp+='<button class="primary" onclick="chartSaveExt()" style="padding:6px 12px">저장</button></div></div>';
+
+  // 그릴 데이터: 각 소스별 존재하는 점만
+  const present=SRC.filter(s=>h.some(p=>p[s.k]!=null));
+  let allv=[]; h.forEach(p=>SRC.forEach(s=>{ if(p[s.k]!=null) allv.push(p[s.k]); }));
+  if(h.length<2 || allv.length<2){
+    box.innerHTML=inp+'<div style="padding:24px 10px;text-align:center;color:var(--sub);line-height:1.7">아직 그래프를 그릴 점이 부족해요.<br>내앱은 열 때마다 자동 기록되고, 위에 네이버·카카오·토스를 입력하면<br>날짜가 쌓일수록 4개 선그래프가 그려져요.</div>';
+    $("#chartModal").classList.add("on"); return;
+  }
+  const W=Math.max(560, Math.min(960, h.length*24)), H=300, PL=64, PR=14, PT=16, PB=40;
+  const mn=Math.min(...allv), mx=Math.max(...allv), rng=(mx-mn)||1;
   const x=i=> PL + (W-PL-PR)*(h.length===1?0:i/(h.length-1));
   const y=v=> PT + (H-PT-PB)*(1-(v-mn)/rng);
-  const pts=h.map((p,i)=>x(i)+","+y(p.v)).join(" ");
-  const first=h[0], last=h[h.length-1], diff=last.v-first.v, dpct=first.v?diff/first.v*100:0;
-  const col=diff>=0?"var(--up)":"var(--dn)";
   let grid="";
   for(let g=0;g<=4;g++){ const gy=PT+(H-PT-PB)*g/4, gv=mx-(rng)*g/4;
     grid+='<line x1="'+PL+'" y1="'+gy+'" x2="'+(W-PR)+'" y2="'+gy+'" stroke="var(--line)" stroke-width="1"/>'
         +'<text x="'+(PL-6)+'" y="'+(gy+3)+'" text-anchor="end" font-size="10" fill="var(--sub)">'+fmtShortWon(gv)+'</text>'; }
-  // x축 라벨: 처음/중간/끝
   const xl=[0, Math.floor((h.length-1)/2), h.length-1];
   let xlab=""; xl.forEach(i=>{ xlab+='<text x="'+x(i)+'" y="'+(H-PB+16)+'" text-anchor="middle" font-size="10" fill="var(--sub)">'+h[i].d.slice(5)+'</text>'; });
-  // 마지막 점 강조
-  const dots='<circle cx="'+x(h.length-1)+'" cy="'+y(last.v)+'" r="3.5" fill="'+col+'"/>';
-  const svg='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="max-width:'+W+'px;display:block">'
-    +grid
-    +'<polyline points="'+pts+'" fill="none" stroke="'+col+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>'
-    +dots+xlab+'</svg>';
-  const head='<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:6px;flex-wrap:wrap;gap:8px">'
-    +'<div><div style="font-size:12px;color:var(--sub)">현재 총액 ('+last.d+')</div><div style="font-size:22px;font-weight:800">'+won(last.v)+'원</div></div>'
-    +'<div style="text-align:right"><div style="font-size:12px;color:var(--sub)">'+first.d+' 대비 ('+h.length+'일)</div><div style="font-size:15px;font-weight:800;color:'+col+'">'+(diff>=0?"+":"−")+won(Math.abs(diff))+'원 ('+(diff>=0?"+":"")+dpct.toFixed(2)+'%)</div></div></div>';
-  box.innerHTML=head+svg;
+  let lines="";
+  present.forEach(function(s){
+    const pts=[]; h.forEach(function(p,i){ if(p[s.k]!=null) pts.push(x(i)+","+y(p[s.k])); });
+    if(pts.length>=2) lines+='<polyline points="'+pts.join(" ")+'" fill="none" stroke="'+s.col+'" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>';
+    // 마지막 점
+    for(let i=h.length-1;i>=0;i--){ if(h[i][s.k]!=null){ lines+='<circle cx="'+x(i)+'" cy="'+y(h[i][s.k])+'" r="3.2" fill="'+s.col+'"/>'; break; } }
+  });
+  const svg='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="max-width:'+W+'px;display:block">'+grid+lines+xlab+'</svg>';
+  // 범례 + 현재값
+  let legend='<div style="display:flex;gap:12px;flex-wrap:wrap;margin:4px 0 8px">';
+  present.forEach(function(s){ let lastV=null; for(let i=h.length-1;i>=0;i--){ if(h[i][s.k]!=null){ lastV=h[i][s.k]; break; } }
+    legend+='<span style="font-size:12px;font-weight:700;color:var(--ink)"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:'+s.col+';margin-right:4px;vertical-align:middle"></span>'+s.label+' '+fmtShortWon(lastV)+'</span>'; });
+  legend+='</div>';
+  box.innerHTML=inp+legend+svg;
   $("#chartModal").classList.add("on");
 }
 
