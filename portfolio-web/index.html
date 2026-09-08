@@ -30,8 +30,9 @@
   .wrap{max-width:1180px;margin:0 auto;padding:12px 5px 60px;}
   header.hero{background:var(--card);border:1px solid var(--line);border-radius:16px;
     box-shadow:var(--shadow);padding:12px 14px;margin-bottom:12px;}
-  .hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;}
-  .hero h1{font-size:16px;margin:0 0 1px;font-weight:700;letter-spacing:-.2px;}
+  .hero-top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:nowrap;}
+  .hero h1{font-size:15px;margin:0 0 1px;font-weight:700;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .controls button.mini{padding:7px 9px;font-size:15px;line-height:1;}
   .titrow{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;}
   .titrow .ver{font-size:11px;font-weight:600;color:var(--sub);}
   .hero .updated{font-size:11px;color:var(--sub);}
@@ -159,14 +160,14 @@
   <header class="hero">
     <div class="hero-top">
       <div>
-        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.06</span></div>
+        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.07</span></div>
         <div class="updated" id="updated">준비 중…</div>
       </div>
-      <div class="controls">
-        <button id="chartBtn" class="ghost">📈 차트</button>
-        <button id="refresh" class="ghost">↻ 시세 새로고침</button>
-        <button id="dataBtn" class="ghost">📂 데이터</button>
-        <button id="editBtn" class="primary">✎ 편집</button>
+      <div class="controls" style="flex-shrink:0">
+        <button id="chartBtn" class="ghost mini" title="차트">📈</button>
+        <button id="refresh" class="ghost mini" title="시세 새로고침">↻</button>
+        <button id="dataBtn" class="ghost mini" title="데이터">📂</button>
+        <button id="editBtn" class="primary mini" title="편집">✎</button>
       </div>
     </div>
     <div class="total-row">
@@ -841,7 +842,7 @@ $("#acctSummary").onclick=e=>{
   else if(dn){const i=+dn.dataset.sumdown; if(i<PORT.accounts.length-1){const x=PORT.accounts.splice(i,1)[0];PORT.accounts.splice(i+1,0,x);saveLocal();render();}}
 };
 function toggleEdit(on){EDITING=on;$("#editArea").style.display=on?"block":"none";$("#viewArea").style.display=on?"none":"block";
-  $("#tabs").style.display=on?"none":"flex";$("#editBtn").textContent=on?"✎ 편집 종료":"✎ 편집";$("#editBtn").classList.toggle("primary",!on);if(on)renderEdit();}
+  $("#tabs").style.display=on?"none":"flex";$("#editBtn").textContent=on?"✕":"✎";$("#editBtn").title=on?"편집 종료":"편집";$("#editBtn").classList.toggle("primary",!on);if(on)renderEdit();}
 
 // ---------- 가져오기/내보내기 ----------
 function openIO(){ $("#ioText").value=""; $("#ioModal").classList.add("on"); }
