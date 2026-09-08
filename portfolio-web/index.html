@@ -159,7 +159,7 @@
   <header class="hero">
     <div class="hero-top">
       <div>
-        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.05</span></div>
+        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.06</span></div>
         <div class="updated" id="updated">준비 중…</div>
       </div>
       <div class="controls">
@@ -727,23 +727,26 @@ function showChart(){
   recordDailyTotal();
   const h=loadHist(), box=$("#chartBox");
   const eToday=h.find(x=>x.d===todayStr())||{};
-  // 엑셀형 입력 그리드: 행=날짜, 열=내앱(자동)/네이버/카카오/토스 (만원)
-  const rowsH=[...h].sort((a,b)=>b.d.localeCompare(a.d)); // 최근 먼저
+  // 엑셀형 입력 그리드: 가로=날짜, 세로=내앱(자동)/네이버/카카오/토스 (만원)
+  const datesAsc=[...h].sort((a,b)=>a.d.localeCompare(b.d)); // 왼→오른 = 과거→최근
   let inp='<div style="margin-bottom:10px">'
     +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;flex-wrap:wrap;gap:6px">'
     +'<span style="font-size:12px;color:var(--sub)">표에 <b>만원 단위</b>로 입력 (내앱은 자동)</span>'
     +'<span><button class="ghost" onclick="chartAddDate()" style="padding:4px 8px;font-size:12px">+ 날짜</button> <button class="primary" onclick="chartSaveGrid()" style="padding:4px 12px;font-size:12px">저장</button></span></div>'
-    +'<div style="overflow:auto;max-height:210px;border:1px solid var(--line);border-radius:8px"><table id="chartGrid" style="width:100%;border-collapse:collapse;font-size:12px">'
-    +'<thead><tr style="position:sticky;top:0;background:var(--card);z-index:1">'
-    +'<th style="padding:5px 6px;text-align:left;border-bottom:1px solid var(--line)">날짜</th>';
-  SRC.forEach(s=>{ inp+='<th style="padding:5px 4px;text-align:right;border-bottom:1px solid var(--line);color:'+s.col+'">'+s.label+'</th>'; });
+    +'<div style="overflow:auto;max-height:220px;border:1px solid var(--line);border-radius:8px"><table id="chartGrid" style="border-collapse:collapse;font-size:12px;white-space:nowrap">'
+    +'<thead><tr style="position:sticky;top:0;background:var(--card);z-index:2">'
+    +'<th style="position:sticky;left:0;background:var(--card);padding:5px 6px;text-align:left;border-bottom:1px solid var(--line);border-right:1px solid var(--line);z-index:3">기관\\날짜</th>';
+  datesAsc.forEach(e=>{ inp+='<th style="padding:5px 6px;text-align:right;border-bottom:1px solid var(--line)">'+e.d.slice(5)+'</th>'; });
   inp+='</tr></thead><tbody>';
-  rowsH.forEach(function(e){
-    inp+='<tr><td style="padding:3px 6px;white-space:nowrap;font-weight:700;border-bottom:1px solid var(--line)">'+e.d.slice(5)+'</td>';
-    inp+='<td style="padding:2px 4px;text-align:right;color:var(--sub);border-bottom:1px solid var(--line)">'+(e.me!=null?Math.round(e.me/10000).toLocaleString("ko-KR"):"—")+'</td>';
-    ["naver","kakao","toss"].forEach(function(k){
-      const cur=(e[k]!=null)?Math.round(e[k]/10000):"";
-      inp+='<td style="padding:1px 2px;border-bottom:1px solid var(--line)"><input data-d="'+e.d+'" data-src="'+k+'" type="number" inputmode="numeric" value="'+cur+'" style="width:74px;text-align:right;padding:3px 4px;font-size:12px;border:1px solid var(--line);border-radius:5px"></td>';
+  SRC.forEach(function(s){
+    inp+='<tr><td style="position:sticky;left:0;background:var(--card);padding:3px 6px;font-weight:700;color:'+s.col+';border-bottom:1px solid var(--line);border-right:1px solid var(--line)">'+s.label+'</td>';
+    datesAsc.forEach(function(e){
+      if(s.k==="me"){
+        inp+='<td style="padding:2px 6px;text-align:right;color:var(--sub);border-bottom:1px solid var(--line)">'+(e.me!=null?Math.round(e.me/10000).toLocaleString("ko-KR"):"—")+'</td>';
+      } else {
+        const cur=(e[s.k]!=null)?Math.round(e[s.k]/10000):"";
+        inp+='<td style="padding:1px 2px;border-bottom:1px solid var(--line)"><input data-d="'+e.d+'" data-src="'+s.k+'" type="number" inputmode="numeric" value="'+cur+'" style="width:70px;text-align:right;padding:3px 4px;font-size:12px;border:1px solid var(--line);border-radius:5px"></td>';
+      }
     });
     inp+='</tr>';
   });
