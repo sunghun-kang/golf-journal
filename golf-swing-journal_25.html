@@ -167,7 +167,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.90 · 26-9-8</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.91 · 26-9-8</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -1094,38 +1094,49 @@ function renderMediaPreview(){
   });
 }
 
+function readMediaFile(file){
+  return new Promise(function(resolve){
+    var reader=new FileReader();
+    reader.onload=function(ev){
+      if(file.type.indexOf('image')===0){
+        // 이미지: 1280px 리사이즈 + JPEG 0.7 압축
+        var img=new Image();
+        img.onload=function(){
+          var MAX=1280, w=img.width, h=img.height;
+          if(w>MAX||h>MAX){ if(w>h){ h=Math.round(h*MAX/w); w=MAX; } else { w=Math.round(w*MAX/h); h=MAX; } }
+          var canvas=document.createElement('canvas');
+          canvas.width=w; canvas.height=h;
+          canvas.getContext('2d').drawImage(img,0,0,w,h);
+          resolve({type:'image', data:canvas.toDataURL('image/jpeg',0.7)});
+        };
+        img.onerror=function(){ resolve({type:'image', data:ev.target.result}); };
+        img.src=ev.target.result;
+      } else {
+        resolve({type:'video', data:ev.target.result}); // 영상은 그대로
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+}
 document.getElementById('mMedia').addEventListener('change',function(e){
   var files=Array.from(e.target.files);
-  var readers=files.map(function(file){
-    return new Promise(function(resolve){
-      var reader=new FileReader();
-      reader.onload=function(ev){
-        if(file.type.startsWith('image')){
-          // 이미지: 1280px 리사이즈 + JPEG 0.7 압축
-          var img=new Image();
-          img.onload=function(){
-            var MAX=1280, w=img.width, h=img.height;
-            if(w>MAX||h>MAX){
-              if(w>h){ h=Math.round(h*MAX/w); w=MAX; } else { w=Math.round(w*MAX/h); h=MAX; }
-            }
-            var canvas=document.createElement('canvas');
-            canvas.width=w; canvas.height=h;
-            canvas.getContext('2d').drawImage(img,0,0,w,h);
-            resolve({type:'image', data:canvas.toDataURL('image/jpeg',0.7)});
-          };
-          img.onerror=function(){ resolve({type:'image', data:ev.target.result}); };
-          img.src=ev.target.result;
-        } else {
-          // 영상은 그대로 (압축 어려움)
-          resolve({type:'video', data:ev.target.result});
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-  });
-  Promise.all(readers).then(function(results){
+  Promise.all(files.map(readMediaFile)).then(function(results){
     pendingMedia=pendingMedia.concat(results);
     renderMediaPreview();
+  });
+});
+// 📋 Ctrl+V(붙여넣기)로 클립보드 사진을 바로 추가 — 편집창 열려있을 때만
+document.addEventListener('paste',function(e){
+  var ov=document.getElementById('ov'); if(!ov||!ov.classList.contains('open')) return;
+  var items=(e.clipboardData&&e.clipboardData.items)?e.clipboardData.items:[];
+  var files=[];
+  for(var i=0;i<items.length;i++){ if(items[i].kind==='file'){ var f=items[i].getAsFile(); if(f&&f.type.indexOf('image')===0) files.push(f); } }
+  if(!files.length) return;           // 텍스트 붙여넣기는 그대로 통과
+  e.preventDefault();                 // 사진일 때만 가로채서 첨부로
+  Promise.all(files.map(readMediaFile)).then(function(results){
+    pendingMedia=pendingMedia.concat(results);
+    renderMediaPreview();
+    try{ var mp=document.getElementById('mMediaPreview'); if(mp) mp.scrollIntoView({block:'nearest'}); }catch(_){}
   });
 });
 
