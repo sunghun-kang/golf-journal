@@ -167,7 +167,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.91 · 26-9-8</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.92 · 26-9-8</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -1730,9 +1730,10 @@ if('serviceWorker' in navigator){
       <input type="date" id="thTo" title="시작(오늘)" style="font-size:0.7rem;padding:3px 1px;width:82px;flex-shrink:0">
       <span style="flex-shrink:0">~</span>
       <input type="date" id="thFrom" title="끝(과거)" style="font-size:0.7rem;padding:3px 1px;width:82px;flex-shrink:0">
-      <input type="text" id="thKw" list="thKwList" placeholder="키워드(,또는 &)" style="width:110px;min-width:70px;flex:1 1 90px;font-size:0.85rem;padding:4px 6px;border:1px solid #ccc;border-radius:6px" onkeydown="if(event.key==='Enter'){thKwSave();runTheme();}">
+      <input type="text" id="thKw" list="thKwList" placeholder="키워드 또는 질문(예: 슬라이스 원인 분석해줘)" style="width:110px;min-width:70px;flex:1 1 90px;font-size:0.85rem;padding:4px 6px;border:1px solid #ccc;border-radius:6px" onkeydown="if(event.key==='Enter'){thKwSave();runTheme();}">
       <datalist id="thKwList"></datalist>
       <button onclick="thKwSave();runTheme()" style="background:#2d7a2d;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:0.82rem;font-weight:700;flex-shrink:0">🔍찾기</button>
+      <button onclick="themeAsk()" style="background:#159957;color:#fff;border:none;border-radius:6px;padding:5px 9px;font-size:0.82rem;font-weight:700;flex-shrink:0">🤖질문</button>
       <button id="thAnalyzeBtn" onclick="thToggleMode()" style="background:#7a3fb8;color:#fff;border:none;border-radius:6px;padding:5px 9px;font-size:0.82rem;font-weight:700;flex-shrink:0">📊분석</button>
       <button onclick="themeAddMedia()" style="background:#b8860b;color:#fff;border:none;border-radius:6px;padding:5px 9px;font-size:0.82rem;font-weight:700;flex-shrink:0">➕사진</button>
       <button onclick="saveTheme()" style="background:#1a4d9e;color:#fff;border:none;border-radius:6px;padding:5px 9px;font-size:0.82rem;font-weight:700;flex-shrink:0">💾저장</button>
@@ -2001,6 +2002,48 @@ function themeAIKey(reset){
   var k=localStorage.getItem('anthropicKey')||'';
   if(!k){ k=prompt('Anthropic API 키를 입력하세요 (sk-ant-...).\n이 기기에만 저장되며 서버로 안 보냅니다.'); if(k){ k=k.trim(); localStorage.setItem('anthropicKey',k); idbKeyPut(k); } }
   return k;
+}
+function themeAskShow(html){
+  var body=document.getElementById('thBody'); if(!body) return;
+  var box=document.getElementById('thAskBox');
+  if(!box){ box=document.createElement('div'); box.id='thAskBox'; body.insertBefore(box, body.firstChild); }
+  box.innerHTML=html;
+}
+function themeAsk(){
+  var q=(document.getElementById('thKw').value||'').trim();
+  if(!q){ alert('키워드 칸에 질문을 적어주세요.\n예: 슬라이스 나는 이유 원인 분석해줘'); return; }
+  var key=themeAIKey(false); if(!key) return;
+  // 질문에서 의미있는 단어만 추출(조사·군말 제거)
+  var stop=/^(나는|나|내|이유|원인|분석|분석해줘|분석해조|해줘|해조|왜|어떻게|무엇|뭐|좀|주라|주세요|알려줘|정리|정리해줘|대책|방법|하는|되는|것|거|들|해줄|볼까|어떤|경우|때|더|좀더|관련|모아|모아서|찾아|찾아서)$/;
+  var toks=q.replace(/[?？.,!·]/g,' ').split(/\s+/).filter(function(w){ return w.length>=2 && !stop.test(w); });
+  if(!toks.length) toks=[q];
+  var hay=function(r){ return (r.venue||'')+' '+(r.members||'')+' '+(r.title||'')+' '+(r.memo||''); };
+  var res=(data||[]).filter(function(r){ if(!r||r.deleted) return false; var s=hay(r); return toks.some(function(t){ return s.indexOf(t)>=0; }); });
+  res.sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+  var used=res.slice(0,100);
+  if(!used.length){ alert('그 단어가 들어간 기록을 못 찾았어요.\n다른 단어로 해보세요 (예: 슬라스/슬라이스, 뒷땅, 엎어침).'); return; }
+  themeAskShow('<div style="background:#e7f6ee;border:1px solid #a9e0c4;border-radius:10px;padding:12px;margin:8px 0;color:#159957;font-weight:700">🤖 "'+esc(q)+'" 분석 중… ('+used.length+'건 참고, 10~30초)</div>');
+  var src=used.map(function(r){
+    return '['+(r.date||'')+']'
+      +(r.venue?(' 문제:'+thStrip(r.venue)):'')
+      +(r.members?(' 원인:'+thStrip(r.members)):'')
+      +(r.title?(' 대책:'+thStrip(r.title).replace(/\n/g,' / ')):'')
+      +(r.memo?(' 메모:'+thStrip(r.memo).replace(/\n/g,' ').slice(0,300)):'');
+  }).join('\n');
+  var sys='당신은 골프 스윙 코치입니다. 사용자의 골프 일지 기록을 근거로 질문에 한국어로 간결하고 실전적으로 답합니다. 기록에 있는 내용을 우선 근거로 삼고, 기록에 없어 일반 지식으로 보완할 때는 "(일반적으로)"라고 표시하세요.';
+  var user='질문: '+q+'\n\n아래는 내 골프 일지 기록이야. 이 기록을 근거로 위 질문에 답해줘. (1) 반복되는 핵심 원인 (2) 효과 있었던/권장 대책 (3) 한 줄 종합 조언. 소제목·불릿으로 간결하게.\n맨 마지막 줄에 반드시 "한줄요약: <핵심 한 문장>" 형식으로 써줘.\n\n=== 기록('+used.length+'건) ===\n'+src;
+  fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-opus-5',max_tokens:3000,system:sys,output_config:{effort:'low'},messages:[{role:'user',content:user}]})
+  }).then(function(resp){ return resp.json(); }).then(function(j){
+    if(j.error){ themeAskShow('<div style="background:#fdecea;border-radius:10px;padding:12px;color:#c0392b;font-size:0.85rem">⚠️ 오류: '+esc(j.error.message||JSON.stringify(j.error))+'<br><button onclick="themeAIKey(true);themeAsk()" style="margin-top:6px;font-size:0.8rem;border:1px solid #c0392b;background:#fff;border-radius:6px;padding:3px 10px">키 다시 입력</button></div>'); return; }
+    var txt=(j.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('\n').trim();
+    if(!txt) txt='(응답이 비었어요. 다시 시도해 주세요.)';
+    txt=dashDate(txt);
+    themeLastAI=txt; themeLastKw=q; themeLastOneLine=thExtractOneLine(txt);
+    themeAskShow('<div style="background:#eefaf3;border:1px solid #a9e0c4;border-radius:10px;padding:12px;margin:8px 0"><div style="font-weight:700;color:#159957;margin-bottom:6px;font-size:0.92rem">🤖 '+esc(q)+' <button onclick="document.getElementById(\'thAskBox\').innerHTML=\'\'" style="float:right;font-size:0.68rem;background:none;border:1px solid #ccc;border-radius:5px;padding:1px 6px;color:#999">닫기</button></div><div style="white-space:pre-wrap;line-height:1.7;font-size:0.9rem;color:#222">'+esc(txt)+'</div><div style="margin-top:10px;text-align:center"><button onclick="themeSaveAsEntry()" style="background:#1a7a1a;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:0.9rem;font-weight:700">📌 이 답변을 기록으로 저장</button></div></div>');
+  }).catch(function(e){ themeAskShow('<div style="background:#fdecea;border-radius:10px;padding:12px;color:#c0392b;font-size:0.85rem">⚠️ 통신 실패: '+esc(String(e))+'<br>키 확인 또는 잠시 후 재시도.</div>'); });
 }
 function themeAI(){
   var m=themeMatch();
