@@ -161,7 +161,7 @@
   <header class="hero">
     <div class="hero-top">
       <div>
-        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.12</span></div>
+        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.13</span></div>
         <div class="updated" id="updated">준비 중…</div>
       </div>
       <div class="controls" style="flex-shrink:0">
@@ -358,6 +358,7 @@ const SNAP_FX = 1412.6;
 
 // ---------- 포맷 ----------
 const won = n => (n==null||isNaN(n)) ? "—" : Math.round(n).toLocaleString("ko-KR");
+function commaFmt(v){ if(v===null||v===undefined||v==="") return ""; let s=String(v).replace(/,/g,""); if(s==="") return ""; const neg=s[0]==="-"; if(neg)s=s.slice(1); const p=s.split("."); p[0]=(p[0]||"").replace(/\B(?=(\d{3})+(?!\d))/g,","); return (neg?"-":"")+p.join("."); }
 const usd = n => (n==null||isNaN(n)) ? "—" : n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
 const pct = n => (n==null||isNaN(n)) ? "—" : (n>=0?"+":"") + n.toFixed(2) + "%";
 const pctn = n => (n==null||isNaN(n)) ? "—" : (n>=0?"+":"") + n.toFixed(2); // % 기호 없는 손익률
@@ -820,10 +821,10 @@ function renderEdit(){
       const row=document.createElement("div"); row.className="ed-row";
       const isFix=!h.symbol && (h.fixedValue!=null || h.cost!=null || h.kind!=null); // 예금·펀드 등 고정자산
       const amt=isFix
-        ? `<input class="px" type="number" step="any" value="${h.fixedValue??""}" data-ai="${ai}" data-hi="${hi}" data-f="fixedValue" placeholder="평가액"/>
-           <input class="px" type="number" step="any" value="${h.cost??""}" data-ai="${ai}" data-hi="${hi}" data-f="cost" placeholder="원금"/>`
-        : `<input class="qty" type="number" value="${h.qty??""}" data-ai="${ai}" data-hi="${hi}" data-f="qty" placeholder="수량"/>
-           <input class="px" type="number" step="any" value="${h.avgPrice??""}" data-ai="${ai}" data-hi="${hi}" data-f="avgPrice" placeholder="평단"/>`;
+        ? `<input class="px" type="text" inputmode="decimal" value="${commaFmt(h.fixedValue)}" data-ai="${ai}" data-hi="${hi}" data-f="fixedValue" placeholder="평가액"/>
+           <input class="px" type="text" inputmode="decimal" value="${commaFmt(h.cost)}" data-ai="${ai}" data-hi="${hi}" data-f="cost" placeholder="원금"/>`
+        : `<input class="qty" type="text" inputmode="decimal" value="${commaFmt(h.qty)}" data-ai="${ai}" data-hi="${hi}" data-f="qty" placeholder="수량"/>
+           <input class="px" type="text" inputmode="decimal" value="${commaFmt(h.avgPrice)}" data-ai="${ai}" data-hi="${hi}" data-f="avgPrice" placeholder="평단"/>`;
       row.innerHTML=`<input class="hn" value="${esc(h.name)}" data-ai="${ai}" data-hi="${hi}" data-f="name" placeholder="종목명"/>
         <input class="sym" value="${esc(h.symbol||"")}" data-ai="${ai}" data-hi="${hi}" data-f="symbol" placeholder="코드/티커(없으면 예금)"/>
         ${amt}
@@ -835,8 +836,9 @@ function renderEdit(){
     area.appendChild(box);
   });
   area.oninput=e=>{const t=e.target,ai=t.dataset.ai,hi=t.dataset.hi,f=t.dataset.f;if(ai==null)return;let v=t.value;
-    if(f==="qty"||f==="avgPrice"||f==="fixedValue"||f==="cost")v=Number(v)||0;
+    if(f==="qty"||f==="avgPrice"||f==="fixedValue"||f==="cost")v=Number(String(v).replace(/,/g,""))||0; // 콤마 제거 후 숫자
     if(hi==null)PORT.accounts[ai][f]=v; else PORT.accounts[ai].holdings[hi][f]=v;};
+  area.onfocusout=e=>{ const f=e.target.dataset.f; if(f==="qty"||f==="avgPrice"||f==="fixedValue"||f==="cost") e.target.value=commaFmt(e.target.value); }; // 입력 끝나면 콤마 다시 표시
   area.onchange=e=>{ if(e.target.dataset.f==="symbol") renderEdit(); }; // 코드 입력/삭제 시 종목↔고정 칸 전환
   area.onclick=e=>{const t=e.target;
     if(t.dataset.addhold!=null){PORT.accounts[t.dataset.addhold].holdings.push({name:"",symbol:"",qty:0,avgPrice:0});renderEdit();}
