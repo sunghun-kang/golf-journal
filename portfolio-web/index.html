@@ -143,14 +143,27 @@
   </div>
 </div>
 
+<div class="modal" id="chartModal">
+  <div class="msheet" style="max-width:640px">
+    <h3 style="margin:0 0 4px">📈 총자산 추이</h3>
+    <p style="margin:0 0 10px">앱을 열 때마다 그날 총액이 자동 기록돼요. 여러 날 열수록 그래프가 촘촘해집니다.</p>
+    <div id="chartBox" style="overflow-x:auto"></div>
+    <div class="row2" style="justify-content:space-between;align-items:center">
+      <button class="ghost" id="chartClear" style="color:var(--up)">기록 삭제</button>
+      <button class="ghost" id="chartClose">닫기</button>
+    </div>
+  </div>
+</div>
+
 <div class="wrap">
   <header class="hero">
     <div class="hero-top">
       <div>
-        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.02</span></div>
+        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.03</span></div>
         <div class="updated" id="updated">준비 중…</div>
       </div>
       <div class="controls">
+        <button id="chartBtn" class="ghost">📈 차트</button>
         <button id="refresh" class="ghost">↻ 시세 새로고침</button>
         <button id="dataBtn" class="ghost">📂 데이터</button>
         <button id="editBtn" class="primary">✎ 편집</button>
@@ -674,7 +687,55 @@ async function loadQuotes(){
 async function refresh(){
   try{ await loadQuotes(); render();
     $("#updated").textContent="업데이트 "+new Date().toLocaleTimeString("ko-KR");
+    try{ recordDailyTotal(); }catch(e){}   // 그날 총액 자동 기록(차트용)
   }catch(e){ $("#updated").textContent="오류: "+e.message; }
+}
+// ---------- 총자산 추이(차트) ----------
+const HIST_KEY="asset_hist_v1";
+function calcTotalKRW(){ let v=0; PORT.accounts.forEach(a=>{ v+=sumAccount(a).val; }); return v; }
+function loadHist(){ try{ const h=JSON.parse(localStorage.getItem(HIST_KEY)||"[]"); return Array.isArray(h)?h:[]; }catch(e){ return []; } }
+function recordDailyTotal(){
+  const v=Math.round(calcTotalKRW()); if(!v) return;
+  const today=new Date(Date.now()+9*3600*1000).toISOString().slice(0,10);
+  let h=loadHist();
+  if(h.length && h[h.length-1].d===today) h[h.length-1].v=v;
+  else h.push({d:today, v:v});
+  if(h.length>500) h=h.slice(-500);
+  try{ localStorage.setItem(HIST_KEY, JSON.stringify(h)); }catch(e){}
+}
+function fmtShortWon(n){ n=Math.round(n);
+  if(Math.abs(n)>=1e8) return (n/1e8).toFixed(2).replace(/\.?0+$/,"")+"억";
+  if(Math.abs(n)>=1e4) return Math.round(n/1e4).toLocaleString("ko-KR")+"만";
+  return n.toLocaleString("ko-KR"); }
+function showChart(){
+  recordDailyTotal();
+  const h=loadHist(), box=$("#chartBox");
+  if(h.length<2){ box.innerHTML='<div style="padding:30px 10px;text-align:center;color:var(--sub);line-height:1.7">아직 기록이 '+h.length+'일치예요.<br>내일 또 열면 점이 늘어나 선그래프가 그려져요.<br>(현재 총액: <b>'+won(h.length?h[0].v:calcTotalKRW())+'원</b>)</div>'; $("#chartModal").classList.add("on"); return; }
+  const W=Math.max(560, Math.min(920, h.length*22)), H=300, PL=64, PR=16, PT=18, PB=42;
+  const vs=h.map(x=>x.v), mn=Math.min(...vs), mx=Math.max(...vs), rng=(mx-mn)||1;
+  const x=i=> PL + (W-PL-PR)*(h.length===1?0:i/(h.length-1));
+  const y=v=> PT + (H-PT-PB)*(1-(v-mn)/rng);
+  const pts=h.map((p,i)=>x(i)+","+y(p.v)).join(" ");
+  const first=h[0], last=h[h.length-1], diff=last.v-first.v, dpct=first.v?diff/first.v*100:0;
+  const col=diff>=0?"var(--up)":"var(--dn)";
+  let grid="";
+  for(let g=0;g<=4;g++){ const gy=PT+(H-PT-PB)*g/4, gv=mx-(rng)*g/4;
+    grid+='<line x1="'+PL+'" y1="'+gy+'" x2="'+(W-PR)+'" y2="'+gy+'" stroke="var(--line)" stroke-width="1"/>'
+        +'<text x="'+(PL-6)+'" y="'+(gy+3)+'" text-anchor="end" font-size="10" fill="var(--sub)">'+fmtShortWon(gv)+'</text>'; }
+  // x축 라벨: 처음/중간/끝
+  const xl=[0, Math.floor((h.length-1)/2), h.length-1];
+  let xlab=""; xl.forEach(i=>{ xlab+='<text x="'+x(i)+'" y="'+(H-PB+16)+'" text-anchor="middle" font-size="10" fill="var(--sub)">'+h[i].d.slice(5)+'</text>'; });
+  // 마지막 점 강조
+  const dots='<circle cx="'+x(h.length-1)+'" cy="'+y(last.v)+'" r="3.5" fill="'+col+'"/>';
+  const svg='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="max-width:'+W+'px;display:block">'
+    +grid
+    +'<polyline points="'+pts+'" fill="none" stroke="'+col+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>'
+    +dots+xlab+'</svg>';
+  const head='<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:6px;flex-wrap:wrap;gap:8px">'
+    +'<div><div style="font-size:12px;color:var(--sub)">현재 총액 ('+last.d+')</div><div style="font-size:22px;font-weight:800">'+won(last.v)+'원</div></div>'
+    +'<div style="text-align:right"><div style="font-size:12px;color:var(--sub)">'+first.d+' 대비 ('+h.length+'일)</div><div style="font-size:15px;font-weight:800;color:'+col+'">'+(diff>=0?"+":"−")+won(Math.abs(diff))+'원 ('+(diff>=0?"+":"")+dpct.toFixed(2)+'%)</div></div></div>';
+  box.innerHTML=head+svg;
+  $("#chartModal").classList.add("on");
 }
 
 // ---------- 편집 ----------
@@ -756,6 +817,10 @@ $("#ioExport").onclick=()=>{ const blob=new Blob([JSON.stringify(PORT,null,2)],{
 $("#ioReset").onclick=()=>{ if(confirm("관리자(Claude)가 갱신한 최신 보유종목으로 불러올까요? 폰에서 직접 편집한 내용은 사라집니다.")){ loadEmbedded(); closeIO(); document.title=PORT.title; $("#title").textContent=PORT.title; refresh(); } };
 
 // ---------- 이벤트 & 시작 ----------
+$("#chartBtn").onclick=showChart;
+$("#chartClose").onclick=()=>$("#chartModal").classList.remove("on");
+$("#chartModal").onclick=e=>{ if(e.target.id==="chartModal") $("#chartModal").classList.remove("on"); };
+$("#chartClear").onclick=()=>{ if(confirm("총자산 추이 기록을 모두 지울까요?")){ try{localStorage.removeItem(HIST_KEY);}catch(e){} $("#chartModal").classList.remove("on"); } };
 $("#refresh").onclick=refresh;
 $("#editBtn").onclick=()=>toggleEdit(!EDITING);
 $("#sortKey").onchange=e=>{ SORT.key=e.target.value; render(); };
