@@ -167,7 +167,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.88 · 26-9-8</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.89 · 26-9-8</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -2209,8 +2209,16 @@ function mtgFixQuality(){ var ch=false; (meetings||[]).forEach(function(m){ if(!
   if(m.type==='품질'){ if((m.attendees||'')==='회장님'){ m.attendees=''; m.updatedAt=nowKST(); ch=true; } }
   else { if(!(m.attendees||'').trim()){ m.attendees='회장님'; m.updatedAt=nowKST(); ch=true; } }
 }); return ch; }
+function mtgRemoveHolidayAuto(){
+  if(typeof HOLIDAYS==='undefined') return false;
+  var AUTO={'월간':1,'AI':1,'주간':1,'품질':1}; var ch=false;
+  (meetings||[]).forEach(function(m){ if(!m||m.deleted) return;
+    if(AUTO[m.type] && HOLIDAYS.has(m.date) && !(m.report||'').trim() && !(m.orders||'').trim()){ m.deleted=true; m.updatedAt=nowKST(); ch=true; }
+  });
+  return ch;
+}
 function mtgRenderCal(){
-  var _ch=false; if(mtgMigrateTypes()) _ch=true; if(mtgFixQuality()) _ch=true; if(mtgDedup()) _ch=true; if(_ch){ mtgSaveLocal(); mtgPush(); }
+  var _ch=false; if(mtgMigrateTypes()) _ch=true; if(mtgFixQuality()) _ch=true; if(mtgRemoveHolidayAuto()) _ch=true; if(mtgDedup()) _ch=true; if(_ch){ mtgSaveLocal(); mtgPush(); }
   var head=document.getElementById('mtgTitle'); if(head) head.textContent=mtgY+'년 '+(mtgM+1)+'월';
   var first=new Date(mtgY,mtgM,1); var startDow=first.getDay(); var days=new Date(mtgY,mtgM+1,0).getDate();
   var dows=['일','월','화','수','목','금','토'];
@@ -2222,11 +2230,14 @@ function mtgRenderCal(){
     var dow=new Date(mtgY,mtgM,day).getDay();
     var list=mtgForDate(ds);
     var mt=list[0];
-    var dcol=(dow===0?'#d42020':dow===6?'#1a6ac0':'#444');
-    h+='<div onclick="mtgAdd(\''+ds+'\')" style="background:#fff;min-height:170px;padding:3px 4px;cursor:pointer;position:relative;vertical-align:top">';
+    var isHol=(typeof HOLIDAYS!=='undefined')&&HOLIDAYS.has(ds);
+    var holName=isHol?HOLIDAYS.get(ds):'';
+    var dcol=(isHol||dow===0)?'#d42020':(dow===6?'#1a6ac0':'#444');
+    h+='<div onclick="mtgAdd(\''+ds+'\')" style="background:'+(isHol?'#fdeceb':'#fff')+';min-height:170px;padding:3px 4px;cursor:pointer;position:relative;vertical-align:top">';
     // 날짜 + 회의이름(같은 줄)
     h+='<div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">';
     h+='<span style="font-size:0.78rem;font-weight:700;color:'+dcol+'">'+day+'</span>';
+    if(isHol){ h+='<span style="font-size:0.6rem;color:#d42020;font-weight:700">'+esc(holName)+'</span>'; }
     if(dow===0){ h+='<span style="font-size:0.6rem;color:#c98;font-weight:700">'+mtgWeekNo(mtgY,mtgM,day)+'주</span>'; }
     if(mt){
       h+='<span onclick="event.stopPropagation();mtgEdit(\''+mt.id+'\')" style="background:'+mtgColor(mt.type)+';color:#fff;border-radius:4px;padding:1px 6px;font-size:0.68rem;font-weight:700;cursor:pointer">'+esc(mt.type)+'</span>';
@@ -2249,7 +2260,7 @@ function mtgAutoFill(){
   if(!confirm(mtgY+'년 '+(mtgM+1)+'월의 정기회의(월간=첫 월요일, AI=둘째 월요일, 주간=매주 수요일, 품질=매주 목요일)를 빈 양식으로 추가할까요?')) return;
   var days=new Date(mtgY,mtgM+1,0).getDate(); var firstMon=0;
   for(var d=1;d<=days;d++){ if(new Date(mtgY,mtgM,d).getDay()===1){ firstMon=d; break; } }
-  function addIf(ds,type){ if(!meetings.some(function(x){return !x.deleted&&x.date===ds&&x.type===type;})){ meetings.push({id:'mtg_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),type:type,date:ds,attendees:(type==='품질'?'':'회장님'),report:'',orders:'',updatedAt:nowKST()}); } }
+  function addIf(ds,type){ if(typeof HOLIDAYS!=='undefined'&&HOLIDAYS.has(ds)) return; /* 공휴일엔 정기회의 안 넣음 */ if(!meetings.some(function(x){return !x.deleted&&x.date===ds&&x.type===type;})){ meetings.push({id:'mtg_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),type:type,date:ds,attendees:(type==='품질'?'':'회장님'),report:'',orders:'',updatedAt:nowKST()}); } }
   if(firstMon){ addIf(mtgDateStr(mtgY,mtgM,firstMon),'월간'); var ai=firstMon+7; if(ai<=days) addIf(mtgDateStr(mtgY,mtgM,ai),'AI'); }
   for(var d2=1;d2<=days;d2++){ var dw=new Date(mtgY,mtgM,d2).getDay(); if(dw===3) addIf(mtgDateStr(mtgY,mtgM,d2),'주간'); if(dw===4) addIf(mtgDateStr(mtgY,mtgM,d2),'품질'); }
   mtgSaveLocal(); mtgPush(); mtgRenderCal();
