@@ -161,7 +161,7 @@
   <header class="hero">
     <div class="hero-top">
       <div>
-        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.08</span></div>
+        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.09</span></div>
         <div class="updated" id="updated">준비 중…</div>
       </div>
       <div class="controls" style="flex-shrink:0">
@@ -742,7 +742,7 @@ function showChart(){
     +'<div style="overflow:auto;max-height:220px;border:1px solid var(--line);border-radius:8px"><table id="chartGrid" style="border-collapse:collapse;font-size:12px;white-space:nowrap">'
     +'<thead><tr style="position:sticky;top:0;background:var(--card);z-index:2">'
     +'<th style="position:sticky;left:0;background:var(--card);padding:5px 6px;text-align:left;border-bottom:1px solid var(--line);border-right:1px solid var(--line);z-index:3">기관\\날짜</th>';
-  datesAsc.forEach(e=>{ inp+='<th style="padding:5px 6px;text-align:right;border-bottom:1px solid var(--line)">'+e.d.slice(5)+'</th>'; });
+  datesAsc.forEach(e=>{ inp+='<th style="padding:5px 6px;text-align:right;border-bottom:1px solid var(--line)">'+e.d.slice(2)+'</th>'; });
   inp+='</tr></thead><tbody>';
   SRC.forEach(function(s){
     inp+='<tr><td style="position:sticky;left:0;background:var(--card);padding:3px 6px;font-weight:700;color:'+s.col+';border-bottom:1px solid var(--line);border-right:1px solid var(--line)">'+s.label+'</td>';
@@ -774,7 +774,7 @@ function showChart(){
     grid+='<line x1="'+PL+'" y1="'+gy+'" x2="'+(W-PR)+'" y2="'+gy+'" stroke="var(--line)" stroke-width="1"/>'
         +'<text x="'+(PL-6)+'" y="'+(gy+3)+'" text-anchor="end" font-size="10" fill="var(--sub)">'+fmtShortWon(gv)+'</text>'; }
   const xl=[0, Math.floor((h.length-1)/2), h.length-1];
-  let xlab=""; xl.forEach(i=>{ xlab+='<text x="'+x(i)+'" y="'+(H-PB+16)+'" text-anchor="middle" font-size="10" fill="var(--sub)">'+h[i].d.slice(5)+'</text>'; });
+  let xlab=""; xl.forEach(i=>{ xlab+='<text x="'+x(i)+'" y="'+(H-PB+16)+'" text-anchor="middle" font-size="10" fill="var(--sub)">'+h[i].d.slice(2)+'</text>'; });
   let lines="";
   present.forEach(function(s){
     const pts=[]; h.forEach(function(p,i){ if(p[s.k]!=null) pts.push(x(i)+","+y(p[s.k])); });
