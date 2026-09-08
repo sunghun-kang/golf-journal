@@ -161,7 +161,7 @@
   <header class="hero">
     <div class="hero-top">
       <div>
-        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.11</span></div>
+        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.12</span></div>
         <div class="updated" id="updated">준비 중…</div>
       </div>
       <div class="controls" style="flex-shrink:0">
@@ -730,6 +730,7 @@ function chartAddDate(){
   };
   try{ dp.showPicker(); }catch(e){ dp.focus(); dp.click(); } // 달력 팝업
 }
+function chartDelDate(d){ if(!confirm(d+" 날짜 기록을 지울까요?")) return; const h=loadHist().filter(x=>x.d!==d); saveHist(h); showChart(); }
 function showChart(){
   recordDailyTotal();
   const h=loadHist(), box=$("#chartBox");
@@ -743,7 +744,7 @@ function showChart(){
     +'<div style="overflow:auto;max-height:220px;border:1px solid var(--line);border-radius:8px"><table id="chartGrid" style="border-collapse:collapse;font-size:12px;white-space:nowrap">'
     +'<thead><tr style="position:sticky;top:0;background:var(--card);z-index:2">'
     +'<th style="position:sticky;left:0;background:var(--card);padding:5px 6px;text-align:left;border-bottom:1px solid var(--line);border-right:1px solid var(--line);z-index:3">기관\\날짜</th>';
-  datesAsc.forEach(e=>{ inp+='<th style="padding:5px 6px;text-align:right;border-bottom:1px solid var(--line)">'+e.d.slice(2)+'</th>'; });
+  datesAsc.forEach(e=>{ inp+='<th style="padding:5px 6px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap">'+e.d.slice(2)+' <span onclick="chartDelDate(\''+e.d+'\')" title="이 날짜 삭제" style="color:#c0392b;cursor:pointer;font-weight:700;padding:0 3px">✕</span></th>'; });
   inp+='</tr></thead><tbody>';
   SRC.forEach(function(s){
     inp+='<tr><td style="position:sticky;left:0;background:var(--card);padding:3px 6px;font-weight:700;color:'+s.col+';border-bottom:1px solid var(--line);border-right:1px solid var(--line)">'+s.label+'</td>';
