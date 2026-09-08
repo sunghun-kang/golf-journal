@@ -149,6 +149,7 @@
     <h3 style="margin:0 0 4px">📈 총자산 추이</h3>
     <p style="margin:0 0 10px">앱을 열 때마다 그날 총액이 자동 기록돼요. 여러 날 열수록 그래프가 촘촘해집니다.</p>
     <div id="chartBox" style="overflow-x:auto"></div>
+    <input type="date" id="chartDatePick" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
     <div class="row2" style="justify-content:space-between;align-items:center">
       <button class="ghost" id="chartClear" style="color:var(--up)">기록 삭제</button>
       <button class="ghost" id="chartClose">닫기</button>
@@ -160,7 +161,7 @@
   <header class="hero">
     <div class="hero-top">
       <div>
-        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.07</span></div>
+        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.08</span></div>
         <div class="updated" id="updated">준비 중…</div>
       </div>
       <div class="controls" style="flex-shrink:0">
@@ -719,10 +720,14 @@ function chartSaveGrid(){
   h.sort((a,b)=>a.d.localeCompare(b.d)); saveHist(h); showChart();
 }
 function chartAddDate(){
-  let d=prompt("추가할 날짜 (YYYY-MM-DD)", todayStr()); if(!d) return; d=d.trim();
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(d)){ alert("YYYY-MM-DD 형식으로 입력하세요 (예: 2026-09-08)"); return; }
-  const h=loadHist(); if(!h.find(x=>x.d===d)){ h.push({d:d}); h.sort((a,b)=>a.d.localeCompare(b.d)); saveHist(h); }
-  showChart();
+  const dp=document.getElementById("chartDatePick"); if(!dp){ return; }
+  dp.value=todayStr();
+  dp.onchange=function(){
+    const d=dp.value; if(!/^\d{4}-\d{2}-\d{2}$/.test(d)) return;
+    const h=loadHist(); if(!h.find(x=>x.d===d)){ h.push({d:d}); h.sort((a,b)=>a.d.localeCompare(b.d)); saveHist(h); }
+    showChart();
+  };
+  try{ dp.showPicker(); }catch(e){ dp.focus(); dp.click(); } // 달력 팝업
 }
 function showChart(){
   recordDailyTotal();
