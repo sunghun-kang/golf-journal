@@ -161,7 +161,7 @@
   <header class="hero">
     <div class="hero-top">
       <div>
-        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.10</span></div>
+        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.11</span></div>
         <div class="updated" id="updated">준비 중…</div>
       </div>
       <div class="controls" style="flex-shrink:0">
@@ -709,14 +709,14 @@ function fmtShortWon(n){ n=Math.round(n);
   if(Math.abs(n)>=1e8) return (n/1e8).toFixed(2).replace(/\.?0+$/,"")+"억";
   if(Math.abs(n)>=1e4) return Math.round(n/1e4).toLocaleString("ko-KR")+"만";
   return n.toLocaleString("ko-KR"); }
-// 엑셀형 표 저장(만원 단위 → 원). 저장 후 차트 다시 그림
+// 엑셀형 표 저장(천원 단위 → 원). 저장 후 차트 다시 그림
 function chartSaveGrid(){
   const h=loadHist();
   document.querySelectorAll('#chartGrid input').forEach(function(el){
     const d=el.dataset.d, k=el.dataset.src; let e=h.find(x=>x.d===d); if(!e){ e={d:d}; h.push(e); }
     if(k==="memo"){ const t=(el.value||"").trim(); if(t) e.memo=t; else delete e.memo; return; }
     const s=(el.value||"").replace(/,/g,"").trim();
-    if(s==="") delete e[k]; else { const n=Number(s); if(isFinite(n)) e[k]=Math.round(n*10000); } // 만원→원
+    if(s==="") delete e[k]; else { const n=Number(s); if(isFinite(n)) e[k]=Math.round(n*1000); } // 천원→원
   });
   h.sort((a,b)=>a.d.localeCompare(b.d)); saveHist(h); showChart();
 }
@@ -734,11 +734,11 @@ function showChart(){
   recordDailyTotal();
   const h=loadHist(), box=$("#chartBox");
   const eToday=h.find(x=>x.d===todayStr())||{};
-  // 엑셀형 입력 그리드: 가로=날짜, 세로=내앱(자동)/네이버/카카오/토스 (만원)
+  // 엑셀형 입력 그리드: 가로=날짜, 세로=내앱(자동)/네이버/카카오/토스 (천원)
   const datesAsc=[...h].sort((a,b)=>a.d.localeCompare(b.d)); // 왼→오른 = 과거→최근
   let inp='<div style="margin-bottom:10px">'
     +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;flex-wrap:wrap;gap:6px">'
-    +'<span style="font-size:12px;color:var(--sub)">표에 <b>만원 단위</b>로 입력 (내앱은 자동)</span>'
+    +'<span style="font-size:12px;color:var(--sub)">표에 <b>천원 단위</b>로 입력 (내앱은 자동)</span>'
     +'<span><button class="ghost" onclick="chartAddDate()" style="padding:4px 8px;font-size:12px">+ 날짜</button> <button class="primary" onclick="chartSaveGrid()" style="padding:4px 12px;font-size:12px">저장</button></span></div>'
     +'<div style="overflow:auto;max-height:220px;border:1px solid var(--line);border-radius:8px"><table id="chartGrid" style="border-collapse:collapse;font-size:12px;white-space:nowrap">'
     +'<thead><tr style="position:sticky;top:0;background:var(--card);z-index:2">'
@@ -749,9 +749,9 @@ function showChart(){
     inp+='<tr><td style="position:sticky;left:0;background:var(--card);padding:3px 6px;font-weight:700;color:'+s.col+';border-bottom:1px solid var(--line);border-right:1px solid var(--line)">'+s.label+'</td>';
     datesAsc.forEach(function(e){
       if(s.k==="me"){
-        inp+='<td style="padding:2px 6px;text-align:right;color:var(--sub);border-bottom:1px solid var(--line)">'+(e.me!=null?Math.round(e.me/10000).toLocaleString("ko-KR"):"—")+'</td>';
+        inp+='<td style="padding:2px 6px;text-align:right;color:var(--sub);border-bottom:1px solid var(--line)">'+(e.me!=null?Math.round(e.me/1000).toLocaleString("ko-KR"):"—")+'</td>';
       } else {
-        const cur=(e[s.k]!=null)?Math.round(e[s.k]/10000):"";
+        const cur=(e[s.k]!=null)?Math.round(e[s.k]/1000):"";
         inp+='<td style="padding:1px 2px;border-bottom:1px solid var(--line)"><input data-d="'+e.d+'" data-src="'+s.k+'" type="number" inputmode="numeric" value="'+cur+'" style="width:70px;text-align:right;padding:3px 4px;font-size:12px;border:1px solid var(--line);border-radius:5px"></td>';
       }
     });
