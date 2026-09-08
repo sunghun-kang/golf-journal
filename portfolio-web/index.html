@@ -161,7 +161,7 @@
   <header class="hero">
     <div class="hero-top">
       <div>
-        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.09</span></div>
+        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.10</span></div>
         <div class="updated" id="updated">준비 중…</div>
       </div>
       <div class="controls" style="flex-shrink:0">
@@ -714,6 +714,7 @@ function chartSaveGrid(){
   const h=loadHist();
   document.querySelectorAll('#chartGrid input').forEach(function(el){
     const d=el.dataset.d, k=el.dataset.src; let e=h.find(x=>x.d===d); if(!e){ e={d:d}; h.push(e); }
+    if(k==="memo"){ const t=(el.value||"").trim(); if(t) e.memo=t; else delete e.memo; return; }
     const s=(el.value||"").replace(/,/g,"").trim();
     if(s==="") delete e[k]; else { const n=Number(s); if(isFinite(n)) e[k]=Math.round(n*10000); } // 만원→원
   });
@@ -756,6 +757,12 @@ function showChart(){
     });
     inp+='</tr>';
   });
+  // 메모 행(날짜별 메모)
+  inp+='<tr><td style="position:sticky;left:0;background:var(--card);padding:3px 6px;font-weight:700;color:var(--sub);border-right:1px solid var(--line)">메모</td>';
+  datesAsc.forEach(function(e){
+    inp+='<td style="padding:1px 2px"><input data-d="'+e.d+'" data-src="memo" type="text" value="'+esc(e.memo||"")+'" placeholder="메모" style="width:110px;padding:3px 4px;font-size:12px;border:1px solid var(--line);border-radius:5px"></td>';
+  });
+  inp+='</tr>';
   inp+='</tbody></table></div></div>';
 
   // 그릴 데이터: 각 소스별 존재하는 점만
