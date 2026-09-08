@@ -159,7 +159,7 @@
   <header class="hero">
     <div class="hero-top">
       <div>
-        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.04</span></div>
+        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.05</span></div>
         <div class="updated" id="updated">준비 중…</div>
       </div>
       <div class="controls">
@@ -707,29 +707,47 @@ function fmtShortWon(n){ n=Math.round(n);
   if(Math.abs(n)>=1e8) return (n/1e8).toFixed(2).replace(/\.?0+$/,"")+"억";
   if(Math.abs(n)>=1e4) return Math.round(n/1e4).toLocaleString("ko-KR")+"만";
   return n.toLocaleString("ko-KR"); }
-// 오늘 수동 입력 저장(만원 단위 → 원). 저장 후 차트 다시 그림
-function chartSaveExt(){
-  const h=loadHist(), e=histToday(h);
-  ["naver","kakao","toss"].forEach(function(k){
-    const el=document.getElementById("ext_"+k); if(!el) return;
+// 엑셀형 표 저장(만원 단위 → 원). 저장 후 차트 다시 그림
+function chartSaveGrid(){
+  const h=loadHist();
+  document.querySelectorAll('#chartGrid input').forEach(function(el){
+    const d=el.dataset.d, k=el.dataset.src; let e=h.find(x=>x.d===d); if(!e){ e={d:d}; h.push(e); }
     const s=(el.value||"").replace(/,/g,"").trim();
-    if(s===""){ delete e[k]; } else { const n=Number(s); if(isFinite(n)) e[k]=Math.round(n*10000); } // 만원→원
+    if(s==="") delete e[k]; else { const n=Number(s); if(isFinite(n)) e[k]=Math.round(n*10000); } // 만원→원
   });
-  saveHist(h); showChart();
+  h.sort((a,b)=>a.d.localeCompare(b.d)); saveHist(h); showChart();
+}
+function chartAddDate(){
+  let d=prompt("추가할 날짜 (YYYY-MM-DD)", todayStr()); if(!d) return; d=d.trim();
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(d)){ alert("YYYY-MM-DD 형식으로 입력하세요 (예: 2026-09-08)"); return; }
+  const h=loadHist(); if(!h.find(x=>x.d===d)){ h.push({d:d}); h.sort((a,b)=>a.d.localeCompare(b.d)); saveHist(h); }
+  showChart();
 }
 function showChart(){
   recordDailyTotal();
   const h=loadHist(), box=$("#chartBox");
   const eToday=h.find(x=>x.d===todayStr())||{};
-  // 오늘 수동입력 칸(만원)
-  let inp='<div style="background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:10px">'
-    +'<div style="font-size:12px;color:var(--sub);margin-bottom:6px">오늘('+todayStr().slice(5)+') 수동 입력 <b>(만원 단위)</b> — 네이버·카카오·토스 앱의 총자산을 적으세요</div>'
-    +'<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">';
-  [["naver","네이버"],["kakao","카카오"],["toss","토스"]].forEach(function(a){
-    const cur=(eToday[a[0]]!=null)?Math.round(eToday[a[0]]/10000):"";
-    inp+='<label style="font-size:12px;font-weight:700;display:flex;align-items:center;gap:3px">'+a[1]+'<input id="ext_'+a[0]+'" type="number" inputmode="numeric" value="'+cur+'" placeholder="만원" style="width:92px;text-align:right;padding:5px 6px"></label>';
+  // 엑셀형 입력 그리드: 행=날짜, 열=내앱(자동)/네이버/카카오/토스 (만원)
+  const rowsH=[...h].sort((a,b)=>b.d.localeCompare(a.d)); // 최근 먼저
+  let inp='<div style="margin-bottom:10px">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;flex-wrap:wrap;gap:6px">'
+    +'<span style="font-size:12px;color:var(--sub)">표에 <b>만원 단위</b>로 입력 (내앱은 자동)</span>'
+    +'<span><button class="ghost" onclick="chartAddDate()" style="padding:4px 8px;font-size:12px">+ 날짜</button> <button class="primary" onclick="chartSaveGrid()" style="padding:4px 12px;font-size:12px">저장</button></span></div>'
+    +'<div style="overflow:auto;max-height:210px;border:1px solid var(--line);border-radius:8px"><table id="chartGrid" style="width:100%;border-collapse:collapse;font-size:12px">'
+    +'<thead><tr style="position:sticky;top:0;background:var(--card);z-index:1">'
+    +'<th style="padding:5px 6px;text-align:left;border-bottom:1px solid var(--line)">날짜</th>';
+  SRC.forEach(s=>{ inp+='<th style="padding:5px 4px;text-align:right;border-bottom:1px solid var(--line);color:'+s.col+'">'+s.label+'</th>'; });
+  inp+='</tr></thead><tbody>';
+  rowsH.forEach(function(e){
+    inp+='<tr><td style="padding:3px 6px;white-space:nowrap;font-weight:700;border-bottom:1px solid var(--line)">'+e.d.slice(5)+'</td>';
+    inp+='<td style="padding:2px 4px;text-align:right;color:var(--sub);border-bottom:1px solid var(--line)">'+(e.me!=null?Math.round(e.me/10000).toLocaleString("ko-KR"):"—")+'</td>';
+    ["naver","kakao","toss"].forEach(function(k){
+      const cur=(e[k]!=null)?Math.round(e[k]/10000):"";
+      inp+='<td style="padding:1px 2px;border-bottom:1px solid var(--line)"><input data-d="'+e.d+'" data-src="'+k+'" type="number" inputmode="numeric" value="'+cur+'" style="width:74px;text-align:right;padding:3px 4px;font-size:12px;border:1px solid var(--line);border-radius:5px"></td>';
+    });
+    inp+='</tr>';
   });
-  inp+='<button class="primary" onclick="chartSaveExt()" style="padding:6px 12px">저장</button></div></div>';
+  inp+='</tbody></table></div></div>';
 
   // 그릴 데이터: 각 소스별 존재하는 점만
   const present=SRC.filter(s=>h.some(p=>p[s.k]!=null));
