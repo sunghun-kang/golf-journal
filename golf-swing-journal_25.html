@@ -167,7 +167,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.92 · 26-9-8</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.93 · 26-9-8</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -1737,11 +1737,28 @@ if('serviceWorker' in navigator){
       <button id="thAnalyzeBtn" onclick="thToggleMode()" style="background:#7a3fb8;color:#fff;border:none;border-radius:6px;padding:5px 9px;font-size:0.82rem;font-weight:700;flex-shrink:0">📊분석</button>
       <button onclick="themeAddMedia()" style="background:#b8860b;color:#fff;border:none;border-radius:6px;padding:5px 9px;font-size:0.82rem;font-weight:700;flex-shrink:0">➕사진</button>
       <button onclick="saveTheme()" style="background:#1a4d9e;color:#fff;border:none;border-radius:6px;padding:5px 9px;font-size:0.82rem;font-weight:700;flex-shrink:0">💾저장</button>
+      <button onclick="openKeyModal()" style="background:#555;color:#fff;border:none;border-radius:6px;padding:5px 9px;font-size:0.82rem;font-weight:700;flex-shrink:0">🔑키</button>
     </div>
   </div>
   <div id="thInfo" style="padding:6px 12px;font-size:0.82rem;color:#555"></div>
   <div id="thBody" style="padding:0 10px 40px"></div>
   <button onclick="closeTheme()" title="테마 닫기" style="position:fixed;bottom:16px;right:16px;z-index:5;background:rgba(27,58,27,0.85);color:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:0.9rem;box-shadow:0 2px 6px rgba(0,0,0,0.3)">✕</button>
+  <!-- 🔑 API 키 입력(붙여넣기 잘 되는 전용 입력창) -->
+  <div id="keyModal" style="display:none;position:fixed;inset:0;z-index:10005;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;padding:16px">
+    <div style="background:#fff;border-radius:12px;max-width:460px;width:100%;padding:18px;box-shadow:0 6px 24px rgba(0,0,0,0.3)">
+      <h3 style="margin:0 0 6px;font-size:1.05rem">🔑 Anthropic API 키</h3>
+      <p style="font-size:0.8rem;color:#666;margin:0 0 10px;line-height:1.5"><code>sk-ant-</code>… 키를 붙여넣고 저장하세요. <b>이 기기에만</b> 저장됩니다(서버로 안 감).</p>
+      <input id="keyInput" type="text" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="sk-ant-... 붙여넣기" style="width:100%;box-sizing:border-box;font-size:0.9rem;padding:11px;border:2px solid #159957;border-radius:8px">
+      <div style="font-size:0.72rem;color:#999;margin-top:6px">붙여넣기: 입력칸 탭 후 Ctrl+V, 또는 길게 눌러 '붙여넣기'</div>
+      <div style="display:flex;gap:6px;justify-content:space-between;align-items:center;margin-top:12px">
+        <button onclick="delKeyModal()" style="background:none;border:1px solid #ccc;border-radius:7px;padding:7px 10px;color:#888;font-size:0.8rem">키 삭제</button>
+        <span style="display:flex;gap:6px">
+          <button onclick="closeKeyModal()" style="background:#eee;border:1px solid #ccc;border-radius:7px;padding:8px 14px">취소</button>
+          <button onclick="saveKeyModal()" style="background:#159957;color:#fff;border:none;border-radius:7px;padding:8px 18px;font-weight:700">저장</button>
+        </span>
+      </div>
+    </div>
+  </div>
 </div>
 <script>
 var themeSort='desc';
@@ -2000,9 +2017,13 @@ function idbKeyDel(){ try{ if(IDB) IDB.transaction('kv','readwrite').objectStore
 function themeAIKey(reset){
   if(reset){ localStorage.removeItem('anthropicKey'); idbKeyDel(); }
   var k=localStorage.getItem('anthropicKey')||'';
-  if(!k){ k=prompt('Anthropic API 키를 입력하세요 (sk-ant-...).\n이 기기에만 저장되며 서버로 안 보냅니다.'); if(k){ k=k.trim(); localStorage.setItem('anthropicKey',k); idbKeyPut(k); } }
+  if(!k){ openKeyModal(); return ''; }   // 붙여넣기 잘 되는 전용 입력창(팝업 대체)
   return k;
 }
+function openKeyModal(){ var m=document.getElementById('keyModal'); if(!m) return; var i=document.getElementById('keyInput'); try{ i.value=localStorage.getItem('anthropicKey')||''; }catch(e){} m.style.display='flex'; setTimeout(function(){ try{ i.focus(); i.select(); }catch(e){} },60); }
+function closeKeyModal(){ var m=document.getElementById('keyModal'); if(m) m.style.display='none'; }
+function saveKeyModal(){ var i=document.getElementById('keyInput'); var k=((i&&i.value)||'').trim(); if(!k){ alert('키를 붙여넣어 주세요.'); return; } try{ localStorage.setItem('anthropicKey',k); }catch(e){} try{ idbKeyPut(k); }catch(e){} closeKeyModal(); alert('✅ API 키 저장 완료!\n이제 🤖질문·AI요약을 쓸 수 있어요.'); }
+function delKeyModal(){ try{ localStorage.removeItem('anthropicKey'); }catch(e){} try{ idbKeyDel(); }catch(e){} var i=document.getElementById('keyInput'); if(i) i.value=''; alert('키를 지웠어요.'); }
 function themeAskShow(html){
   var body=document.getElementById('thBody'); if(!body) return;
   var box=document.getElementById('thAskBox');
