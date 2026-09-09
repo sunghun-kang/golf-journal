@@ -161,7 +161,7 @@
   <header class="hero">
     <div class="hero-top">
       <div>
-        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.16</span></div>
+        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.17</span></div>
         <div class="updated" id="updated">준비 중…</div>
       </div>
       <div class="controls" style="flex-shrink:0">
@@ -695,7 +695,7 @@ async function refresh(){
 }
 // ---------- 총자산 추이(차트) : 4개 기관(내앱 자동 + 네이버·카카오·토스 수동) ----------
 const HKEY="asset_hist_v2";
-const SRC=[{k:"me",label:"내앱",col:"#e5342a"},{k:"naver",label:"네이버",col:"#12a06e"},{k:"kakao",label:"카카오",col:"#d9a400"},{k:"toss",label:"토스",col:"#2f6fed"}];
+const SRC=[{k:"me",label:"내앱",col:"#e5342a"},{k:"naver",label:"네이버",col:"#12a06e"},{k:"kakao",label:"카카오",col:"#d9a400"},{k:"toss",label:"토스",col:"#2f6fed"},{k:"kb",label:"KB",col:"#9333ea"}];
 function calcTotalKRW(){ let v=0; PORT.accounts.forEach(a=>{ v+=sumAccount(a).val; }); return v; }
 function loadHist(){
   try{ const h=JSON.parse(localStorage.getItem(HKEY)||"null"); if(Array.isArray(h)) return h; }catch(e){}
