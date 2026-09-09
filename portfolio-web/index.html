@@ -162,7 +162,7 @@
   <header class="hero">
     <div class="hero-top">
       <div>
-        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.26</span></div>
+        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.27</span></div>
         <div class="updated" id="updated">준비 중…</div>
       </div>
       <div class="controls" style="flex-shrink:0">
@@ -762,7 +762,15 @@ function assetSyncPull(){
 }
 function todayStr(){ return new Date(Date.now()+9*3600*1000).toISOString().slice(0,10); }
 function histToday(h){ const t=todayStr(); let e=h.find(x=>x.d===t); if(!e){ e={d:t}; h.push(e); h.sort((a,b)=>a.d.localeCompare(b.d)); e=h.find(x=>x.d===t); } return e; }
-function recordDailyTotal(){ const v=Math.round(calcTotalKRW()); if(!v) return; const h=loadHist(); histToday(h).me=v; if(h.length>800) h.splice(0,h.length-800); saveHist(h); }
+function recordDailyTotal(){
+  const v=Math.round(calcTotalKRW()); if(!v) return;
+  const h=loadHist(); const wk=thisMonday();           // 이번 주 월요일 칸에 내앱 총액 기록
+  let e=h.find(x=>x.d===wk); if(!e){ e={d:wk}; h.push(e); h.sort((a,b)=>a.d.localeCompare(b.d)); e=h.find(x=>x.d===wk); }
+  const isMon=(new Date().getDay()===1);
+  if(isMon || e.me==null) e.me=v;                        // 월요일이면 갱신, 다른 요일이면 비었을 때만 채움
+  if(h.length>800) h.splice(0,h.length-800);
+  saveHist(h);
+}
 function fmtShortWon(n){ n=Math.round(n);
   if(Math.abs(n)>=1e8) return (n/1e8).toFixed(2).replace(/\.?0+$/,"")+"억";
   if(Math.abs(n)>=1e4) return Math.round(n/1e4).toLocaleString("ko-KR")+"만";
