@@ -161,7 +161,7 @@
   <header class="hero">
     <div class="hero-top">
       <div>
-        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.14</span></div>
+        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.15</span></div>
         <div class="updated" id="updated">준비 중…</div>
       </div>
       <div class="controls" style="flex-shrink:0">
@@ -754,7 +754,7 @@ function showChart(){
         inp+='<td style="padding:2px 6px;text-align:right;color:var(--sub);border-bottom:1px solid var(--line)">'+(e.me!=null?Math.round(e.me/1000).toLocaleString("ko-KR"):"—")+'</td>';
       } else {
         const cur=(e[s.k]!=null)?Math.round(e[s.k]/1000):"";
-        inp+='<td style="padding:1px 1px;border-bottom:1px solid var(--line)"><input data-d="'+e.d+'" data-src="'+s.k+'" type="number" inputmode="numeric" value="'+cur+'" style="width:52px;text-align:right;padding:2px 3px;font-size:11px;border:1px solid var(--line);border-radius:4px"></td>';
+        inp+='<td style="padding:1px 1px;border-bottom:1px solid var(--line)"><input data-d="'+e.d+'" data-src="'+s.k+'" type="text" inputmode="numeric" value="'+(cur!==""?commaFmt(cur):"")+'" style="width:66px;text-align:right;padding:2px 3px;font-size:11px;border:1px solid var(--line);border-radius:4px"></td>';
       }
     });
     inp+='</tr>';
@@ -894,6 +894,7 @@ $("#ioReset").onclick=()=>{ if(confirm("관리자(Claude)가 갱신한 최신 �
 
 // ---------- 이벤트 & 시작 ----------
 $("#chartBtn").onclick=showChart;
+$("#chartBox").addEventListener("focusout",function(e){ const el=e.target; if(el.tagName==="INPUT" && el.dataset.src && el.dataset.src!=="memo"){ el.value=commaFmt(String(el.value).replace(/,/g,"")); } });
 $("#chartClose").onclick=()=>$("#chartModal").classList.remove("on");
 $("#chartModal").onclick=e=>{ if(e.target.id==="chartModal") $("#chartModal").classList.remove("on"); };
 $("#chartClear").onclick=()=>{ if(confirm("총자산 추이 기록을 모두 지울까요?")){ try{localStorage.removeItem(HIST_KEY);}catch(e){} $("#chartModal").classList.remove("on"); } };
