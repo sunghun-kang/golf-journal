@@ -161,7 +161,7 @@
   <header class="hero">
     <div class="hero-top">
       <div>
-        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.15</span></div>
+        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.16</span></div>
         <div class="updated" id="updated">준비 중…</div>
       </div>
       <div class="controls" style="flex-shrink:0">
@@ -741,11 +741,11 @@ function showChart(){
   let inp='<div style="margin-bottom:10px">'
     +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;flex-wrap:wrap;gap:6px">'
     +'<span style="font-size:12px;color:var(--sub)">표에 <b>천원 단위</b>로 입력 (내앱은 자동)</span>'
-    +'<span><button class="ghost" onclick="chartGenMondays()" style="padding:4px 8px;font-size:12px">📅 매주월</button> <button class="ghost" onclick="chartAddDate()" style="padding:4px 8px;font-size:12px">+ 날짜</button> <button class="primary" onclick="chartSaveGrid()" style="padding:4px 12px;font-size:12px">저장</button></span></div>'
+    +'<span><button class="ghost" onclick="chartScrollToWeek()" style="padding:4px 8px;font-size:12px">📍 금주</button> <button class="ghost" onclick="chartGenMondays()" style="padding:4px 8px;font-size:12px">📅 매주월</button> <button class="ghost" onclick="chartAddDate()" style="padding:4px 8px;font-size:12px">+ 날짜</button> <button class="primary" onclick="chartSaveGrid()" style="padding:4px 12px;font-size:12px">저장</button></span></div>'
     +'<div id="chartScroll" style="overflow:auto;max-height:240px;border:1px solid var(--line);border-radius:8px"><table id="chartGrid" style="border-collapse:collapse;font-size:11px;white-space:nowrap">'
     +'<thead><tr style="position:sticky;top:0;background:var(--card);z-index:2">'
     +'<th style="position:sticky;left:0;background:var(--card);padding:5px 6px;text-align:left;border-bottom:1px solid var(--line);border-right:1px solid var(--line);z-index:3">기관\\날짜</th>';
-  datesAsc.forEach(e=>{ inp+='<th style="padding:4px 3px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap;font-size:10.5px">'+e.d.slice(2)+'('+dowCh(e.d)+')<span onclick="chartDelDate(\''+e.d+'\')" title="이 날짜 삭제" style="color:#c0392b;cursor:pointer;font-weight:700;padding-left:3px">✕</span></th>'; });
+  datesAsc.forEach(e=>{ inp+='<th data-d="'+e.d+'" style="padding:4px 3px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap;font-size:10.5px">'+e.d.slice(2)+'('+dowCh(e.d)+')<span onclick="chartDelDate(\''+e.d+'\')" title="이 날짜 삭제" style="color:#c0392b;cursor:pointer;font-weight:700;padding-left:3px">✕</span></th>'; });
   inp+='</tr></thead><tbody>';
   SRC.forEach(function(s){
     inp+='<tr><td style="position:sticky;left:0;background:var(--card);padding:3px 6px;font-weight:700;color:'+s.col+';border-bottom:1px solid var(--line);border-right:1px solid var(--line)">'+s.label+'</td>';
@@ -772,7 +772,7 @@ function showChart(){
   let allv=[]; h.forEach(p=>SRC.forEach(s=>{ if(p[s.k]!=null) allv.push(p[s.k]); }));
   if(h.length<2 || allv.length<2){
     box.innerHTML=inp+'<div style="padding:24px 10px;text-align:center;color:var(--sub);line-height:1.7">아직 그래프를 그릴 점이 부족해요.<br>내앱은 열 때마다 자동 기록되고, 위에 네이버·카카오·토스를 입력하면<br>날짜가 쌓일수록 4개 선그래프가 그려져요.</div>';
-    chartScrollRight();
+    chartScrollToWeek();
     $("#chartModal").classList.add("on"); return;
   }
   const W=Math.max(560, Math.min(960, h.length*24)), H=300, PL=64, PR=14, PT=16, PB=40;
@@ -799,10 +799,22 @@ function showChart(){
     legend+='<span style="font-size:12px;font-weight:700;color:var(--ink)"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:'+s.col+';margin-right:4px;vertical-align:middle"></span>'+s.label+' '+fmtShortWon(lastV)+'</span>'; });
   legend+='</div>';
   box.innerHTML=inp+legend+svg;
-  chartScrollRight();
+  chartScrollToWeek();
   $("#chartModal").classList.add("on");
 }
 function chartScrollRight(){ const sc=document.getElementById("chartScroll"); if(sc) setTimeout(function(){ sc.scrollLeft=sc.scrollWidth; },30); }
+function thisMonday(){ const t=new Date(); const day=t.getDay(); const diff=(day===0?-6:1-day); return ymd(new Date(t.getFullYear(),t.getMonth(),t.getDate()+diff)); }
+function chartScrollToWeek(){
+  const sc=document.getElementById("chartScroll"); if(!sc) return;
+  const wk=thisMonday(), today=todayStr();
+  setTimeout(function(){
+    let th=sc.querySelector('th[data-d="'+wk+'"]') || sc.querySelector('th[data-d="'+today+'"]');
+    if(!th){ const ths=[].slice.call(sc.querySelectorAll('th[data-d]')); let best=null;
+      ths.forEach(function(x){ if(x.getAttribute("data-d")<=today){ if(!best||x.getAttribute("data-d")>best.getAttribute("data-d")) best=x; } });
+      th=best||ths[ths.length-1]; }
+    if(th){ sc.scrollLeft=Math.max(0, th.offsetLeft - sc.clientWidth*0.5); }
+  },40);
+}
 function dowCh(dstr){ const p=String(dstr).split("-"); return ["일","월","화","수","목","금","토"][new Date(+p[0],+p[1]-1,+p[2]).getDay()]; }
 function ymd(dt){ return dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(dt.getDate()).padStart(2,"0"); }
 function chartGenMondays(){
