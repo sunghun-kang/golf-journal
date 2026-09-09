@@ -161,7 +161,7 @@
   <header class="hero">
     <div class="hero-top">
       <div>
-        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.20</span></div>
+        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.21</span></div>
         <div class="updated" id="updated">준비 중…</div>
       </div>
       <div class="controls" style="flex-shrink:0">
@@ -233,7 +233,7 @@ const $ = s => document.querySelector(s);
 const LS_KEY = "portfolio_v1";
 const CACHE_KEY = "quotes_cache_v1";
 // ▼▼ 관리자(Claude)가 관리하는 보유종목. 갱신 때마다 DATA_VERSION +1 → 폰에서 새로고침하면 자동 반영 ▼▼
-const DATA_VERSION = 5;
+const DATA_VERSION = 6;
 const EMBEDDED = {"_v":DATA_VERSION,"title":"내 자산 한눈에 보기","accounts":[
 {"name":"토스증권","type":"증권사","holdings":[
 {"name":"SMHX (팹리스반도체)","symbol":"SMHX","qty":59.792325,"avgPrice":48.91},
@@ -312,6 +312,9 @@ const EMBEDDED = {"_v":DATA_VERSION,"title":"내 자산 한눈에 보기","accou
 {"name":"클로봇 12R(권리주)","kind":"권리주","fixedValue":0,"cost":0},
 {"name":"외화예수금(USD)","kind":"외화","fixedValue":1831,"cost":1831}
 ]},
+{"name":"NH Lab","type":"증권사","holdings":[
+{"name":"NH Lab 랩어카운트","kind":"랩","fixedValue":380000000,"cost":360000000}
+]},
 {"name":"IBK기업은행","type":"은행","holdings":[
 {"name":"보통예금(IBK평생한가족통장)","kind":"예금","fixedValue":5450698},
 {"name":"주택청약종합저축","kind":"청약","fixedValue":10000000},
@@ -325,9 +328,6 @@ const EMBEDDED = {"_v":DATA_VERSION,"title":"내 자산 한눈에 보기","accou
 {"name":"글로벌AI액티브 ETF 적립식신탁","kind":"신탁","fixedValue":41753792,"cost":22000000},
 {"name":"반도체 ETF 적립식신탁(2025)","kind":"신탁","fixedValue":54730385,"cost":20012383},
 {"name":"개인형IRP(적립겸용)","kind":"IRP","fixedValue":102987835,"cost":84232370}
-]},
-{"name":"NH Lab","type":"증권사","holdings":[
-{"name":"NH Lab 랩어카운트","kind":"랩","fixedValue":380000000,"cost":360000000}
 ]},
 {"name":"연금","type":"기타","holdings":[
 {"name":"연금","kind":"연금","fixedValue":105000000,"cost":100000000}
