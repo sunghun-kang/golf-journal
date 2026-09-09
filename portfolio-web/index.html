@@ -161,7 +161,7 @@
   <header class="hero">
     <div class="hero-top">
       <div>
-        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.19</span></div>
+        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.20</span></div>
         <div class="updated" id="updated">준비 중…</div>
       </div>
       <div class="controls" style="flex-shrink:0">
@@ -233,7 +233,7 @@ const $ = s => document.querySelector(s);
 const LS_KEY = "portfolio_v1";
 const CACHE_KEY = "quotes_cache_v1";
 // ▼▼ 관리자(Claude)가 관리하는 보유종목. 갱신 때마다 DATA_VERSION +1 → 폰에서 새로고침하면 자동 반영 ▼▼
-const DATA_VERSION = 4;
+const DATA_VERSION = 5;
 const EMBEDDED = {"_v":DATA_VERSION,"title":"내 자산 한눈에 보기","accounts":[
 {"name":"토스증권","type":"증권사","holdings":[
 {"name":"SMHX (팹리스반도체)","symbol":"SMHX","qty":59.792325,"avgPrice":48.91},
@@ -289,7 +289,6 @@ const EMBEDDED = {"_v":DATA_VERSION,"title":"내 자산 한눈에 보기","accou
 {"name":"루시드 그룹","symbol":"LCID","qty":100,"avgPrice":31.51}
 ]},
 {"name":"NH투자증권","type":"증권사","holdings":[
-{"name":"NH Lab 랩어카운트","kind":"랩","fixedValue":380000000,"cost":360000000},
 {"name":"NH-타임폴리오 뉴모빌리티 신기술조합","kind":"신기술조합","fixedValue":196125447,"cost":200000000},
 {"name":"TIGER 미국S&P500","symbol":"360750","qty":400,"avgPrice":22650},
 {"name":"현대모비스","symbol":"012330","qty":20,"avgPrice":455666},
@@ -326,6 +325,9 @@ const EMBEDDED = {"_v":DATA_VERSION,"title":"내 자산 한눈에 보기","accou
 {"name":"글로벌AI액티브 ETF 적립식신탁","kind":"신탁","fixedValue":41753792,"cost":22000000},
 {"name":"반도체 ETF 적립식신탁(2025)","kind":"신탁","fixedValue":54730385,"cost":20012383},
 {"name":"개인형IRP(적립겸용)","kind":"IRP","fixedValue":102987835,"cost":84232370}
+]},
+{"name":"NH Lab","type":"증권사","holdings":[
+{"name":"NH Lab 랩어카운트","kind":"랩","fixedValue":380000000,"cost":360000000}
 ]},
 {"name":"연금","type":"기타","holdings":[
 {"name":"연금","kind":"연금","fixedValue":105000000,"cost":100000000}
