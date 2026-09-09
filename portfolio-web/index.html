@@ -161,7 +161,7 @@
   <header class="hero">
     <div class="hero-top">
       <div>
-        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.24</span></div>
+        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.25</span></div>
         <div class="updated" id="updated">준비 중…</div>
       </div>
       <div class="controls" style="flex-shrink:0">
@@ -557,7 +557,15 @@ function render(){
 
 // ---------- 데이터(로컬 저장) ----------
 function loadLocal(){ try{return JSON.parse(localStorage.getItem(LS_KEY)||"null");}catch(e){return null;} }
-function saveLocal(){ localStorage.setItem(LS_KEY, JSON.stringify(PORT)); }
+// ===== 서버 동기화(Supabase) : 폰·패드·PC 자동 동기화 =====
+var SB_URL="https://qnbpavvcpxjhccppiqav.supabase.co", SB_KEY="sb_publishable_OtaDk4iYFhZJs5GBUz7btw_mOtE5MJP";
+var ASYNCING=false;
+function sbHget(){ return {apikey:SB_KEY,Authorization:"Bearer "+SB_KEY}; }
+function sbHpost(){ return {apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,"Content-Type":"application/json",Prefer:"resolution=merge-duplicates,return=minimal"}; }
+function nowISO(){ return new Date().toISOString(); }
+function sbPush(id,data){ try{ return fetch(SB_URL+"/rest/v1/golf_posts",{method:"POST",headers:sbHpost(),body:JSON.stringify([{id:id,data:data,updated_at:nowISO()}])}).catch(function(){}); }catch(e){} }
+function sbGet(id){ try{ return fetch(SB_URL+"/rest/v1/golf_posts?id=eq."+id+"&select=data",{headers:sbHget()}).then(function(r){return r.ok?r.json():[];}).then(function(a){return (a&&a[0]&&a[0].data)||null;}).catch(function(){return null;}); }catch(e){ return Promise.resolve(null); } }
+function saveLocal(){ try{localStorage.setItem(LS_KEY, JSON.stringify(PORT));}catch(e){} if(!ASYNCING){ var at=nowISO(); try{localStorage.setItem("asset_port_at",at);}catch(e){} sbPush("__asset_port__",{port:PORT,baseV:DATA_VERSION,at:at}); } }
 function allSymbols(){ const set=new Set(); PORT.accounts.forEach(a=>(a.holdings||[]).forEach(h=>{if(h.symbol)set.add(h.symbol);})); return [...set]; }
 
 // ---------- 시세(폰에서 직접 조회) ----------
@@ -710,7 +718,28 @@ function loadHist(){
   try{ const old=JSON.parse(localStorage.getItem("asset_hist_v1")||"[]"); if(Array.isArray(old)&&old.length){ const m=old.map(x=>({d:x.d,me:x.v})); localStorage.setItem(HKEY,JSON.stringify(m)); return m; } }catch(e){}
   return [];
 }
-function saveHist(h){ try{ localStorage.setItem(HKEY, JSON.stringify(h)); }catch(e){} }
+function saveHist(h){ try{ localStorage.setItem(HKEY, JSON.stringify(h)); }catch(e){} if(!ASYNCING){ var at=nowISO(); try{localStorage.setItem("asset_hist_at",at);}catch(e){} sbPush("__asset_hist__",{hist:h,at:at}); } }
+function histMerge(a,b){ var map={}; (a||[]).forEach(function(e){ if(e&&e.d) map[e.d]=Object.assign({},e); });
+  (b||[]).forEach(function(e){ if(!e||!e.d) return; if(!map[e.d]){ map[e.d]=Object.assign({},e); } else { var m=map[e.d]; ["me","naver","kakao","toss","kb","memo"].forEach(function(k){ var mv=m[k]; if((mv===undefined||mv===null||mv==="") && e[k]!==undefined && e[k]!==null && e[k]!=="") m[k]=e[k]; }); } });
+  return Object.keys(map).sort().map(function(k){return map[k];}); }
+function assetSyncPull(){
+  sbGet("__asset_port__").then(function(sp){
+    if(sp && sp.baseV===DATA_VERSION && sp.port && Array.isArray(sp.port.accounts)){
+      var localAt=localStorage.getItem("asset_port_at")||"";
+      if((sp.at||"")>localAt){ ASYNCING=true; PORT=sp.port; saveLocal(); try{localStorage.setItem("asset_port_at",sp.at);}catch(e){} ASYNCING=false; if(!EDITING) refresh(); }
+      else if(localAt){ sbPush("__asset_port__",{port:PORT,baseV:DATA_VERSION,at:localAt}); }
+    } else { sbPush("__asset_port__",{port:PORT,baseV:DATA_VERSION,at:localStorage.getItem("asset_port_at")||nowISO()}); }
+  });
+  sbGet("__asset_hist__").then(function(sh){
+    if(sh && Array.isArray(sh.hist)){
+      var local=loadHist(); var localAt=localStorage.getItem("asset_hist_at")||"";
+      var merged=((sh.at||"")>localAt)? histMerge(sh.hist, local) : histMerge(local, sh.hist);
+      ASYNCING=true; try{localStorage.setItem(HKEY,JSON.stringify(merged));}catch(e){} ASYNCING=false;
+      var at=nowISO(); try{localStorage.setItem("asset_hist_at",at);}catch(e){} sbPush("__asset_hist__",{hist:merged,at:at});
+      var cm=document.getElementById("chartModal"); if(cm && cm.classList.contains("on")) showChart();
+    } else { sbPush("__asset_hist__",{hist:loadHist(),at:localStorage.getItem("asset_hist_at")||nowISO()}); }
+  });
+}
 function todayStr(){ return new Date(Date.now()+9*3600*1000).toISOString().slice(0,10); }
 function histToday(h){ const t=todayStr(); let e=h.find(x=>x.d===t); if(!e){ e={d:t}; h.push(e); h.sort((a,b)=>a.d.localeCompare(b.d)); e=h.find(x=>x.d===t); } return e; }
 function recordDailyTotal(){ const v=Math.round(calcTotalKRW()); if(!v) return; const h=loadHist(); histToday(h).me=v; if(h.length>800) h.splice(0,h.length-800); saveHist(h); }
@@ -954,6 +983,8 @@ function seedQuotes(){
   $("#updated").innerHTML='저장된 시세로 먼저 표시 · 최신 불러오는 중 <span class="spin"></span>';
   // ② 최신 시세는 백그라운드로 받아 도착하는 대로 갱신
   refresh();
+  // ③ 서버 동기화(폰·패드·PC 공유)
+  try{ assetSyncPull(); }catch(e){}
 })();
 </script>
 </body>
