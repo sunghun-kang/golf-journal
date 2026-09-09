@@ -152,6 +152,7 @@
     <input type="date" id="chartDatePick" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
     <div class="row2" style="justify-content:space-between;align-items:center">
       <button class="ghost" id="chartClear" style="color:var(--up)">기록 삭제</button>
+      <button class="primary" id="chartSync">☁ 동기화</button>
       <button class="ghost" id="chartClose">닫기</button>
     </div>
   </div>
@@ -161,7 +162,7 @@
   <header class="hero">
     <div class="hero-top">
       <div>
-        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.25</span></div>
+        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.26</span></div>
         <div class="updated" id="updated">준비 중…</div>
       </div>
       <div class="controls" style="flex-shrink:0">
@@ -722,6 +723,25 @@ function saveHist(h){ try{ localStorage.setItem(HKEY, JSON.stringify(h)); }catch
 function histMerge(a,b){ var map={}; (a||[]).forEach(function(e){ if(e&&e.d) map[e.d]=Object.assign({},e); });
   (b||[]).forEach(function(e){ if(!e||!e.d) return; if(!map[e.d]){ map[e.d]=Object.assign({},e); } else { var m=map[e.d]; ["me","naver","kakao","toss","kb","memo"].forEach(function(k){ var mv=m[k]; if((mv===undefined||mv===null||mv==="") && e[k]!==undefined && e[k]!==null && e[k]!=="") m[k]=e[k]; }); } });
   return Object.keys(map).sort().map(function(k){return map[k];}); }
+function assetSyncNow(){
+  var localN=loadHist().length;
+  fetch(SB_URL+"/rest/v1/golf_posts?id=eq.__asset_hist__&select=data",{headers:sbHget()})
+  .then(function(r){ if(!r.ok) throw new Error("서버 읽기 실패 HTTP "+r.status); return r.json(); })
+  .then(function(a){
+    var sh=(a&&a[0]&&a[0].data)||null; var srv=(sh&&Array.isArray(sh.hist))?sh.hist:[];
+    var merged=histMerge(loadHist(), srv);
+    ASYNCING=true; try{localStorage.setItem(HKEY,JSON.stringify(merged));}catch(e){} try{localStorage.setItem("asset_hist_at",nowISO());}catch(e){} ASYNCING=false;
+    // 보유종목도 같이 올림
+    try{ sbPush("__asset_port__",{port:PORT,baseV:DATA_VERSION,at:localStorage.getItem("asset_port_at")||nowISO()}); }catch(e){}
+    return fetch(SB_URL+"/rest/v1/golf_posts",{method:"POST",headers:sbHpost(),body:JSON.stringify([{id:"__asset_hist__",data:{hist:merged,at:nowISO()},updated_at:nowISO()}])})
+      .then(function(r2){ if(!r2.ok) return r2.text().then(function(t){ throw new Error("서버 쓰기 실패 HTTP "+r2.status+" "+String(t).slice(0,100)); }); })
+      .then(function(){ return fetch(SB_URL+"/rest/v1/golf_posts?id=eq.__asset_hist__&select=data",{headers:sbHget()}).then(function(r3){return r3.json();}); })
+      .then(function(a3){ var sh3=(a3&&a3[0]&&a3[0].data)||null; var n3=(sh3&&sh3.hist)?sh3.hist.length:0;
+        var cm=document.getElementById("chartModal"); if(cm && cm.classList.contains("on")) showChart();
+        alert("✅ 동기화 완료\n\n서버에 있던 날짜: "+srv.length+"개\n내 기기(합친 뒤): "+merged.length+"개\n올린 뒤 서버 재확인: "+n3+"개 ✔\n\n다른 기기에서 ☁동기화 누르면 이 데이터가 받아집니다."); });
+  })
+  .catch(function(e){ alert("⚠️ 동기화 실패\n"+String(e)+"\n\n내 기기 차트기록: "+localN+"개.\n이 메시지를 그대로 알려주세요."); });
+}
 function assetSyncPull(){
   sbGet("__asset_port__").then(function(sp){
     if(sp && sp.baseV===DATA_VERSION && sp.port && Array.isArray(sp.port.accounts)){
@@ -944,6 +964,7 @@ $("#ioReset").onclick=()=>{ if(confirm("관리자(Claude)가 갱신한 최신 �
 // ---------- 이벤트 & 시작 ----------
 $("#chartBtn").onclick=showChart;
 $("#chartBox").addEventListener("focusout",function(e){ const el=e.target; if(el.tagName==="INPUT" && el.dataset.src && el.dataset.src!=="memo"){ el.value=commaFmt(String(el.value).replace(/,/g,"")); } });
+$("#chartSync").onclick=assetSyncNow;
 $("#chartClose").onclick=()=>$("#chartModal").classList.remove("on");
 $("#chartModal").onclick=e=>{ if(e.target.id==="chartModal") $("#chartModal").classList.remove("on"); };
 $("#chartClear").onclick=()=>{ if(confirm("총자산 추이 기록을 모두 지울까요?")){ try{localStorage.removeItem(HIST_KEY);}catch(e){} $("#chartModal").classList.remove("on"); } };
