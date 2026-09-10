@@ -168,7 +168,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.56rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.04 · 26-09-11</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.56rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.05 · 26-09-11</div></div>
     <div style="display:flex;gap:3px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -821,10 +821,11 @@ function showCpop(ds){
     var tags='';
     if(r.vt==='F') tags+='<span class="cpop-tag" style="background:#2f8a3f">⛳🏌️ 필드</span>';
     if(r.vt==='S') tags+='<span class="cpop-tag" style="background:#2668c4">🏌️‍♀️ 스크린</span>';
-    if(r.vt==='L') tags+='<span class="cpop-tag" style="background:#c94aad">人生</span>'+(r.sub?'<span class="cpop-tag" style="background:#f7e6f2;color:#b62c93">'+esc(r.sub)+'</span>':'');
+    if(r.vt==='L') tags+='<span class="cpop-tag" style="background:#c94aad">人生</span>';
     if(r.vt==='E') tags+='<span class="cpop-tag" style="background:#ba7530">E 영어</span>';
-    if(r.vt==='C') tags+='<span class="cpop-tag" style="background:#db7d15">C 회사</span>'+(r.sub?'<span class="cpop-tag" style="background:#f9ecd9;color:#c76a00">'+esc(r.sub)+'</span>':'');
+    if(r.vt==='C') tags+='<span class="cpop-tag" style="background:#db7d15">C 회사</span>';
     if(r.vt==='A') tags+='<span class="cpop-tag" style="background:#0f9a9a">🔍 분석</span>';
+    if(r.sub){ var _sct=subTint(r.vt); tags+='<span class="cpop-tag" style="background:'+_sct.bg+';color:'+_sct.fg+'">'+esc(r.sub)+'</span>'; }
     if(r.venue) tags+='<span class="cpop-tag" style="background:#888;font-weight:700">'+esc(r.venue)+'</span>';
     if(r.members) tags+='<span class="cpop-tag" style="background:#4a7a4a;font-weight:700">'+esc(r.members)+'</span>';
     if(r.important) tags+='<span class="cpop-tag" style="background:#d42020">🔴 중요</span>';
@@ -860,8 +861,8 @@ function cardHtml(r, i){
   var vtHtml=r.vt==='F'?'<span style="font-size:0.95rem;letter-spacing:-4px;white-space:nowrap;display:inline-block;flex-shrink:0;vertical-align:middle">⛳🏌️</span>':r.vt==='S'?'<span style="font-size:1rem;vertical-align:middle">🏌️‍♀️</span>':r.vt==='L'?'<span class="vt vt-l">人</span>':r.vt==='E'?'<span class="vt vt-e">E</span>':r.vt==='C'?'<span class="vt vt-c">C</span>':r.vt==='A'?'<span class="vt vt-a" style="font-size:0.85rem">🔍</span>':'';
   if(isTidy) vtHtml=AI_SVG2+'<span style="background:#3a8fc0;color:#fff;font-weight:700;font-size:0.72rem;padding:2px 8px;border-radius:10px;vertical-align:middle;margin-left:2px">AI정리</span>';
   else if(isAI) vtHtml=AI_SVG+'<span style="background:#1cab66;color:#fff;font-weight:700;font-size:0.72rem;padding:2px 8px;border-radius:10px;vertical-align:middle;margin-left:2px">AI요약</span>';
-  if(r.sub && (r.vt==='L'||r.vt==='C')){   // 2단계 세부구분 뱃지(연한 톤)
-    var _sc=(r.vt==='L')?{bg:'#f7e6f2',fg:'#b62c93'}:{bg:'#f9ecd9',fg:'#c76a00'};
+  if(r.sub){   // 2단계 세부구분 뱃지(연한 톤)
+    var _sc=subTint(r.vt);
     vtHtml+='<span style="background:'+_sc.bg+';color:'+_sc.fg+';font-weight:700;font-size:0.7rem;padding:2px 8px;border-radius:10px;vertical-align:middle;margin-left:3px">'+esc(r.sub)+'</span>';
   }
   var venueHtml=r.venue?'<span class="venue" style="font-weight:700">'+thBlink(esc(r.venue))+'</span>':'';
@@ -1001,18 +1002,30 @@ function tog(i){
   if(vb)vb.textContent=open?'보기':'닫기';
 }
 
-// 구분 2단계: 人生→금융/연예 등, 회사→자유입력. 선택시 세부 입력칸 토글
+// 세부(2단) 뱃지 색: 구분별 연한 톤
+function subTint(vt){
+  switch(vt){
+    case 'F': return {bg:'#e6f2e9',fg:'#2f8a3f'};
+    case 'S': return {bg:'#e3ecf8',fg:'#2668c4'};
+    case 'A': return {bg:'#dff0f0',fg:'#0f8a8a'};
+    case 'L': return {bg:'#f7e6f2',fg:'#b62c93'};
+    case 'E': return {bg:'#f2e9de',fg:'#a5641f'};
+    case 'C': return {bg:'#f9ecd9',fg:'#c76a00'};
+    default:  return {bg:'#eee',fg:'#555'};
+  }
+}
+// 구분 2단계: 어떤 구분이든 선택하면 세부 입력칸 표시(人生은 금융/연예/운동 추천)
 function mVtChanged(){
   var v=document.getElementById('mVt').value;
   var wrap=document.getElementById('mSubWrap'), inp=document.getElementById('mSub'), dl=document.getElementById('mSubList');
-  var show=(v==='L'||v==='C');
+  var show=(v!=='');
   wrap.style.display=show?'':'none';
   if(!show){ inp.value=''; return; }
   var preset=(v==='L')?['금융','연예','운동']:[];
   var used={}; preset.forEach(function(x){ used[x]=1; });
   (data||[]).forEach(function(r){ if(r&&r.vt===v && r.sub) used[r.sub]=1; });
   dl.innerHTML=Object.keys(used).map(function(x){return '<option value="'+esc(x)+'">';}).join('');
-  inp.placeholder=(v==='L')?'금융/연예/운동 선택·입력':'자유입력';
+  inp.placeholder=(v==='L')?'금융/연예/운동 선택·입력':'세부 선택·입력';
 }
 function openAdd(){
   if(!serverLoaded){alert("서버에서 데이터를 불러오는 중입니다. 잠시 후 다시 시도하세요.");return;}
@@ -1251,7 +1264,7 @@ function saveMod(){
   var wantPin=document.getElementById('mPin').checked;
   var now = nowKST();
   var _vt=document.getElementById('mVt').value;
-  var _sub=(_vt==='L'||_vt==='C')?document.getElementById('mSub').value.trim():'';
+  var _sub=(_vt!=='')?document.getElementById('mSub').value.trim():'';
   var rec={
     date:date,vt:_vt,sub:_sub,
     venue:document.getElementById('mVenue').value.trim(),
