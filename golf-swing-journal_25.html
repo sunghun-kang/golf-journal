@@ -167,7 +167,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.96 · 26-9-10</div></div>
+    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V1.1.97 · 26-9-10</div></div>
     <div style="display:flex;gap:4px">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -219,6 +219,8 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <div class="list" id="list"></div>
 </div>
 <div class="cal-wrap" id="cal-sec"><div class="cal-nav"><button onclick="calPrev()">&#8249;</button><span id="cal-title"></span><button onclick="calNext()">&#8250;</button></div><div class="cal-grid" id="cal-grid"></div></div>
+
+<button id="snapBtn" onclick="snapShot()" title="현재 화면 캡처" style="position:fixed;right:14px;bottom:calc(18px + env(safe-area-inset-bottom));z-index:50;background:#1b3a1b;color:#fff;border:none;border-radius:50%;width:50px;height:50px;font-size:1.35rem;box-shadow:0 3px 10px rgba(0,0,0,0.35);cursor:pointer">📸</button>
 
 <div class="ov" id="ov">
   <div class="modal">
@@ -2523,6 +2525,36 @@ function gcalImport(){
 }
 // 시작 시 회의 로컬 로드(메모리 확보 → 동기화 병합 안전) + 서버 최신 반영
 try{ mtgLoadLocal(function(){ try{ mtgPull(); }catch(e){} }); }catch(e){}
+
+// ===== 📸 현재 화면 스크린샷 (html2canvas 지연로딩 → 공유/저장) =====
+function _snapDL(blob,name){ var url=URL.createObjectURL(blob); var a=document.createElement("a"); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){URL.revokeObjectURL(url);},2000); }
+function _snapRun(){
+  var btn=document.getElementById("snapBtn");
+  var prev=btn?btn.innerHTML:""; if(btn){ btn.innerHTML="⏳"; btn.style.visibility="hidden"; }
+  try{
+    html2canvas(document.body,{ x:window.scrollX, y:window.scrollY, width:window.innerWidth, height:window.innerHeight,
+      useCORS:true, backgroundColor:"#efefea", scale:Math.min(2,(window.devicePixelRatio||1)) })
+    .then(function(canvas){
+      if(btn){ btn.style.visibility="visible"; btn.innerHTML=prev; }
+      canvas.toBlob(function(blob){
+        if(!blob){ alert("캡처 실패(다시 시도)"); return; }
+        var name="강Story_"+(typeof stampKST==="function"?stampKST():Date.now())+".png";
+        try{ var file=new File([blob],name,{type:"image/png"});
+          if(navigator.canShare && navigator.canShare({files:[file]})){ navigator.share({files:[file],title:name}).catch(function(){}); return; }
+        }catch(e){}
+        _snapDL(blob,name);
+      },"image/png");
+    }).catch(function(e){ if(btn){ btn.style.visibility="visible"; btn.innerHTML=prev; } alert("캡처 오류: "+e); });
+  }catch(e){ if(btn){ btn.style.visibility="visible"; btn.innerHTML=prev; } alert("캡처 오류: "+e); }
+}
+function snapShot(){
+  if(window.html2canvas){ _snapRun(); return; }
+  var btn=document.getElementById("snapBtn"); if(btn) btn.innerHTML="⏳";
+  var s=document.createElement("script"); s.src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+  s.onload=function(){ _snapRun(); };
+  s.onerror=function(){ if(btn) btn.innerHTML="📸"; alert("스크린샷 도구 로딩 실패(인터넷 확인 후 다시)"); };
+  document.head.appendChild(s);
+}
 </script>
 
 </body>
