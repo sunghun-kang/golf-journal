@@ -162,7 +162,7 @@
   <header class="hero">
     <div class="hero-top">
       <div>
-        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.28</span></div>
+        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.29</span></div>
         <div class="updated" id="updated">준비 중…</div>
       </div>
       <div class="controls" style="flex-shrink:0">
@@ -719,9 +719,22 @@ function loadHist(){
   try{ const old=JSON.parse(localStorage.getItem("asset_hist_v1")||"[]"); if(Array.isArray(old)&&old.length){ const m=old.map(x=>({d:x.d,me:x.v})); localStorage.setItem(HKEY,JSON.stringify(m)); return m; } }catch(e){}
   return [];
 }
-function saveHist(h){ try{ localStorage.setItem(HKEY, JSON.stringify(h)); }catch(e){} if(!ASYNCING){ var at=nowISO(); try{localStorage.setItem("asset_hist_at",at);}catch(e){} sbPush("__asset_hist__",{hist:h,at:at}); } }
+var _histPushT=null;
+function saveHist(h){ try{ localStorage.setItem(HKEY, JSON.stringify(h)); }catch(e){} if(!ASYNCING){ try{localStorage.setItem("asset_hist_at",nowISO());}catch(e){} clearTimeout(_histPushT); _histPushT=setTimeout(histPushMerge,1500); } }
+// 자동 업로드는 반드시 "서버 읽기→병합→쓰기"로 (덮어쓰기 금지: 다른 기기 데이터 보존)
+function histPushMerge(){
+  try{
+    fetch(SB_URL+"/rest/v1/golf_posts?id=eq.__asset_hist__&select=data",{headers:sbHget()})
+    .then(function(r){ return r.ok?r.json():[]; })
+    .then(function(a){ var sh=(a&&a[0]&&a[0].data)||null; var srv=(sh&&Array.isArray(sh.hist))?sh.hist:[];
+      var merged=histMerge(loadHist(), srv);           // 로컬 우선 + 서버(타기기)로 빈칸/날짜 보강
+      ASYNCING=true; try{localStorage.setItem(HKEY,JSON.stringify(merged));}catch(e){} ASYNCING=false;
+      sbPush("__asset_hist__",{hist:merged,at:nowISO()});
+    }).catch(function(){ sbPush("__asset_hist__",{hist:loadHist(),at:nowISO()}); });
+  }catch(e){ sbPush("__asset_hist__",{hist:loadHist(),at:nowISO()}); }
+}
 function histMerge(a,b){ var map={}; (a||[]).forEach(function(e){ if(e&&e.d) map[e.d]=Object.assign({},e); });
-  (b||[]).forEach(function(e){ if(!e||!e.d) return; if(!map[e.d]){ map[e.d]=Object.assign({},e); } else { var m=map[e.d]; ["me","naver","kakao","toss","kb","memo"].forEach(function(k){ var mv=m[k]; if((mv===undefined||mv===null||mv==="") && e[k]!==undefined && e[k]!==null && e[k]!=="") m[k]=e[k]; }); } });
+  (b||[]).forEach(function(e){ if(!e||!e.d) return; if(!map[e.d]){ map[e.d]=Object.assign({},e); } else { var m=map[e.d]; ["me","naver","kakao","toss","kb","memo","meAcc"].forEach(function(k){ var mv=m[k]; if((mv===undefined||mv===null||mv==="") && e[k]!==undefined && e[k]!==null && e[k]!=="") m[k]=e[k]; }); } });
   return Object.keys(map).sort().map(function(k){return map[k];}); }
 function assetSyncNow(){
   var localN=loadHist().length;
