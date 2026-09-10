@@ -162,7 +162,7 @@
   <header class="hero">
     <div class="hero-top">
       <div>
-        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.30</span></div>
+        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.31</span></div>
         <div class="updated" id="updated">준비 중…</div>
       </div>
       <div class="controls" style="flex-shrink:0">
@@ -787,11 +787,14 @@ function recordDailyTotal(){
   saveHist(h);
 }
 function chartSnapMe(d){                 // 내앱 칸 탭 → 그 날짜에 현재 총액+기관별 기록
-  const total=Math.round(calcTotalKRW()); if(!total){ alert("현재 총액을 계산할 수 없어요. 시세 로딩 후 다시 시도하세요."); return; }
-  if(!confirm(d+" 칸에 지금 내앱 기관별 값을 기록할까요?")) return;
-  const h=loadHist(); let e=h.find(x=>x.d===d); if(!e){ e={d:d}; h.push(e); h.sort((a,b)=>a.d.localeCompare(b.d)); e=h.find(x=>x.d===d); }
-  e.me=total; var acc={}; PORT.accounts.forEach(function(a){ acc[a.name]=Math.round(sumAccount(a).val); }); e.meAcc=acc;
+  var acc={}, total=0, n=0;
+  (PORT.accounts||[]).forEach(function(a){ var val=Math.round(sumAccount(a).val); acc[a.name]=val; total+=val; n++; });
+  if(!n || !total){ alert("계좌 값을 아직 계산하지 못했어요.\n상단 시세가 로딩된 뒤 다시 탭해 주세요."); return; }
+  var h=loadHist(); var e=h.find(function(x){return x.d===d;});
+  if(!e){ e={d:d}; h.push(e); h.sort(function(a,b){return a.d.localeCompare(b.d);}); e=h.find(function(x){return x.d===d;}); }
+  e.me=total; e.meAcc=acc;
   saveHist(h); showChart();
+  alert("✔ "+d+" 기관별 "+n+"개 기록완료\n총액 "+Math.round(total/1000).toLocaleString("ko-KR")+" 천원");
 }
 function fmtShortWon(n){ n=Math.round(n);
   if(Math.abs(n)>=1e8) return (n/1e8).toFixed(2).replace(/\.?0+$/,"")+"억";
