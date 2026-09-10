@@ -162,7 +162,7 @@
   <header class="hero">
     <div class="hero-top">
       <div>
-        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.31</span></div>
+        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.32</span></div>
         <div class="updated" id="updated">준비 중…</div>
       </div>
       <div class="controls" style="flex-shrink:0">
@@ -779,7 +779,7 @@ function recordDailyTotal(){
   const v=Math.round(calcTotalKRW()); if(!v) return;
   const h=loadHist(); const wk=thisMonday();           // 이번 주 월요일 칸에 내앱 총액 기록
   let e=h.find(x=>x.d===wk); if(!e){ e={d:wk}; h.push(e); h.sort((a,b)=>a.d.localeCompare(b.d)); e=h.find(x=>x.d===wk); }
-  const isMon=(new Date().getDay()===1);
+  const isMon=(new Date(Date.now()+9*3600*1000).getUTCDay()===1);  // 서울(KST) 요일
   if(isMon || e.me==null){ e.me=v;
     var acc={}; PORT.accounts.forEach(function(a){ acc[a.name]=Math.round(sumAccount(a).val); }); e.meAcc=acc; // 기관별 세부
   }
@@ -902,7 +902,7 @@ function showChart(){
   $("#chartModal").classList.add("on");
 }
 function chartScrollRight(){ const sc=document.getElementById("chartScroll"); if(sc) setTimeout(function(){ sc.scrollLeft=sc.scrollWidth; },30); }
-function thisMonday(){ const t=new Date(); const day=t.getDay(); const diff=(day===0?-6:1-day); return ymd(new Date(t.getFullYear(),t.getMonth(),t.getDate()+diff)); }
+function thisMonday(){ const t=new Date(Date.now()+9*3600*1000); const day=t.getUTCDay(); const diff=(day===0?-6:1-day); const m=new Date(Date.UTC(t.getUTCFullYear(),t.getUTCMonth(),t.getUTCDate()+diff)); return m.getUTCFullYear()+"-"+String(m.getUTCMonth()+1).padStart(2,"0")+"-"+String(m.getUTCDate()).padStart(2,"0"); } // 서울(KST) 기준 이번주 월요일
 function chartScrollToWeek(){
   const sc=document.getElementById("chartScroll"); if(!sc) return;
   const wk=thisMonday(), today=todayStr();
