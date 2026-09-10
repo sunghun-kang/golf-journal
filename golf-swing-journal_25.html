@@ -18,12 +18,13 @@
 
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#efefea;color:#222;font-size:14px}
-.top{background:#1b3a1b;color:#fff;padding:8px 12px;position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center}
-.top h1{font-size:1rem;font-weight:700}
-.top-right{display:flex;align-items:center;gap:10px}
-.cnt{font-size:0.75rem;color:#9bc}
-.btn-add{background:#4a9a4a;color:#fff;border:none;border-radius:7px;padding:7px 15px;font-size:0.85rem;cursor:pointer;font-family:inherit;font-weight:700}
-.btn-io{background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:7px;padding:6px 11px;font-size:0.78rem;cursor:pointer;font-family:inherit}
+.top{background:#1b3a1b;color:#fff;padding:7px 8px;position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;gap:5px;flex-wrap:nowrap}
+.top h1{font-size:0.95rem;font-weight:700;white-space:nowrap}
+.top-right{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.cnt{font-size:0.68rem;color:#9bc;white-space:nowrap}
+.btn-add{background:#4a9a4a;color:#fff;border:none;border-radius:7px;padding:6px 9px;font-size:0.8rem;cursor:pointer;font-family:inherit;font-weight:700;white-space:nowrap;flex-shrink:0}
+.btn-io{background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:7px;padding:5px 7px;font-size:0.78rem;cursor:pointer;font-family:inherit;flex-shrink:0}
+.top .tab-btn{min-width:0!important;padding:3px 7px!important;font-size:0.72rem!important;white-space:nowrap!important;flex-shrink:0}
 .btn-io:hover{background:rgba(255,255,255,0.25)}
 .conn-status{font-size:0.75rem;display:flex;align-items:center;gap:3px}
 .more-menu{position:relative;display:inline-block}
@@ -166,9 +167,9 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 </head>
 <body>
 <div class="top">
-  <div style="display:flex;align-items:center;gap:10px">
-    <div><h1>🏌️ 강'Story</h1><div style="font-size:0.65rem;color:#9fc;margin-top:2px">V01.02.01 · 26-09-10</div></div>
-    <div style="display:flex;gap:4px">
+  <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.56rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.02 · 26-09-11</div></div>
+    <div style="display:flex;gap:3px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
       <button class="tab-btn" onclick="openTheme()" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center;white-space:nowrap">테마</button>
@@ -225,9 +226,9 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <div class="ov" id="ov">
   <div class="modal">
     <h2 id="mtitle">새 기록 추가</h2>
-    <div class="fr row2">
-      <div><label>날짜</label><input type="date" id="mDate"></div>
-      <div><label>구분</label>
+    <div class="fr" style="display:flex;gap:7px;align-items:flex-end">
+      <div style="flex:0 0 112px"><label>날짜</label><input type="date" id="mDate"></div>
+      <div style="flex:1 1 auto;min-width:0"><label>구분(1단)</label>
         <select id="mVt" onchange="mVtChanged()">
           <option value="">없음</option>
           <option value="F">⛳🏌️ 필드</option>
@@ -238,10 +239,10 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
           <option value="C">C 회사</option>
         </select>
       </div>
-    </div>
-    <div class="fr" id="mSubWrap" style="display:none"><label id="mSubLabel">세부</label>
-      <input type="text" id="mSub" list="mSubList" placeholder="세부 구분" autocomplete="off">
-      <datalist id="mSubList"></datalist>
+      <div id="mSubWrap" style="display:none;flex:1 1 auto;min-width:0"><label id="mSubLabel">세부(2단)</label>
+        <input type="text" id="mSub" list="mSubList" placeholder="세부" autocomplete="off">
+        <datalist id="mSubList"></datalist>
+      </div>
     </div>
     <div class="fr"><label>구장/문제</label><input type="text" id="mVenue" placeholder="스클, 오너스, BA / 슬라스, 뒷땅..."></div>
     <div class="fr"><label>멤버/원인</label><input type="text" id="mMembers" placeholder="홍길동 / 손목방향, 엎어침..."></div>
@@ -988,7 +989,7 @@ function render(){
     html+=cardHtml(r, i);
   });
   document.getElementById('list').innerHTML=html||'<div style="padding:40px;color:#aaa">검색 결과 없음</div>';
-  document.getElementById('cnt').textContent=(matched.length<data.length?matched.length+' / '+data.length:'총 '+data.length)+'개';
+  document.getElementById('cnt').textContent=(matched.length<data.length?matched.length+'/'+data.length:''+data.length)+'개';
 }
 
 function tog(i){
