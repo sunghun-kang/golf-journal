@@ -51,9 +51,9 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .date.sun,.date.holiday{color:#d42020}
 .date.sat{color:#1a8a1a}
 
-.vt{font-size:0.72rem;font-weight:700;padding:2px 8px;border-radius:10px;flex-shrink:0;vertical-align:middle}
+.vt{font-size:0.72rem;font-weight:700;height:22px;padding:0 9px;border-radius:11px;flex-shrink:0;display:inline-flex;align-items:center;box-sizing:border-box}
 .vt-f{background:#d7ecdd;color:#2b7d3c}.vt-s{background:#d7e5f7;color:#245fb0}.vt-l{background:#f2dcec;color:#a82789}.vt-e{background:#eddfca;color:#96591c}.vt-c{background:#f7e0c2;color:#b7620a}.vt-a{background:#d3e9e9;color:#0e8383}
-.venue{font-size:0.82rem;color:#555;background:#eee;padding:2px 7px;border-radius:4px;flex-shrink:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.venue{font-size:0.82rem;color:#555;background:#eee;height:22px;line-height:22px;padding:0 9px;border-radius:11px;flex-shrink:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-sizing:border-box}
 
 .title{font-size:0.87rem;line-height:1.4;flex:1;min-width:0;word-break:keep-all}
 .card.important .title{}
@@ -168,7 +168,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.56rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.08 · 26-09-11</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.56rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.09 · 26-09-11</div></div>
     <div style="display:flex;gap:3px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -859,11 +859,11 @@ function cardHtml(r, i){
   var isTidy = /^\s*📊/.test(_tt) || /AI정리/.test(_tt);     // 📊 AI정리(자동)
   var isAI = r.ai || isSum || isTidy;
   var vtHtml=r.vt==='F'?'<span style="font-size:0.95rem;letter-spacing:-4px;white-space:nowrap;display:inline-block;flex-shrink:0;vertical-align:middle">⛳🏌️</span>':r.vt==='S'?'<span style="font-size:1rem;vertical-align:middle">🏌️‍♀️</span>':r.vt==='L'?'<span class="vt vt-l">人</span>':r.vt==='E'?'<span class="vt vt-e">E</span>':r.vt==='C'?'<span class="vt vt-c">C</span>':r.vt==='A'?'<span class="vt vt-a" style="font-size:0.85rem">🔍</span>':'';
-  if(isTidy) vtHtml=AI_SVG2+'<span style="background:#d7e6f4;color:#2b76ab;font-weight:700;font-size:0.72rem;padding:2px 8px;border-radius:10px;vertical-align:middle;margin-left:2px">AI정리</span>';
-  else if(isAI) vtHtml=AI_SVG+'<span style="background:#d5efdf;color:#10894f;font-weight:700;font-size:0.72rem;padding:2px 8px;border-radius:10px;vertical-align:middle;margin-left:2px">AI요약</span>';
+  if(isTidy) vtHtml=AI_SVG2+'<span style="background:#d7e6f4;color:#2b76ab;font-weight:700;font-size:0.72rem;height:22px;padding:0 9px;border-radius:11px;display:inline-flex;align-items:center;box-sizing:border-box;flex-shrink:0;margin-left:2px">AI정리</span>';
+  else if(isAI) vtHtml=AI_SVG+'<span style="background:#d5efdf;color:#10894f;font-weight:700;font-size:0.72rem;height:22px;padding:0 9px;border-radius:11px;display:inline-flex;align-items:center;box-sizing:border-box;flex-shrink:0;margin-left:2px">AI요약</span>';
   if(r.sub){   // 2단계 세부구분 뱃지(연한 톤)
     var _sc=subTint(r.vt);
-    vtHtml+='<span style="background:'+_sc.bg+';color:'+_sc.fg+';font-weight:700;font-size:0.82rem;padding:2px 8px;border-radius:10px;vertical-align:middle;margin-left:3px">'+esc(r.sub)+'</span>';
+    vtHtml+='<span style="background:'+_sc.bg+';color:'+_sc.fg+';font-weight:700;font-size:0.82rem;height:22px;padding:0 9px;border-radius:11px;display:inline-flex;align-items:center;box-sizing:border-box;flex-shrink:0;margin-left:3px">'+esc(r.sub)+'</span>';
   }
   var venueHtml=r.venue?'<span class="venue" style="font-weight:700">'+thBlink(esc(r.venue))+'</span>':'';
   var member1=r.members?r.members.trim():'';
