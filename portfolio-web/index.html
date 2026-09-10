@@ -162,7 +162,7 @@
   <header class="hero">
     <div class="hero-top">
       <div>
-        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.29</span></div>
+        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.30</span></div>
         <div class="updated" id="updated">준비 중…</div>
       </div>
       <div class="controls" style="flex-shrink:0">
@@ -786,6 +786,13 @@ function recordDailyTotal(){
   if(h.length>800) h.splice(0,h.length-800);
   saveHist(h);
 }
+function chartSnapMe(d){                 // 내앱 칸 탭 → 그 날짜에 현재 총액+기관별 기록
+  const total=Math.round(calcTotalKRW()); if(!total){ alert("현재 총액을 계산할 수 없어요. 시세 로딩 후 다시 시도하세요."); return; }
+  if(!confirm(d+" 칸에 지금 내앱 기관별 값을 기록할까요?")) return;
+  const h=loadHist(); let e=h.find(x=>x.d===d); if(!e){ e={d:d}; h.push(e); h.sort((a,b)=>a.d.localeCompare(b.d)); e=h.find(x=>x.d===d); }
+  e.me=total; var acc={}; PORT.accounts.forEach(function(a){ acc[a.name]=Math.round(sumAccount(a).val); }); e.meAcc=acc;
+  saveHist(h); showChart();
+}
 function fmtShortWon(n){ n=Math.round(n);
   if(Math.abs(n)>=1e8) return (n/1e8).toFixed(2).replace(/\.?0+$/,"")+"억";
   if(Math.abs(n)>=1e4) return Math.round(n/1e4).toLocaleString("ko-KR")+"만";
@@ -820,7 +827,7 @@ function showChart(){
   const datesAsc=[...h].sort((a,b)=>a.d.localeCompare(b.d)); // 왼→오른 = 과거→최근
   let inp='<div style="margin-bottom:10px">'
     +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;flex-wrap:wrap;gap:6px">'
-    +'<span style="font-size:12px;color:var(--sub)">표에 <b>천원 단위</b>로 입력 (내앱은 자동)</span>'
+    +'<span style="font-size:12px;color:var(--sub)">천원 단위 입력 · <b>내앱 숫자칸 탭</b>=그날 기관별 기록</span>'
     +'<span><button class="ghost" onclick="chartScrollToWeek()" style="padding:4px 8px;font-size:12px">📍 금주</button> <button class="ghost" onclick="chartGenMondays()" style="padding:4px 8px;font-size:12px">📅 매주월</button> <button class="ghost" onclick="chartAddDate()" style="padding:4px 8px;font-size:12px">+ 날짜</button> <button class="primary" onclick="chartSaveGrid()" style="padding:4px 12px;font-size:12px">저장</button></span></div>'
     +'<div id="chartScroll" style="overflow:auto;max-height:240px;border:1px solid var(--line);border-radius:8px"><table id="chartGrid" style="border-collapse:collapse;font-size:11px;white-space:nowrap">'
     +'<thead><tr style="position:sticky;top:0;background:var(--card);z-index:2">'
@@ -831,7 +838,8 @@ function showChart(){
     inp+='<tr><td style="position:sticky;left:0;background:var(--card);padding:3px 6px;font-weight:700;color:'+s.col+';border-bottom:1px solid var(--line);border-right:1px solid var(--line)">'+s.label+'</td>';
     datesAsc.forEach(function(e){
       if(s.k==="me"){
-        inp+='<td style="padding:2px 6px;text-align:right;color:var(--sub);border-bottom:1px solid var(--line)">'+(e.me!=null?Math.round(e.me/1000).toLocaleString("ko-KR"):"—")+'</td>';
+        var hasAcc=(e.meAcc&&Object.keys(e.meAcc).length);
+        inp+='<td onclick="chartSnapMe(\''+e.d+'\')" title="탭하면 이 날짜에 현재 기관별을 기록" style="cursor:pointer;padding:2px 6px;text-align:right;color:'+(hasAcc?"var(--sub)":"#2f6fed")+';border-bottom:1px solid var(--line)">'+(e.me!=null?Math.round(e.me/1000).toLocaleString("ko-KR")+(hasAcc?"":" ⤵"):"＋")+'</td>';
       } else {
         const cur=(e[s.k]!=null)?Math.round(e[s.k]/1000):"";
         inp+='<td style="padding:1px 1px;border-bottom:1px solid var(--line)"><input data-d="'+e.d+'" data-src="'+s.k+'" type="text" inputmode="numeric" value="'+(cur!==""?commaFmt(cur):"")+'" style="width:66px;text-align:right;padding:2px 3px;font-size:11px;border:1px solid var(--line);border-radius:4px"></td>';
