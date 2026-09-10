@@ -168,7 +168,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.56rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.02 · 26-09-11</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.56rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.03 · 26-09-11</div></div>
     <div style="display:flex;gap:3px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -226,9 +226,9 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <div class="ov" id="ov">
   <div class="modal">
     <h2 id="mtitle">새 기록 추가</h2>
-    <div class="fr" style="display:flex;gap:7px;align-items:flex-end">
+    <div class="fr" style="display:flex;gap:7px;align-items:flex-start">
       <div style="flex:0 0 112px"><label>날짜</label><input type="date" id="mDate"></div>
-      <div style="flex:1 1 auto;min-width:0"><label>구분(1단)</label>
+      <div style="flex:1 1 auto;min-width:0"><label>구분 <span id="mSubHint" style="font-weight:400;color:#999;font-size:0.66rem"></span></label>
         <select id="mVt" onchange="mVtChanged()">
           <option value="">없음</option>
           <option value="F">⛳🏌️ 필드</option>
@@ -238,9 +238,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
           <option value="E">E 영어</option>
           <option value="C">C 회사</option>
         </select>
-      </div>
-      <div id="mSubWrap" style="display:none;flex:1 1 auto;min-width:0"><label id="mSubLabel">세부(2단)</label>
-        <input type="text" id="mSub" list="mSubList" placeholder="세부" autocomplete="off">
+        <input type="text" id="mSub" list="mSubList" placeholder="세부" autocomplete="off" style="display:none;margin-top:4px">
         <datalist id="mSubList"></datalist>
       </div>
     </div>
@@ -1004,17 +1002,17 @@ function tog(i){
 // 구분 2단계: 人生→금융/연예 등, 회사→자유입력. 선택시 세부 입력칸 토글
 function mVtChanged(){
   var v=document.getElementById('mVt').value;
-  var wrap=document.getElementById('mSubWrap'), lab=document.getElementById('mSubLabel'),
-      inp=document.getElementById('mSub'), dl=document.getElementById('mSubList');
+  var inp=document.getElementById('mSub'), dl=document.getElementById('mSubList'),
+      hint=document.getElementById('mSubHint');
   var show=(v==='L'||v==='C');
-  wrap.style.display=show?'':'none';
+  inp.style.display=show?'':'none';
+  if(hint) hint.textContent=show?'▾ 세부 선택·입력':'';
   if(!show){ inp.value=''; return; }
   var preset=(v==='L')?['금융','연예','운동']:[];
   var used={}; preset.forEach(function(x){ used[x]=1; });
   (data||[]).forEach(function(r){ if(r&&r.vt===v && r.sub) used[r.sub]=1; });
   dl.innerHTML=Object.keys(used).map(function(x){return '<option value="'+esc(x)+'">';}).join('');
-  lab.textContent=(v==='L')?'세부 (人生)':'세부 (회사·자유입력)';
-  inp.placeholder=(v==='L')?'금융 / 연예 …':'자유롭게 입력';
+  inp.placeholder=(v==='L')?'세부 선택·입력 (금융/연예/운동)':'세부 자유입력';
 }
 function openAdd(){
   if(!serverLoaded){alert("서버에서 데이터를 불러오는 중입니다. 잠시 후 다시 시도하세요.");return;}
