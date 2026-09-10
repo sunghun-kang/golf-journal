@@ -168,7 +168,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.56rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.09 · 26-09-11</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.56rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.10 · 26-09-11</div></div>
     <div style="display:flex;gap:3px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -226,7 +226,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <div class="ov" id="ov">
   <div class="modal">
     <h2 id="mtitle">새 기록 추가</h2>
-    <div class="fr" style="display:flex;gap:6px;align-items:flex-end">
+    <div class="fr" style="display:flex;gap:6px;align-items:flex-end;flex-wrap:wrap">
       <div style="flex:0 0 106px"><label>날짜</label><input type="date" id="mDate"></div>
       <div style="flex:0 0 100px"><label>구분</label>
         <select id="mVt" onchange="mVtChanged()">
@@ -239,7 +239,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
           <option value="C">C 회사</option>
         </select>
       </div>
-      <div id="mSubWrap" style="display:none;flex:1 1 auto;min-width:0"><label>세부(2단)</label>
+      <div id="mSubWrap" style="display:none;flex:1 1 140px;min-width:130px"><label>세부(2단)</label>
         <input type="text" id="mSub" list="mSubList" placeholder="세부 선택·입력" autocomplete="off">
         <datalist id="mSubList"></datalist>
       </div>
@@ -1019,7 +1019,7 @@ function mVtChanged(){
   var v=document.getElementById('mVt').value;
   var wrap=document.getElementById('mSubWrap'), inp=document.getElementById('mSub'), dl=document.getElementById('mSubList');
   var show=(v!=='');
-  wrap.style.display=show?'':'none';
+  wrap.style.display=show?'block':'none';
   if(!show){ inp.value=''; return; }
   var preset=(v==='L')?['금융','연예','운동']:[];
   var used={}; preset.forEach(function(x){ used[x]=1; });
