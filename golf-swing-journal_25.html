@@ -168,7 +168,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.56rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.10 · 26-09-11</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.56rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.11 · 26-09-16</div></div>
     <div style="display:flex;gap:3px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -186,6 +186,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
         <button onclick="exportFile();toggleMore()">💾 백업파일 저장 (앱→파일)</button>
         <button onclick="importFile();toggleMore()">📂 파일에서 불러오기 (파일→앱)</button>
         <button onclick="resyncAll();toggleMore()">📥 서버에서 전체받기 (클라우드→앱)</button>
+        <button onclick="checkUnsynced();">🔍 미동기화 확인 (폰↔서버)</button>
         <button onclick="toggleAutoBackup()">🔁 자동백업 <span id="autoBkState" style="font-weight:700"></span></button>
         <button onclick="openSettings();toggleMore()">⚙️ 연동 설정</button>
         <button onclick="migrateToPosts();toggleMore()" style="opacity:0.6;font-size:0.85em">🔁 예전자료 이전 (1회·안써도됨)</button>
@@ -455,6 +456,36 @@ function resyncAll(){
   if(!confirm('서버(golf_posts)에서 전체를 다시 받아옵니다.\n(로컬은 합쳐지며 지워지지 않아요)\n계속?'))return;
   localStorage.removeItem('golfSyncAt2'); // 델타 초기화 → 전체 재수신
   loadFromServer();
+}
+// 🔍 미동기화 확인: 서버 전체 id ↔ 로컬 비교 → 서버에 없는(폰에만 있는) 기록 찾기
+function checkUnsynced(){
+  toggleMore();
+  showSyncStatus('미동기화 확인중...');
+  var srvIds={}, PAGE=1000, offset=0;
+  function pg(){ return fetch(SUPABASE_URL+'/rest/v1/golf_posts?select=id&limit='+PAGE+'&offset='+offset,{headers:sbH()})
+    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+    .then(function(rows){ if(!Array.isArray(rows))rows=[]; rows.forEach(function(x){ if(x&&x.id) srvIds[x.id]=1; }); if(rows.length===PAGE){ offset+=PAGE; return pg(); } }); }
+  pg().then(function(){
+    showSyncStatus('');
+    var localOnly=data.filter(function(r){ return r&&r.id && !r.deleted && String(r.id).indexOf('__')!==0 && !srvIds[r.id]; });
+    var srvN=Object.keys(srvIds).length;
+    if(!localOnly.length){ alert('✅ 모두 동기화됨\n\n내 기기: '+data.length+'건\n서버: '+srvN+'건\n폰에만 있는 기록: 0건'); return; }
+    var list=localOnly.slice(0,15).map(function(r){ var med=(r.media&&r.media.length)?(' [미디어'+r.media.length+']'):''; return '· '+(r.date||'')+' '+(String(r.title||'').split('\n')[0].slice(0,18))+med; }).join('\n');
+    if(confirm('⚠️ 폰에만 있고 서버엔 없는 기록: '+localOnly.length+'건\n(내기기 '+data.length+' / 서버 '+srvN+')\n\n'+list+(localOnly.length>15?('\n…외 '+(localOnly.length-15)+'건'):'')+'\n\n지금 서버로 다시 올릴까요?\n(미디어가 너무 크면 그 건은 실패할 수 있어요)')){
+      retryUploadList(localOnly);
+    }
+  }).catch(function(e){ showSyncStatus(''); alert('확인 실패: '+e+'\n(인터넷/서버 상태 확인)'); });
+}
+function retryUploadList(list){
+  var done=0, fail=0; showSyncStatus('올리는중... 0/'+list.length);
+  list.reduce(function(p,r){ return p.then(function(){
+    return postRows([{id:r.id,data:r,updated_at:new Date().toISOString()}])
+      .then(function(){ done++; }).catch(function(){ fail++; })
+      .then(function(){ showSyncStatus('올리는중... '+(done+fail)+'/'+list.length); });
+  }); }, Promise.resolve()).then(function(){
+    showSyncStatus('');
+    alert('업로드 완료\n성공 '+done+'건'+(fail?(' · 실패 '+fail+'건(미디어 큼)'):'')+'\n\n다른 기기에서 🔄 누르면 받아집니다.');
+  });
 }
 function migrateToPosts(){
   if(!confirm('이 기기의 '+data.length+'개 + 서버 기존데이터를 합쳐 새 저장방식(golf_posts)에 올립니다.\n(기존 데이터는 그대로, 복사만)\n\n※ 데이터가 가장 많은 기기(폰)에서 먼저 하면 제일 안전해요.\n계속할까요?'))return;
