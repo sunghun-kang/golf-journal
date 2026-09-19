@@ -168,7 +168,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.18 · 26-09-19</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.19 · 26-09-19</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -1807,6 +1807,7 @@ if('serviceWorker' in navigator){
       <input type="date" id="thFrom" title="끝(과거)" style="font-size:0.7rem;padding:3px 1px;width:82px;flex-shrink:0">
       <input type="text" id="thKw" list="thKwList" placeholder="키워드 또는 질문(예: 슬라이스 원인 분석해줘)" style="width:110px;min-width:70px;flex:1 1 90px;font-size:0.85rem;padding:4px 6px;border:1px solid #ccc;border-radius:6px" onkeydown="if(event.key==='Enter'){thKwSave();runTheme();}">
       <datalist id="thKwList"></datalist>
+      <button onclick="document.getElementById('thKw').value='';document.getElementById('thKw').focus()" title="키워드 지우기" style="background:#eee;color:#888;border:1px solid #ccc;border-radius:6px;padding:5px 8px;font-size:0.82rem;font-weight:700;flex-shrink:0">✕</button>
       <button onclick="thKwSave();runTheme()" style="background:#2d7a2d;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:0.82rem;font-weight:700;flex-shrink:0">🔍찾기</button>
       <button onclick="themeAsk()" style="background:#159957;color:#fff;border:none;border-radius:6px;padding:5px 9px;font-size:0.82rem;font-weight:700;flex-shrink:0">🤖질문</button>
       <button id="thAnalyzeBtn" onclick="thToggleMode()" style="background:#7a3fb8;color:#fff;border:none;border-radius:6px;padding:5px 9px;font-size:0.82rem;font-weight:700;flex-shrink:0">📊분석</button>
@@ -1900,7 +1901,7 @@ function openTheme(){
   var t=new Date(new Date().getTime()+9*3600*1000).toISOString().slice(0,10);
   document.getElementById('thTo').value=t;
   document.getElementById('thFrom').value='';
-  try{ document.getElementById('thKw').value = localStorage.getItem('thKwLast')||''; }catch(e){}
+  document.getElementById('thKw').value = '';   // 열 때 이전 키워드 자동복원 안함(엎어침 등 잔류 방지)
   thKwFillList();
   document.getElementById('thInfo').textContent='기간·키워드·구분을 정하고 🔍찾기. (기간 비우면 전체)';
   document.getElementById('thBody').innerHTML='';
