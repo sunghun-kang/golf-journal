@@ -168,7 +168,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.56rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.15 · 26-09-19</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.56rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.16 · 26-09-19</div></div>
     <div style="display:flex;gap:3px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -2144,7 +2144,8 @@ function themeAsk(){
   res.sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
   var used=res.slice(0,100);
   if(!used.length){ alert('해당 기간·구분·단어의 기록을 못 찾았어요.\n예: "9월 필드 분석", "슬라이스 원인", "이번달 뒷땅".'); return; }
-  themeAskShow('<div style="background:#e7f6ee;border:1px solid #a9e0c4;border-radius:10px;padding:12px;margin:8px 0;color:#159957;font-weight:700">🤖 "'+esc(q)+'" 분석 중… ('+used.length+'건 참고, 10~30초)</div>');
+  var usedSummary=used.slice(0,50).map(function(r){ return (r.date||'')+(vtNames[r.vt]?('('+vtNames[r.vt]+')'):''); }).join(', ');
+  themeAskShow('<div style="background:#e7f6ee;border:1px solid #a9e0c4;border-radius:10px;padding:12px;margin:8px 0;color:#159957;font-weight:700">🤖 "'+esc(q)+'" 분석 중… '+(dateLabel?('['+esc(dateLabel)+'] '):'')+used.length+'건 참고 (10~30초)<div style="font-weight:400;font-size:0.7rem;color:#5a8a6f;margin-top:5px;line-height:1.5">📋 참고 기록: '+esc(usedSummary)+(used.length>50?(' …외 '+(used.length-50)+'건'):'')+'</div></div>');
   var src=used.map(function(r){
     return '['+(r.date||'')+']'
       +(r.venue?(' 문제:'+thStrip(r.venue)):'')
