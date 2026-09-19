@@ -168,7 +168,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.56rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.14 · 26-09-19</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.56rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.15 · 26-09-19</div></div>
     <div style="display:flex;gap:3px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -2122,23 +2122,28 @@ function themeAsk(){
   else if(_mm=q.match(/(?:^|\s)(\d{1,2})\s*월/)){ dateFrom=_cy+'-'+String(+_mm[1]).padStart(2,'0'); dateLabel=_cy+'년 '+(+_mm[1])+'월'; }  // 연도없는 N월 = 올해 그 달
   else if(/최근/.test(q)){ dateLabel='최근'; }
   var inRange=function(r){ if(!dateFrom) return true; return String(r.date||'').indexOf(dateFrom)===0; };
-  // ── 키워드 토큰(날짜·군말·범용어 제외) ──
-  var stop=/^(나는|나|내|이유|원인|분석|분석해줘|분석해조|해줘|해조|왜|어떻게|무엇|뭐|좀|주라|주세요|알려줘|정리|정리해줘|대책|방법|하는|되는|것|거|들|해줄|볼까|어떤|경우|때|더|좀더|관련|모아|모아서|찾아|찾아서|골프|스윙|기록|일지|전체|모두|다)$/;
+  // ── 구분(타입) 인식: 필드/스크린/인생/영어/회사 → vt 필터 (분석은 동작어라 제외) ──
+  var typeMap={'필드':'F','스크린':'S','인생':'L','人生':'L','영어':'E','회사':'C'};
+  var wantVt={}; Object.keys(typeMap).forEach(function(w){ if(q.indexOf(w)>=0) wantVt[typeMap[w]]=1; });
+  var vtKeys=Object.keys(wantVt);
+  var vtNames={F:'필드',S:'스크린',A:'분석',L:'人生',E:'영어',C:'회사'};
+  if(vtKeys.length){ dateLabel=(dateLabel?dateLabel+' ':'')+vtKeys.map(function(k){return vtNames[k];}).join('·'); }
+  // ── 키워드 토큰(날짜·군말·범용어·타입어 제외) ──
+  var stop=/^(나는|나|내|이유|원인|분석|분석해줘|분석해조|해줘|해조|왜|어떻게|무엇|뭐|좀|주라|주세요|알려줘|정리|정리해줘|요약|요약해줘|요약해조|요약해|대책|방법|하는|되는|것|거|들|해줄|볼까|어떤|경우|때|더|좀더|관련|모아|모아서|찾아|찾아서|골프|스윙|기록|일지|전체|모두|다|필드|스크린|인생|人生|영어|회사)$/;
   var qc=q.replace(/20\d{2}\s*[년.\-\/]\s*\d{1,2}\s*월?/g,' ').replace(/\d{1,2}\s*월/g,' ').replace(/이번\s*달|지난\s*달|저번\s*달|금월|이달|전월|최근/g,' ');
   var toks=qc.replace(/[?？.,!·]/g,' ').split(/\s+/).filter(function(w){ return w.length>=2 && !stop.test(w); });
   var hay=function(r){ return (r.venue||'')+' '+(r.members||'')+' '+(r.title||'')+' '+(r.memo||''); };
   var pool=(data||[]).filter(function(r){ return r && !r.deleted && String(r.id||'').indexOf('__')!==0; });
-  var res;
-  if(toks.length){
-    res=pool.filter(function(r){ return inRange(r) && toks.some(function(t){ return hay(r).indexOf(t)>=0; }); });
-    if(!res.length && dateFrom) res=pool.filter(inRange);                                              // 범위내 키워드0 → 그 기간 전체
-    if(!res.length) res=pool.filter(function(r){ return toks.some(function(t){ return hay(r).indexOf(t)>=0; }); }); // 범위밖 키워드
-  } else {
-    res=pool.filter(inRange);                                                                          // 키워드 없음 → 기간(또는 전체) 최신
-  }
+  var kwOk=function(r){ return !toks.length || toks.some(function(t){ return hay(r).indexOf(t)>=0; }); };
+  var vtOk=function(r){ return !vtKeys.length || wantVt[r.vt]===1; };
+  var res=pool.filter(function(r){ return inRange(r) && vtOk(r) && kwOk(r); });
+  if(!res.length && toks.length && (dateFrom||vtKeys.length)) res=pool.filter(function(r){ return inRange(r) && vtOk(r); });  // 키워드 완화
+  if(!res.length && vtKeys.length && dateFrom) res=pool.filter(inRange);                                                     // 타입 완화(기간만)
+  if(!res.length && dateFrom) res=pool.filter(inRange);
+  if(!res.length && toks.length) res=pool.filter(function(r){ return toks.some(function(t){ return hay(r).indexOf(t)>=0; }); });
   res.sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
   var used=res.slice(0,100);
-  if(!used.length){ alert('해당 기간·단어의 기록을 못 찾았어요.\n예: "9월 골프 분석", "슬라이스 원인", "이번달 뒷땅".'); return; }
+  if(!used.length){ alert('해당 기간·구분·단어의 기록을 못 찾았어요.\n예: "9월 필드 분석", "슬라이스 원인", "이번달 뒷땅".'); return; }
   themeAskShow('<div style="background:#e7f6ee;border:1px solid #a9e0c4;border-radius:10px;padding:12px;margin:8px 0;color:#159957;font-weight:700">🤖 "'+esc(q)+'" 분석 중… ('+used.length+'건 참고, 10~30초)</div>');
   var src=used.map(function(r){
     return '['+(r.date||'')+']'
