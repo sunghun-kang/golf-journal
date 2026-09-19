@@ -168,13 +168,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.56rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.16 · 26-09-19</div></div>
-    <div style="display:flex;gap:3px;flex-shrink:0">
-      <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
-      <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
-      <button class="tab-btn" onclick="openTheme()" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center;white-space:nowrap">테마</button>
-      <button class="tab-btn" onclick="openMtg()" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center;white-space:nowrap">회의</button>
-    </div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.56rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.17 · 26-09-19</div></div>
   </div>
   <div class="top-right">
     <span class="cnt" id="cnt"></span>
@@ -194,6 +188,12 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
     </div>
     <button class="btn-add" onclick="openAdd()">+ 추가</button>
   </div>
+</div>
+<div style="display:flex;gap:8px;padding:7px 10px;background:#16311a">
+  <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="flex:1;background:#2f6fb0;color:#fff;border:none;border-radius:9px;padding:9px 0;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:inset 0 0 0 2px #fff">📋 목록</button>
+  <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="flex:1;background:#2f9e6f;color:#fff;border:none;border-radius:9px;padding:9px 0;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit;opacity:0.55">📅 달력</button>
+  <button class="tab-btn" onclick="openTheme()" style="flex:1;background:#8a5cc7;color:#fff;border:none;border-radius:9px;padding:9px 0;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit">🎨 테마</button>
+  <button class="tab-btn" onclick="openMtg()" style="flex:1;background:#c77a2f;color:#fff;border:none;border-radius:9px;padding:9px 0;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit">📝 회의</button>
 </div>
 
 <div class="vt-filter">
@@ -745,8 +745,10 @@ function swTab(t){
   var isL = t==='list';
   document.getElementById('tb-list').classList.toggle('active', isL);
   document.getElementById('tb-cal').classList.toggle('active', !isL);
-  document.getElementById('tb-list').style.background = isL ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.15)';
-  document.getElementById('tb-cal').style.background = !isL ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.15)';
+  document.getElementById('tb-list').style.opacity = isL ? '1' : '0.55';
+  document.getElementById('tb-cal').style.opacity = !isL ? '1' : '0.55';
+  document.getElementById('tb-list').style.boxShadow = isL ? 'inset 0 0 0 2px #fff' : 'none';
+  document.getElementById('tb-cal').style.boxShadow = !isL ? 'inset 0 0 0 2px #fff' : 'none';
   document.getElementById('list-sec').style.display = isL ? '' : 'none';
   document.getElementById('cal-sec').style.display = isL ? 'none' : 'block';
   if(!isL) renderCal();
