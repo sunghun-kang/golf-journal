@@ -168,7 +168,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.56rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.13 · 26-09-19</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.56rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.14 · 26-09-19</div></div>
     <div style="display:flex;gap:3px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer;font-family:inherit;font-weight:700;min-width:3.4em;text-align:center">달력</button>
@@ -2115,13 +2115,13 @@ function themeAsk(){
   var key=themeAIKey(false); if(!key) return;
   // ── 기간(월) 파싱: "9월","2026-09","이번달","지난달","최근" (날짜는 date필드로 필터) ──
   var _n=new Date(Date.now()+9*3600*1000), _cy=_n.getUTCFullYear(), _cm=_n.getUTCMonth()+1, _mm;
-  var dateFrom='', monthOnly='', dateLabel='';
+  var dateFrom='', dateLabel='';
   if(_mm=q.match(/(20\d{2})\s*[년.\-\/]\s*(\d{1,2})\s*월?/)){ dateFrom=_mm[1]+'-'+String(+_mm[2]).padStart(2,'0'); dateLabel=_mm[1]+'년 '+(+_mm[2])+'월'; }
   else if(/이번\s*달|금월|이달/.test(q)){ dateFrom=_cy+'-'+String(_cm).padStart(2,'0'); dateLabel='이번달'; }
   else if(/지난\s*달|저번\s*달|전월/.test(q)){ var _pm=_cm-1,_py=_cy; if(_pm<1){_pm=12;_py--;} dateFrom=_py+'-'+String(_pm).padStart(2,'0'); dateLabel='지난달'; }
-  else if(_mm=q.match(/(?:^|\s)(\d{1,2})\s*월/)){ monthOnly=String(+_mm[1]).padStart(2,'0'); dateLabel=(+_mm[1])+'월(모든 해)'; }  // 연도없는 N월 = 모든 해 그 달
+  else if(_mm=q.match(/(?:^|\s)(\d{1,2})\s*월/)){ dateFrom=_cy+'-'+String(+_mm[1]).padStart(2,'0'); dateLabel=_cy+'년 '+(+_mm[1])+'월'; }  // 연도없는 N월 = 올해 그 달
   else if(/최근/.test(q)){ dateLabel='최근'; }
-  var inRange=function(r){ var d=String(r.date||''); if(monthOnly) return d.indexOf('-'+monthOnly+'-')>=0; if(dateFrom) return d.indexOf(dateFrom)===0; return true; };
+  var inRange=function(r){ if(!dateFrom) return true; return String(r.date||'').indexOf(dateFrom)===0; };
   // ── 키워드 토큰(날짜·군말·범용어 제외) ──
   var stop=/^(나는|나|내|이유|원인|분석|분석해줘|분석해조|해줘|해조|왜|어떻게|무엇|뭐|좀|주라|주세요|알려줘|정리|정리해줘|대책|방법|하는|되는|것|거|들|해줄|볼까|어떤|경우|때|더|좀더|관련|모아|모아서|찾아|찾아서|골프|스윙|기록|일지|전체|모두|다)$/;
   var qc=q.replace(/20\d{2}\s*[년.\-\/]\s*\d{1,2}\s*월?/g,' ').replace(/\d{1,2}\s*월/g,' ').replace(/이번\s*달|지난\s*달|저번\s*달|금월|이달|전월|최근/g,' ');
