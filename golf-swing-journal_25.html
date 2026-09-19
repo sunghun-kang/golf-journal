@@ -24,7 +24,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .cnt{font-size:0.68rem;color:#9bc;white-space:nowrap}
 .btn-add{background:#4a9a4a;color:#fff;border:none;border-radius:7px;padding:6px 9px;font-size:0.8rem;cursor:pointer;font-family:inherit;font-weight:700;white-space:nowrap;flex-shrink:0}
 .btn-io{background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:7px;padding:5px 7px;font-size:0.78rem;cursor:pointer;font-family:inherit;flex-shrink:0}
-.top .tab-btn{min-width:0!important;padding:3px 7px!important;font-size:0.72rem!important;white-space:nowrap!important;flex-shrink:0}
+.top .tab-btn{min-width:0;white-space:nowrap;flex-shrink:0}
 .btn-io:hover{background:rgba(255,255,255,0.25)}
 .conn-status{font-size:0.75rem;display:flex;align-items:center;gap:3px}
 .more-menu{position:relative;display:inline-block}
@@ -168,7 +168,13 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.56rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.17 · 26-09-19</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.18 · 26-09-19</div></div>
+    <div style="display:flex;gap:4px;flex-shrink:0">
+      <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
+      <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
+      <button class="tab-btn" onclick="openTheme()" style="background:#8a5cc7;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">테마</button>
+      <button class="tab-btn" onclick="openMtg()" style="background:#c77a2f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">회의</button>
+    </div>
   </div>
   <div class="top-right">
     <span class="cnt" id="cnt"></span>
@@ -186,14 +192,8 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
         <button onclick="migrateToPosts();toggleMore()" style="opacity:0.6;font-size:0.85em">🔁 예전자료 이전 (1회·안써도됨)</button>
       </div>
     </div>
-    <button class="btn-add" onclick="openAdd()">+ 추가</button>
+    <button class="btn-add" onclick="openAdd()" style="padding:6px 9px">＋추가</button>
   </div>
-</div>
-<div style="display:flex;gap:8px;padding:7px 10px;background:#16311a">
-  <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="flex:1;background:#2f6fb0;color:#fff;border:none;border-radius:9px;padding:9px 0;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:inset 0 0 0 2px #fff">📋 목록</button>
-  <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="flex:1;background:#2f9e6f;color:#fff;border:none;border-radius:9px;padding:9px 0;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit;opacity:0.55">📅 달력</button>
-  <button class="tab-btn" onclick="openTheme()" style="flex:1;background:#8a5cc7;color:#fff;border:none;border-radius:9px;padding:9px 0;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit">🎨 테마</button>
-  <button class="tab-btn" onclick="openMtg()" style="flex:1;background:#c77a2f;color:#fff;border:none;border-radius:9px;padding:9px 0;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit">📝 회의</button>
 </div>
 
 <div class="vt-filter">
