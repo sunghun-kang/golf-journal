@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>강'골프 백업 도구</title>
+<style>
+  body{font-family:-apple-system,'Malgun Gothic',sans-serif;background:#f4f5f2;color:#222;margin:0;padding:18px;max-width:620px;margin:0 auto}
+  h1{font-size:1.2rem;margin:6px 0 2px}
+  .sub{color:#777;font-size:0.85rem;margin-bottom:16px}
+  .card{background:#fff;border:1px solid #e2e2dc;border-radius:12px;padding:14px 16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  .card h2{font-size:1rem;margin:0 0 4px}
+  .card p{font-size:0.82rem;color:#666;margin:0 0 10px;line-height:1.5}
+  button{background:#1b6b3a;color:#fff;border:none;border-radius:9px;padding:11px 16px;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit;width:100%}
+  button:active{opacity:.85}
+  button.alt{background:#2f6fb0}
+  button.all{background:#8a5cc7}
+  #log{white-space:pre-wrap;font-size:0.8rem;color:#333;background:#fff;border:1px solid #e2e2dc;border-radius:10px;padding:12px;margin-top:8px;min-height:40px;line-height:1.6}
+  .ok{color:#1b6b3a;font-weight:700}
+  .err{color:#c0392b;font-weight:700}
+</style>
+</head>
+<body>
+  <h1>💾 강'골프 백업 도구</h1>
+  <div class="sub">이 페이지를 <b>내 PC/폰 브라우저</b>에서 열고 버튼을 누르면, 서버 데이터를 JSON 파일로 <b>다운로드(HDD 저장)</b>합니다.</div>
+
+  <div class="card">
+    <h2>📝 회의록 백업</h2>
+    <p>기산전자 회의록 전체(<code>__meetings__</code>)를 JSON으로 저장.</p>
+    <button onclick="bkMeetings()">회의록 JSON 받기</button>
+  </div>
+
+  <div class="card">
+    <h2>💰 자산 데이터 백업</h2>
+    <p>포트폴리오(<code>__asset_port__</code>) + 차트 이력(<code>__asset_hist__</code>)을 한 파일로 저장.</p>
+    <button class="alt" onclick="bkAsset()">자산 JSON 받기</button>
+  </div>
+
+  <div class="card">
+    <h2>📦 전체 한 번에</h2>
+    <p>회의록 + 자산(포트폴리오·이력)을 하나의 JSON으로 저장.</p>
+    <button class="all" onclick="bkAll()">전체 JSON 받기</button>
+  </div>
+
+  <div id="log">준비됨. 버튼을 눌러주세요.</div>
+
+<script>
+var SB="https://qnbpavvcpxjhccppiqav.supabase.co", KEY="sb_publishable_OtaDk4iYFhZJs5GBUz7btw_mOtE5MJP";
+function H(){ return {apikey:KEY, Authorization:"Bearer "+KEY}; }
+function log(msg, cls){ var el=document.getElementById('log'); el.innerHTML=(cls?('<span class="'+cls+'">'+msg+'</span>'):msg); }
+function stamp(){ var d=new Date(Date.now()+9*3600*1000).toISOString(); return d.slice(0,10)+"_"+d.slice(11,13)+d.slice(14,16); }
+function dl(obj, name){
+  var blob=new Blob([JSON.stringify(obj,null,2)], {type:"application/json"});
+  var url=URL.createObjectURL(blob); var a=document.createElement("a");
+  a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+}
+function getRow(id){
+  return fetch(SB+"/rest/v1/golf_posts?id=eq."+id+"&select=id,data,updated_at",{headers:H()})
+    .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
+    .then(function(a){ return (a&&a[0])||null; });
+}
+function bkMeetings(){
+  log("회의록 받는 중…");
+  getRow("__meetings__").then(function(row){
+    if(!row){ log("서버에 회의록이 없습니다.", "err"); return; }
+    var list=(row.data&&row.data.list)||[];
+    dl(row.data, "meetings_backup_"+stamp()+".json");
+    log("✔ 회의록 "+list.length+"건 저장 완료 (다운로드 폴더 확인)", "ok");
+  }).catch(function(e){ log("실패: "+e+"\n(인터넷/서버 확인 후 재시도)", "err"); });
+}
+function bkAsset(){
+  log("자산 데이터 받는 중…");
+  Promise.all([getRow("__asset_port__"), getRow("__asset_hist__")]).then(function(rs){
+    var port=rs[0]?rs[0].data:null, hist=rs[1]?rs[1].data:null;
+    if(!port && !hist){ log("서버에 자산 데이터가 없습니다.", "err"); return; }
+    var accN=(port&&port.port&&port.port.accounts)?port.port.accounts.length:0;
+    var histN=(hist&&hist.hist)?hist.hist.length:0;
+    dl({asset_port:port, asset_hist:hist, savedAt:new Date().toISOString()}, "asset_backup_"+stamp()+".json");
+    log("✔ 자산 저장 완료 (계좌 "+accN+"개 · 차트 "+histN+"날짜)", "ok");
+  }).catch(function(e){ log("실패: "+e+"\n(인터넷/서버 확인 후 재시도)", "err"); });
+}
+function bkAll(){
+  log("전체 받는 중…");
+  Promise.all([getRow("__meetings__"), getRow("__asset_port__"), getRow("__asset_hist__")]).then(function(rs){
+    var out={ meetings:rs[0]?rs[0].data:null, asset_port:rs[1]?rs[1].data:null, asset_hist:rs[2]?rs[2].data:null, savedAt:new Date().toISOString() };
+    var mN=(out.meetings&&out.meetings.list)?out.meetings.list.length:0;
+    var hN=(out.asset_hist&&out.asset_hist.hist)?out.asset_hist.hist.length:0;
+    dl(out, "gangolf_all_backup_"+stamp()+".json");
+    log("✔ 전체 저장 완료 (회의록 "+mN+"건 · 차트 "+hN+"날짜)", "ok");
+  }).catch(function(e){ log("실패: "+e+"\n(인터넷/서버 확인 후 재시도)", "err"); });
+}
+</script>
+</body>
+</html>
