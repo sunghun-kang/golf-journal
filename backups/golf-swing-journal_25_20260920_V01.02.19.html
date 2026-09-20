@@ -1,0 +1,2657 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="골프일지">
+<meta name="theme-color" content="#1b3a1b">
+<link rel="manifest" href="manifest.json">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>강'Story</title>
+<style>
+
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#efefea;color:#222;font-size:14px}
+.top{background:#1b3a1b;color:#fff;padding:7px 8px;position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;gap:5px;flex-wrap:nowrap}
+.top h1{font-size:0.95rem;font-weight:700;white-space:nowrap}
+.top-right{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.cnt{font-size:0.68rem;color:#9bc;white-space:nowrap}
+.btn-add{background:#4a9a4a;color:#fff;border:none;border-radius:7px;padding:6px 9px;font-size:0.8rem;cursor:pointer;font-family:inherit;font-weight:700;white-space:nowrap;flex-shrink:0}
+.btn-io{background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:7px;padding:5px 7px;font-size:0.78rem;cursor:pointer;font-family:inherit;flex-shrink:0}
+.top .tab-btn{min-width:0;white-space:nowrap;flex-shrink:0}
+.btn-io:hover{background:rgba(255,255,255,0.25)}
+.conn-status{font-size:0.75rem;display:flex;align-items:center;gap:3px}
+.more-menu{position:relative;display:inline-block}
+.more-dropdown{display:none;position:absolute;right:0;top:110%;background:#2d5a2d;border:1px solid rgba(255,255,255,0.2);border-radius:8px;min-width:130px;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,0.3)}
+.more-dropdown.open{display:block}
+.more-dropdown button{display:block;width:100%;text-align:left;background:none;border:none;color:#fff;padding:10px 14px;font-size:0.82rem;cursor:pointer;font-family:inherit}
+.more-dropdown button:hover{background:rgba(255,255,255,0.1)}
+.searchbar{background:#fff;padding:9px 14px;border-bottom:1px solid #ddd}
+.searchbar input{width:100%;padding:7px 11px;border:1px solid #ccc;border-radius:7px;font-size:0.87rem;font-family:inherit}
+.list{padding:10px 12px}
+.div-month{margin-top:5px;margin-bottom:1px;padding:1px 6px;font-size:0.78rem;font-weight:700;color:#557;letter-spacing:0.05em;border-bottom:1px solid #ccc}
+.div-year{margin-top:5px;margin-bottom:1px;padding:1px 6px;font-size:0.83rem;font-weight:700;color:#1b3a1b;border-bottom:2px solid #1b3a1b;letter-spacing:0.08em}
+.div-pin{margin-top:4px;margin-bottom:2px;padding:2px 6px;font-size:0.8rem;font-weight:700;color:#1a4d9e;border-bottom:2px solid #1a4d9e;letter-spacing:0.05em}
+
+.card{background:#fff;border-left:4px solid #ddd;border-radius:0 9px 9px 0;margin:3px 0;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.card.field{border-left-color:#2d7a2d}
+.card.screen{border-left-color:#1a4d9e}
+.card.important{border-left-color:#d42020;background:#fff8f8}
+
+.row{padding:3px 10px;cursor:pointer;display:flex;flex-direction:column;gap:1px}
+.row-top{display:flex;align-items:center;gap:2px;flex-wrap:nowrap}
+.row-title{font-size:0.87rem;line-height:1.4;word-break:keep-all;padding:2px 0}
+.date{font-size:0.82rem;font-weight:700;white-space:nowrap;flex-shrink:0}
+.date.sun,.date.holiday{color:#d42020}
+.date.sat{color:#1a8a1a}
+
+.vt{font-size:0.72rem;font-weight:700;height:22px;padding:0 9px;border-radius:11px;flex-shrink:0;display:inline-flex;align-items:center;box-sizing:border-box}
+.vt-f{background:#d7ecdd;color:#2b7d3c}.vt-s{background:#d7e5f7;color:#245fb0}.vt-l{background:#f2dcec;color:#a82789}.vt-e{background:#eddfca;color:#96591c}.vt-c{background:#f7e0c2;color:#b7620a}.vt-a{background:#d3e9e9;color:#0e8383}
+.venue{font-size:0.82rem;color:#555;background:#eee;height:22px;line-height:22px;padding:0 9px;border-radius:11px;flex-shrink:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-sizing:border-box}
+
+.title{font-size:0.87rem;line-height:1.4;flex:1;min-width:0;word-break:keep-all}
+.card.important .title{}
+
+.acts{margin-left:auto;display:flex;gap:4px;flex-shrink:0}
+.acts button{background:none;border:1px solid #ddd;border-radius:5px;padding:1px 6px;font-size:0.66rem;cursor:pointer;color:#666;font-family:inherit}
+.acts button:hover{background:#f0f0ee}
+.btn-view{border-color:#4a7aaa!important;color:#1a4d9e!important;font-weight:600!important}
+
+.body{display:none;padding:8px 12px 11px;background:#fafaf5;border-top:1px solid #eee}
+.memo{font-size:0.82rem;line-height:1.8;color:#444;white-space:pre-wrap}
+
+/* 모달 */
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;align-items:flex-start;justify-content:center;padding-top:40px;overflow-y:auto}
+.ov.open{display:flex}
+.modal{background:#fff;border-radius:12px;padding:8px 12px;width:98%;max-width:600px;margin-bottom:40px}
+.modal h2{font-size:0.98rem;font-weight:700;color:#1b3a1b;margin-bottom:8px}
+.fr{margin-bottom:3px}
+.fr label{display:block;font-size:0.76rem;color:#666;font-weight:600;margin-bottom:1px}
+.fr input,.fr textarea,.fr select{width:100%;padding:3px 7px;border:1px solid #ccc;border-radius:7px;font-size:0.85rem;font-family:inherit;color:#222}
+.fr textarea{height:320px;resize:vertical}
+.fr.row2{display:flex;gap:7px}
+.fr.row2 > *{flex:1}
+.chk-row{display:flex;align-items:center;gap:8px;margin-top:8px}
+.chk-row input{width:auto}
+.chk-row label{font-size:0.84rem;color:#c00;font-weight:600;margin:0}
+.mbtns{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+.mbtns button{padding:8px 18px;border-radius:7px;border:none;cursor:pointer;font-size:0.87rem;font-family:inherit;font-weight:700}
+.bs{background:#2d7a2d;color:#fff}.bc{background:#eee;color:#444}.bx{background:#1d6f42;color:#fff}
+
+/* 탭 */
+.tab-bar{display:flex;background:#fff;border-bottom:2px solid #ddd;}
+.tab-btn{flex:1;padding:9px 0;border:none;background:none;font-size:0.85rem;font-weight:700;color:#888;cursor:pointer;font-family:inherit;border-bottom:3px solid transparent;margin-bottom:-2px;}
+.vt-filter{display:flex;gap:2px;padding:4px 6px;background:#f5f5f0;border-bottom:1px solid #ddd;font-size:0.76rem;flex-wrap:wrap;align-items:center}
+.vt-filter input[type=checkbox]{display:none}
+.vt-filter label{display:inline-flex;align-items:center;gap:1px;cursor:pointer;user-select:none;padding:2px 5px;border-radius:11px;background:#e9e9e2;opacity:0.5;transition:opacity .1s,background .1s}
+.vt-filter label.on{opacity:1;background:#d7edd7;box-shadow:inset 0 0 0 1.5px #7bbf7b}
+.th-filter input[type=checkbox]{display:none}
+.th-filter label{display:inline-flex;align-items:center;gap:1px;cursor:pointer;user-select:none;padding:2px 7px;border-radius:11px;background:#e9e9e2;color:#555;opacity:0.5;transition:opacity .1s,background .1s}
+.th-filter label.on{opacity:1;background:#d7edd7;box-shadow:inset 0 0 0 1.5px #7bbf7b}
+.flt-f-lbl{color:#2d7a2d;font-weight:700}
+.flt-f-lbl input{accent-color:#2d7a2d}
+.flt-s-lbl{color:#1a4d9e;font-weight:700}
+.flt-s-lbl input{accent-color:#1a4d9e}
+.flt-e-lbl{color:#8b4513;font-weight:700}
+.flt-e-lbl input{accent-color:#8b4513}
+.flt-l-lbl{color:#b0208c;font-weight:700}
+.flt-l-lbl input{accent-color:#b0208c}
+.flt-star-lbl{color:#d42020;font-weight:700}
+.flt-star-lbl input{accent-color:#d42020}
+.flt-pin-lbl{color:#1a4d9e;font-weight:700}
+.flt-pin-lbl input{accent-color:#1a4d9e}
+.flt-c-lbl{color:rgb(220,100,0);font-weight:700}
+.flt-c-lbl input{accent-color:rgb(220,100,0)}
+.flt-n-lbl{color:#0a7d7d;font-weight:700}
+.flt-n-lbl input{accent-color:#0a7d7d}
+.flt-l-lbl{color:#b0208c;font-weight:700}
+.flt-l-lbl input{accent-color:#b0208c}
+/* 필터칩 켜짐 = 분류색 아주 연하게(파스텔 배경 + 분류색 글씨) */
+.vt-filter label.flt-f-lbl.on{background:#e4f2e4;color:#2d7a2d;box-shadow:inset 0 0 0 1px #b6dbb6}
+.vt-filter label.flt-s-lbl.on{background:#e3ecf8;color:#1a4d9e;box-shadow:inset 0 0 0 1px #b7c9ea}
+.vt-filter label.flt-n-lbl.on{background:#ddf0f0;color:#0a7d7d;box-shadow:inset 0 0 0 1px #a9dcdc}
+.vt-filter label.flt-ai-lbl.on{background:#ddf2e7;color:#159957;box-shadow:inset 0 0 0 1px #a9e0c4}
+.vt-filter label.flt-l-lbl.on{background:#f7e2f1;color:#b0208c;box-shadow:inset 0 0 0 1px #e6b6d8}
+.vt-filter label.flt-e-lbl.on{background:#f0e6da;color:#8b4513;box-shadow:inset 0 0 0 1px #d9c3aa}
+.vt-filter label.flt-c-lbl.on{background:#f9ecd9;color:#c76a00;box-shadow:inset 0 0 0 1px #eacfa5}
+.vt-filter label.flt-star-lbl.on{background:#f9e0e0;color:#d42020;box-shadow:inset 0 0 0 1px #eeb5b5}
+.vt-filter label.flt-pin-lbl.on{background:#e2ecf8;color:#1a6ac0;box-shadow:inset 0 0 0 1px #b7cdea}
+/* 달력 */
+.cal-wrap{display:none;padding:10px 12px;}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.cal-nav button{background:#1b3a1b;color:#fff;border:none;border-radius:6px;padding:4px 14px;font-size:1.1rem;cursor:pointer;}
+.cal-nav span{font-size:0.95rem;font-weight:700;color:#1b3a1b;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.cal-dow{text-align:center;font-size:0.72rem;font-weight:700;color:#888;padding:4px 0;}
+.cal-cell{min-height:150px;background:#fff;border-radius:6px;padding:3px 4px;border:1px solid #eee;overflow:hidden;}
+.cal-cell.other{background:#f5f5f3;opacity:0.45;}
+.cal-cell.today{border:2px solid #4a9a4a;}
+.cal-dn{font-size:0.74rem;font-weight:700;color:#333;margin-bottom:2px;}
+.cal-cell.csun .cal-dn,.cal-cell.chol .cal-dn{color:#d42020;}
+.cal-cell.csat .cal-dn{color:#1a8a1a;}
+.ctag{font-size:0.67rem;font-weight:700;color:#fff;border-radius:3px;padding:1px 5px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;display:block;}
+.ctag:hover{filter:brightness(1.15);}
+.ccore{font-size:0.62rem;line-height:1.25;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 3px;margin:-1px 0 3px;cursor:pointer;}
+.ctag.tf{background:#2d7a2d;}
+.ctag.ts{background:#1a4d9e;}
+.ctag.tn{background:#777;}
+.ctag.ti{background:#d42020;}
+/* 팝업 */
+.cpop{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);z-index:999;align-items:flex-start;justify-content:center;padding-top:70px;}
+.cpop.on{display:flex;}
+.cpop-box{background:#fff;border-radius:12px;width:94%;max-width:500px;max-height:76vh;overflow-y:auto;padding:18px;box-shadow:0 8px 32px rgba(0,0,0,0.25);}
+.cpop-hd{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #1b3a1b;padding-bottom:8px;margin-bottom:12px;}
+.cpop-hd h3{font-size:0.95rem;font-weight:700;color:#1b3a1b;margin:0;}
+.cpop-hd button{background:none;border:none;font-size:1.4rem;cursor:pointer;color:#888;line-height:1;padding:0;}
+.cpop-card{border-left:4px solid #ccc;border-radius:0 8px 8px 0;padding:10px 12px;margin-bottom:8px;background:#fafaf8;}
+.cpop-card.cf{border-left-color:#2d7a2d;}
+.cpop-card.cs{border-left-color:#1a4d9e;}
+.cpop-card.ci{border-left-color:#d42020;background:#fff8f8;}
+.cpop-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:5px;}
+.cpop-tag{font-size:0.7rem;font-weight:700;padding:2px 7px;border-radius:3px;color:#fff;}
+.cpop-title{font-size:0.87rem;line-height:1.4;color:#222;}
+.cpop-title.bold{font-weight:700;}
+.cpop-title.imp{font-weight:700;}
+.cpop-memo{font-size:0.8rem;color:#555;line-height:1.75;white-space:pre-wrap;margin-top:6px;border-top:1px solid #eee;padding-top:6px;}
+.thbl{color:#fff;border-radius:2px;padding:0 2px;font-weight:700;animation:thblink 0.7s steps(1,end) infinite;}
+@keyframes thblink{50%{opacity:0.3;}}
+.thbl0{background:#e11d1d;}.thbl1{background:#1a4d9e;}.thbl2{background:#1a7a1a;}.thbl3{background:#7a3fb8;}.thbl4{background:#c76a00;}.thbl5{background:#0d8a8a;}
+
+</style>
+</head>
+<body>
+<div class="top">
+  <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.19 · 26-09-19</div></div>
+    <div style="display:flex;gap:4px;flex-shrink:0">
+      <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
+      <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
+      <button class="tab-btn" onclick="openTheme()" style="background:#8a5cc7;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">테마</button>
+      <button class="tab-btn" onclick="openMtg()" style="background:#c77a2f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">회의</button>
+    </div>
+  </div>
+  <div class="top-right">
+    <span class="cnt" id="cnt"></span>
+    <span id="sync-status" style="font-size:0.72rem;color:#9fc;margin-right:4px;"></span>
+    <button class="btn-io" onclick="loadFromServer()" title="서버에서 불러오기">🔄</button><span id="conn-icon" title="서버 연결 상태" style="font-size:1rem;margin-left:2px">🔴</span>
+    <div class="more-menu">
+      <button class="btn-io" onclick="toggleMore()" title="더보기">⋮</button>
+      <div class="more-dropdown" id="more-dropdown">
+        <button onclick="exportFile();toggleMore()">💾 백업파일 저장 (앱→파일)</button>
+        <button onclick="importFile();toggleMore()">📂 파일에서 불러오기 (파일→앱)</button>
+        <button onclick="resyncAll();toggleMore()">📥 서버에서 전체받기 (클라우드→앱)</button>
+        <button onclick="checkUnsynced();">🔍 미동기화 확인 (폰↔서버)</button>
+        <button onclick="toggleAutoBackup()">🔁 자동백업 <span id="autoBkState" style="font-weight:700"></span></button>
+        <button onclick="openSettings();toggleMore()">⚙️ 연동 설정</button>
+        <button onclick="migrateToPosts();toggleMore()" style="opacity:0.6;font-size:0.85em">🔁 예전자료 이전 (1회·안써도됨)</button>
+      </div>
+    </div>
+    <button class="btn-add" onclick="openAdd()" style="padding:6px 9px">＋추가</button>
+  </div>
+</div>
+
+<div class="vt-filter">
+  <label><input type="checkbox" id="flt-all" onchange="fltChange('all')"> 전체</label>
+  <label class="flt-f-lbl"><input type="checkbox" id="flt-f" onchange="fltChange('f')"> <span style="font-size:0.9rem;letter-spacing:-4px;white-space:nowrap;display:inline-block;vertical-align:middle">⛳🏌️</span></label>
+  <label class="flt-s-lbl"><input type="checkbox" id="flt-s" onchange="fltChange('s')"> <span style="font-size:0.95rem;background:#d6e4f7;border-radius:4px;padding:1px 4px;vertical-align:middle">🏌️‍♀️</span></label>
+  <label class="flt-n-lbl"><input type="checkbox" id="flt-n" checked onchange="fltChange('n')"> <span style="font-size:0.95rem;vertical-align:middle">🔍</span></label>
+  <label class="flt-ai-lbl"><input type="checkbox" id="flt-ai" checked onchange="fltChange('ai')"> <svg width="20" height="14" viewBox="0 0 30 22" style="vertical-align:middle"><g stroke="#9b7fe0" stroke-width="0.7" opacity="0.5"><line x1="4" y1="5" x2="15" y2="4"/><line x1="4" y1="5" x2="15" y2="11"/><line x1="4" y1="5" x2="15" y2="18"/><line x1="4" y1="11" x2="15" y2="4"/><line x1="4" y1="11" x2="15" y2="11"/><line x1="4" y1="11" x2="15" y2="18"/><line x1="4" y1="17" x2="15" y2="4"/><line x1="4" y1="17" x2="15" y2="11"/><line x1="4" y1="17" x2="15" y2="18"/></g><g stroke="#4bb6c6" stroke-width="0.7" opacity="0.55"><line x1="15" y1="4" x2="26" y2="8"/><line x1="15" y1="4" x2="26" y2="14"/><line x1="15" y1="11" x2="26" y2="8"/><line x1="15" y1="11" x2="26" y2="14"/><line x1="15" y1="18" x2="26" y2="8"/><line x1="15" y1="18" x2="26" y2="14"/></g><circle cx="4" cy="5" r="2.1" fill="#b04bd6"/><circle cx="4" cy="11" r="2.1" fill="#b04bd6"/><circle cx="4" cy="17" r="2.1" fill="#b04bd6"/><circle cx="15" cy="4" r="2.1" fill="#2aa9c4"/><circle cx="15" cy="11" r="2.1" fill="#2aa9c4"/><circle cx="15" cy="18" r="2.1" fill="#2aa9c4"/><circle cx="26" cy="8" r="2.1" fill="#e8722c"/><circle cx="26" cy="14" r="2.1" fill="#e8722c"/></svg></label>
+  <label class="flt-l-lbl"><input type="checkbox" id="flt-l" onchange="fltChange('l')"> 人生</label>
+  <label class="flt-e-lbl"><input type="checkbox" id="flt-e" onchange="fltChange('e')"> 영어</label>
+  <label class="flt-c-lbl"><input type="checkbox" id="flt-c" onchange="fltChange('c')"> 회사</label>
+  <label class="flt-star-lbl"><input type="checkbox" id="flt-star" checked onchange="fltChange('star')"> ★</label>
+  <label class="flt-pin-lbl"><input type="checkbox" id="flt-pin" checked onchange="fltChange('pin')"> 📌</label>
+  <input id="q" type="text" placeholder="검색..." style="flex:1;min-width:80px;padding:4px 8px;border-radius:6px;border:1px solid #ccc;font-size:0.82rem;font-family:inherit">
+</div>
+<div id="list-sec">
+<div class="searchbar" style="display:none">
+  <input type="text" style="display:none">
+</div>
+<div id="backupBanner" style="display:none;margin:8px 10px;padding:10px 12px;background:#fff8e6;border:1px solid #f0d98a;border-radius:8px;font-size:0.85rem;align-items:center;gap:8px;flex-wrap:wrap">
+  <span id="backupMsg" style="flex:1;min-width:150px;color:#8a6d1a;line-height:1.4"></span>
+  <button onclick="exportFile()" style="background:#1a7a1a;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-weight:700;font-size:0.85rem">💾 지금 백업</button>
+  <button onclick="backupDismiss()" style="background:none;border:1px solid #ccc;border-radius:6px;padding:6px 10px;color:#888;font-size:0.85rem">나중에</button>
+</div>
+<div class="list" id="list"></div>
+</div>
+<div class="cal-wrap" id="cal-sec"><div class="cal-nav"><button onclick="calPrev()">&#8249;</button><span id="cal-title"></span><button onclick="calNext()">&#8250;</button></div><div class="cal-grid" id="cal-grid"></div></div>
+
+<button id="snapBtn" onclick="snapShot()" title="현재 화면 캡처" style="position:fixed;right:14px;bottom:calc(18px + env(safe-area-inset-bottom));z-index:50;background:#1b3a1b;color:#fff;border:none;border-radius:50%;width:50px;height:50px;font-size:1.35rem;box-shadow:0 3px 10px rgba(0,0,0,0.35);cursor:pointer">📸</button>
+
+<div class="ov" id="ov">
+  <div class="modal">
+    <h2 id="mtitle">새 기록 추가</h2>
+    <div class="fr" style="display:flex;gap:6px;align-items:flex-end;flex-wrap:wrap">
+      <div style="flex:0 0 106px"><label>날짜</label><input type="date" id="mDate"></div>
+      <div style="flex:0 0 100px"><label>구분</label>
+        <select id="mVt" onchange="mVtChanged()">
+          <option value="">없음</option>
+          <option value="F">⛳🏌️ 필드</option>
+          <option value="S">🏌️‍♀️ 스크린</option>
+          <option value="A">🔍 분석</option>
+          <option value="L">L 人生</option>
+          <option value="E">E 영어</option>
+          <option value="C">C 회사</option>
+        </select>
+      </div>
+      <div id="mSubWrap" style="display:none;flex:1 1 140px;min-width:130px"><label>세부(2단)</label>
+        <input type="text" id="mSub" list="mSubList" placeholder="세부 선택·입력" autocomplete="off">
+        <datalist id="mSubList"></datalist>
+      </div>
+    </div>
+    <div class="fr"><label>구장/문제</label><input type="text" id="mVenue" placeholder="스클, 오너스, BA / 슬라스, 뒷땅..."></div>
+    <div class="fr"><label>멤버/원인</label><input type="text" id="mMembers" placeholder="홍길동 / 손목방향, 엎어침..."></div>
+    <div class="fr"><label>핵심키워드 / 대책,해결방안</label><textarea id="mTitle" rows="2" style="height:auto;min-height:3.4em;resize:vertical" placeholder="핵심키워드 / 대책,해결방안 (길게 써도 자동 줄바꿈)"></textarea></div>
+    <div class="fr"><label>상세 메모 <span style="font-size:0.68rem;font-weight:400;color:#888">— 부분강조: <code style="background:#fee;padding:0 3px;border-radius:3px;color:#c00">ㅃ빨강ㅃ</code> · <code style="background:#eef;padding:0 3px;border-radius:3px;color:#1a4d9e">ㅍ파랑ㅍ</code> · <code style="background:#efe;padding:0 3px;border-radius:3px;color:#1a7a1a">ㄴ녹색ㄴ</code> · <code style="background:#eee;padding:0 3px;border-radius:3px">**굵게**</code></span></label><textarea id="mMemo" placeholder="ㅡ 상세 내용&#10;ㅡ 느낀점"></textarea></div>
+    <div class="fr"><input type="file" id="mMedia" accept="image/*,video/*" multiple style="font-size:0.82rem;padding:6px 0">
+      <div id="mMediaPreview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px"></div>
+    </div>
+    <div class="fr" style="margin-top:6px">
+      <div style="display:flex;flex-direction:row;align-items:center;gap:12px">
+        <label style="display:inline-flex;align-items:center;gap:2px;font-size:0.78rem;white-space:nowrap"><input type="radio" name="mColor" value="" checked> 기본</label>
+        <label style="display:inline-flex;align-items:center;gap:2px;font-size:0.78rem;color:#c00;white-space:nowrap"><input type="radio" name="mColor" value="red"> 빨강</label>
+        <label style="display:inline-flex;align-items:center;gap:2px;font-size:0.78rem;color:#1a7a1a;white-space:nowrap"><input type="radio" name="mColor" value="green"> 녹색</label>
+        <label style="display:inline-flex;align-items:center;gap:2px;font-size:0.78rem;color:#1a4d9e;white-space:nowrap"><input type="radio" name="mColor" value="blue"> 파랑</label>
+        <label style="display:inline-flex;align-items:center;gap:2px;font-size:0.78rem;white-space:nowrap"><input type="checkbox" id="mBold"> <b>굵게</b></label>
+        <label style="display:inline-flex;align-items:center;gap:2px;font-size:0.78rem;color:#d42020;white-space:nowrap"><input type="checkbox" id="mImp"> ★중요</label>
+        <label style="display:inline-flex;align-items:center;gap:2px;font-size:0.78rem;color:#1a4d9e;white-space:nowrap"><input type="checkbox" id="mPin"> 📌게시</label>
+      </div>
+    </div>
+    <div class="mbtns">
+      <button class="bc" id="mDelBtn" onclick="delModal()" style="display:none;background:#d42020;color:#fff;border-color:#d42020">삭제</button>
+      <button class="bc" id="mRegenBtn" onclick="regenAI()" style="display:none;background:#7a3fb8;color:#fff;border-color:#7a3fb8">🔄 다시요약</button>
+      <button class="bc" onclick="if(confirm('취소할까요?'))closeOv()">취소</button>
+      <button class="bs" onclick="saveMod()">저장</button>
+      <button class="bx" onclick="exportExcel()">📊 Excel</button>
+    </div>
+  </div>
+</div>
+<script>
+var data = [];
+
+function nowKST() {
+  var d = new Date();
+  var kst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+  return kst.toISOString().replace('Z', '+09:00');
+}
+function todayKST() {
+  var d = new Date();
+  var kst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+  return kst.toISOString().slice(0, 10);
+}
+function stampKST() {   // 파일명용: 2026-09-06_1830 (날짜+시분) → 이전 파일 안 덮어씀
+  var kst = new Date(Date.now() + 9*60*60*1000).toISOString();
+  return kst.slice(0,10)+'_'+kst.slice(11,13)+kst.slice(14,16);
+}
+
+// =============================================
+// Google Apps Script 연동
+// =============================================
+var SUPABASE_URL = 'https://qnbpavvcpxjhccppiqav.supabase.co';
+var SUPABASE_KEY = 'sb_publishable_OtaDk4iYFhZJs5GBUz7btw_mOtE5MJP';
+
+
+
+var _syncMax='';
+function loadFromServer() {
+  showSyncStatus('불러오는중...');
+  _syncMax = localStorage.getItem('golfSyncAt2') || '';
+  var base = SUPABASE_URL + '/rest/v1/golf_posts?select=id,data,updated_at&order=updated_at.asc';
+  if(_syncMax){
+    var since = new Date(new Date(_syncMax).getTime() - 5*60*1000).toISOString(); // 5분 버퍼
+    base += '&updated_at=gt.' + encodeURIComponent(since);
+  }
+  var PAGE=10, offset=0, total=0;
+  function loadPage(){
+    return fetch(base+'&limit='+PAGE+'&offset='+offset, { headers: sbH() })
+      .then(function(r){ if(!r.ok) throw new Error('http_'+r.status); return r.json(); })
+      .then(function(rows){
+        if(!Array.isArray(rows)) rows=[];
+        applyServerRows(rows);
+        total+=rows.length;
+        showSyncStatus('불러오는중... '+total+'개');
+        render();
+        if(rows.length===PAGE){ offset+=PAGE; return loadPage(); }
+      });
+  }
+  loadPage()
+  .then(function(){
+    serverLoaded = true; serverSynced = true;
+    if(_syncMax) localStorage.setItem('golfSyncAt2', _syncMax);
+    showSyncStatus('✅ 동기화완료 (받음 '+total+' · 총 '+data.length+'개)');
+    render();
+    checkBackupReminder();
+    autoBackupRun(false);
+    retryPending();
+  })
+  .catch(function(){
+    serverLoaded = true;
+    render();
+    showSyncStatus('⚠️ 오프라인 모드 (로컬: '+data.length+'개)');
+  });
+}
+
+// ===== per-record(글 하나=행 하나) + 델타 동기화 (golf_posts) =====
+function sbH(extra){ var h={'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}; if(extra){for(var k in extra)h[k]=extra[k];} return h; }
+function sortData(){ data.sort(function(a,b){ var dc=(b.date||'').localeCompare(a.date||''); if(dc!==0)return dc; return (b.createdAt||b.updatedAt||'').localeCompare(a.createdAt||a.updatedAt||''); }); }
+function getPend(){ try{ return JSON.parse(localStorage.getItem('golfPend2')||'{"up":[],"del":[]}'); }catch(e){ return {up:[],del:[]}; } }
+function setPend(p){ try{ localStorage.setItem('golfPend2', JSON.stringify(p)); }catch(e){} }
+function pendUp(id){ var p=getPend(); if(p.up.indexOf(id)<0)p.up.push(id); var di=p.del.indexOf(id); if(di>=0)p.del.splice(di,1); setPend(p); }
+function pendDel(id){ var p=getPend(); if(p.del.indexOf(id)<0)p.del.push(id); var ui=p.up.indexOf(id); if(ui>=0)p.up.splice(ui,1); setPend(p); }
+function pendClear(id){ var p=getPend(); var ui=p.up.indexOf(id); if(ui>=0)p.up.splice(ui,1); var di=p.del.indexOf(id); if(di>=0)p.del.splice(di,1); setPend(p); }
+
+function postRows(rows){
+  return fetch(SUPABASE_URL+'/rest/v1/golf_posts', {method:'POST', headers:sbH({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}), body:JSON.stringify(rows)})
+    .then(function(res){ if(!res.ok){ return res.text().then(function(t){ throw new Error('HTTP '+res.status+' '+String(t).slice(0,120)); }); } });
+}
+
+function pushRecord(rec){
+  save();
+  showSyncStatus('저장중...');
+  postRows([{id:rec.id, data:rec, updated_at:new Date().toISOString()}])
+  .then(function(){ pendClear(rec.id); showSyncStatus('✅ 저장완료'); })
+  .catch(function(){ pendUp(rec.id); showSyncStatus('💾 로컬 저장 (서버 실패 → 나중에 자동 재시도)'); });
+}
+
+function deleteRecord(id){
+  save();
+  showSyncStatus('삭제중...');
+  postRows([{id:id, data:{id:id, deleted:true, updatedAt:nowKST()}, updated_at:new Date().toISOString()}])
+  .then(function(){ pendClear(id); showSyncStatus('✅ 삭제완료'); })
+  .catch(function(){ pendDel(id); showSyncStatus('💾 삭제 대기 (서버 실패 → 나중에 재시도)'); });
+}
+
+function retryPending(){
+  var p=getPend(); if(!p.up.length && !p.del.length) return;
+  var rows=[];
+  p.up.forEach(function(id){ var r=data.filter(function(x){return x.id===id;})[0]; if(r) rows.push({id:id,data:r,updated_at:new Date().toISOString()}); });
+  p.del.forEach(function(id){ rows.push({id:id,data:{id:id,deleted:true,updatedAt:nowKST()},updated_at:new Date().toISOString()}); });
+  if(!rows.length){ setPend({up:[],del:[]}); return; }
+  postRows(rows).then(function(){ setPend({up:[],del:[]}); showSyncStatus('✅ 밀린 변경 저장완료'); }).catch(function(){});
+}
+
+function applyServerRows(rows){
+  var byId={}; data.forEach(function(r){ if(r&&r.id) byId[r.id]=r; });
+  rows.forEach(function(row){
+    var id=row.id; var rec=row.data;
+    if(row.updated_at && row.updated_at>_syncMax) _syncMax=row.updated_at;
+    if(!id && rec) id=rec.id;
+    if(!id) return;
+    if(id==='__theme_extra__'){
+      if(rec && Array.isArray(rec.extra)){
+        var _nd=mergeTomb(themeExtraDel, Array.isArray(rec.del)?rec.del:[]);
+        var _m=mergeExtra(themeExtra, rec.extra, _nd);
+        if(_m.length!==themeExtra.length || _nd.length!==themeExtraDel.length){
+          themeExtra=_m; themeExtraDel=_nd; if(!themeExtraAt) themeExtraAt=nowKST(); themeExtraSaveLocal();
+          var _ov=document.getElementById('theme-ov'); if(_ov && _ov.style.display!=='none') runTheme();
+        }
+      }
+      return;
+    }
+    if(id==='__meetings__'){
+      if(rec && Array.isArray(rec.list) && typeof mtgMerge==='function'){
+        // 아직 메모리에 로드 안됐을 수 있으니 로컬(localStorage, 동기)도 병합해 손실 방지
+        var _base=meetings;
+        try{ var _ls=localStorage.getItem('meetings'); if(_ls){ _base=mtgMerge(meetings, JSON.parse(_ls)||[]); } }catch(e){}
+        var _mm=mtgMerge(_base, rec.list);
+        var _b=''; try{_b=JSON.stringify(meetings);}catch(e){}
+        var _a=''; try{_a=JSON.stringify(_mm);}catch(e){}
+        if(_a!==_b){
+          meetings=_mm; if(typeof mtgSaveLocal==='function') mtgSaveLocal();
+          var _mo=document.getElementById('mtg-ov'); if(_mo && _mo.style.display!=='none' && typeof mtgRenderCal==='function') mtgRenderCal();
+        }
+      }
+      return;
+    }
+    if(id && id.indexOf('__asset')===0){ return; }  // 자산앱 전용 행은 무시(오염 방지)
+    if(rec && rec.deleted){ delete byId[id]; return; }
+    if(!rec) return;
+    var cur=byId[id];
+    if(!cur){ byId[id]=rec; return; }
+    if((rec.updatedAt||'') > (cur.updatedAt||'')){
+      if(cur.media&&cur.media.length&&(!rec.media||!rec.media.length)) rec.media=cur.media;
+      byId[id]=rec;
+    }
+  });
+  data=Object.keys(byId).map(function(k){return byId[k];});
+  sortData(); save();
+}
+
+function bulkPushAll(){
+  var rows=data.map(function(r){ return {id:r.id, data:r, updated_at:new Date().toISOString()}; });
+  var chunks=[]; for(var i=0;i<rows.length;i+=5) chunks.push(rows.slice(i,i+5));
+  var done=0, fail=0;
+  return chunks.reduce(function(pr,ch){ return pr.then(function(){
+    showSyncStatus('올리는중... '+done+'/'+rows.length+(fail?(' (큰것 '+fail+')'):''));
+    return postRows(ch).then(function(){ done+=ch.length; })
+      .catch(function(){
+        // 청크 실패 → 1개씩 재시도 (진짜 큰 것만 걸러짐, 나머지는 다 올림)
+        return ch.reduce(function(p2,one){ return p2.then(function(){
+          return postRows([one]).then(function(){ done++; }).catch(function(){ fail++; });
+        }); }, Promise.resolve());
+      });
+  }); }, Promise.resolve())
+    .then(function(){
+      localStorage.setItem('golfSyncAt2', new Date().toISOString());
+      if(fail){ alert('참고: '+fail+'개는 사진/영상이 너무 커서 서버에 못 올렸어요.\n(그 글들은 PC와 백업파일에 안전히 있어요. 나머지는 다 올라갔어요.)'); }
+    });
+}
+
+function pullAllPosts(){
+  _syncMax = localStorage.getItem('golfSyncAt2')||'';
+  var base=SUPABASE_URL+'/rest/v1/golf_posts?select=id,data,updated_at&order=updated_at.asc';
+  var PAGE=10, offset=0;
+  function pg(){ return fetch(base+'&limit='+PAGE+'&offset='+offset,{headers:sbH()})
+    .then(function(r){ if(!r.ok) throw new Error('http_'+r.status); return r.json(); })
+    .then(function(rows){ if(!Array.isArray(rows))rows=[]; applyServerRows(rows); if(rows.length===PAGE){offset+=PAGE;return pg();} }); }
+  return pg();
+}
+function resyncAll(){
+  if(!confirm('서버(golf_posts)에서 전체를 다시 받아옵니다.\n(로컬은 합쳐지며 지워지지 않아요)\n계속?'))return;
+  localStorage.removeItem('golfSyncAt2'); // 델타 초기화 → 전체 재수신
+  loadFromServer();
+}
+// 🔍 미동기화 확인: 서버 전체 id ↔ 로컬 비교 → 서버에 없는(폰에만 있는) 기록 찾기
+function checkUnsynced(){
+  toggleMore();
+  showSyncStatus('미동기화 확인중...');
+  var srvIds={}, PAGE=1000, offset=0;
+  function pg(){ return fetch(SUPABASE_URL+'/rest/v1/golf_posts?select=id&limit='+PAGE+'&offset='+offset,{headers:sbH()})
+    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+    .then(function(rows){ if(!Array.isArray(rows))rows=[]; rows.forEach(function(x){ if(x&&x.id) srvIds[x.id]=1; }); if(rows.length===PAGE){ offset+=PAGE; return pg(); } }); }
+  pg().then(function(){
+    showSyncStatus('');
+    var localOnly=data.filter(function(r){ return r&&r.id && !r.deleted && String(r.id).indexOf('__')!==0 && !srvIds[r.id]; });
+    var srvN=Object.keys(srvIds).length;
+    if(!localOnly.length){ alert('✅ 모두 동기화됨\n\n내 기기: '+data.length+'건\n서버: '+srvN+'건\n폰에만 있는 기록: 0건'); return; }
+    var list=localOnly.slice(0,15).map(function(r){ var med=(r.media&&r.media.length)?(' [미디어'+r.media.length+']'):''; return '· '+(r.date||'')+' '+(String(r.title||'').split('\n')[0].slice(0,18))+med; }).join('\n');
+    if(confirm('⚠️ 폰에만 있고 서버엔 없는 기록: '+localOnly.length+'건\n(내기기 '+data.length+' / 서버 '+srvN+')\n\n'+list+(localOnly.length>15?('\n…외 '+(localOnly.length-15)+'건'):'')+'\n\n지금 서버로 다시 올릴까요?\n(미디어가 너무 크면 그 건은 실패할 수 있어요)')){
+      retryUploadList(localOnly);
+    }
+  }).catch(function(e){ showSyncStatus(''); alert('확인 실패: '+e+'\n(인터넷/서버 상태 확인)'); });
+}
+function retryUploadList(list){
+  var done=0, fail=0; showSyncStatus('올리는중... 0/'+list.length);
+  list.reduce(function(p,r){ return p.then(function(){
+    return postRows([{id:r.id,data:r,updated_at:new Date().toISOString()}])
+      .then(function(){ done++; }).catch(function(){ fail++; })
+      .then(function(){ showSyncStatus('올리는중... '+(done+fail)+'/'+list.length); });
+  }); }, Promise.resolve()).then(function(){
+    showSyncStatus('');
+    alert('업로드 완료\n성공 '+done+'건'+(fail?(' · 실패 '+fail+'건(미디어 큼)'):'')+'\n\n다른 기기에서 🔄 누르면 받아집니다.');
+  });
+}
+function migrateToPosts(){
+  if(!confirm('이 기기의 '+data.length+'개 + 서버 기존데이터를 합쳐 새 저장방식(golf_posts)에 올립니다.\n(기존 데이터는 그대로, 복사만)\n\n※ 데이터가 가장 많은 기기(폰)에서 먼저 하면 제일 안전해요.\n계속할까요?'))return;
+  showSyncStatus('이전: 서버 병합중...');
+  pullAllPosts()                        // 1) 이미 올라온 golf_posts 먼저 병합(최신 우선)
+  .catch(function(){})                  //    (비었거나 실패해도 계속)
+  .then(function(){                     // 2) 옛 blob도 병합
+    return fetch(SUPABASE_URL+'/rest/v1/golf_log?id=eq.main&select=data',{headers:sbH()})
+      .then(function(r){ return r.ok?r.json():null; }).catch(function(){ return null; });
+  })
+  .then(function(j){
+    var old=j&&j[0]&&j[0].data;
+    if(Array.isArray(old)&&old.length){ data=mergeData(data.slice(), old); save(); render(); }
+    return bulkPushAll();               // 3) 병합된 전체를 올림
+  })
+  .then(function(){
+    if(_syncMax) localStorage.setItem('golfSyncAt2', _syncMax);
+    serverSynced=true;
+    showSyncStatus('✅ 이전 완료 ('+data.length+'개)');
+    alert('✅ 이전 완료!\n'+data.length+'개를 새 방식으로 올렸어요.\n\n이제 "바뀐 글만" 빠르게 주고받아요.\n다른 기기는 새로고침하면 받아갑니다.');
+    render();
+  })
+  .catch(function(e){
+    alert('❌ 이전 중 오류:\n'+(e&&e.message||e)+'\n\n다시 시도해보세요. (기존 데이터는 안전)');
+    showSyncStatus('❌ 이전 실패');
+  });
+}
+
+function saveToServer() {
+  save();
+  if(!serverSynced){
+    showSyncStatus('💾 로컬만 저장 (서버 미연결 → 덮어쓰기 방지). 🔴이면 잠시 후 🔄');
+    return;
+  }
+  showSyncStatus('저장중...');
+  // 1) 서버 최신을 먼저 읽어서 병합 (다른 기기 변경 보존, 항목별 updatedAt 최신 우선)
+  fetch(SUPABASE_URL + '/rest/v1/golf_log?id=eq.main&select=data', {
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+  })
+  .then(function(r){ if(!r.ok) throw new Error('read_'+r.status); return r.json(); })
+  .then(function(j){
+    var srv = j && j[0] && j[0].data;
+    if(Array.isArray(srv)){
+      data = mergeData(data, srv);  // 내 최신편집은 유지 + 다른 기기 최신도 반영
+      save();
+    }
+    // 2) 병합 결과를 저장
+    return fetch(SUPABASE_URL + '/rest/v1/golf_log?id=eq.main', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({data: data, updated_at: new Date().toISOString()})
+    });
+  })
+  .then(function(response){
+    if(!response.ok){
+      alert('⚠️ 서버 저장 실패! (HTTP '+response.status+')\n\n로컬에만 저장됐어요. 사진이 너무 크거나 서버 용량 초과일 수 있습니다.\n잠시 후 🔄로 다시 시도해보세요.');
+      showSyncStatus('❌ 서버 저장실패 (HTTP '+response.status+')');
+      throw new Error('http_'+response.status);
+    }
+    showSyncStatus('✅ 서버 저장완료 ('+data.length+'개)');
+    render();  // 병합으로 다른 기기 변경이 들어왔을 수 있어 갱신
+  })
+  .catch(function(err){
+    if(err && err.message && err.message.indexOf('http_')===0) return; // 이미 알림함
+    if(err && err.message && err.message.indexOf('read_')===0){
+      showSyncStatus('💾 로컬만 저장 (서버읽기 실패 → 덮어쓰기 방지). 🔄 재시도');
+      return;
+    }
+    showSyncStatus('💾 로컬 저장됨 (오프라인)');
+  });
+}
+
+function toggleMore(){
+  var d=document.getElementById('more-dropdown');
+  d.classList.toggle('open');
+  updateAutoBkLabel();
+}
+document.addEventListener('click', function(e){
+  if(!e.target.closest('.more-menu')) document.getElementById('more-dropdown').classList.remove('open');
+});
+
+function showSyncStatus(msg) {
+  var el = document.getElementById('sync-status');
+  var icon = document.getElementById('conn-icon');
+  if (el) { el.textContent = msg; setTimeout(function(){ el.textContent=''; }, 3000); }
+  if (icon) {
+    if (msg.indexOf('✅') >= 0) {
+      icon.textContent = '🔵';
+      icon.title = '서버 연결됨';
+    } else if (msg.indexOf('오프라인') >= 0 || msg.indexOf('로컬') >= 0) {
+      icon.textContent = '🔴';
+      icon.title = '로컬 저장 (오프라인)';
+    }
+  }
+}
+
+function openSettings() {
+  loadFromServer();
+}
+
+
+// ID 및 updatedAt 초기화
+data.forEach(function(r){
+  if(!r.important)r.important=false;
+  if(!r.id)r.id=r.date+"_"+(r.title||"").substring(0,10).replace(/\s/g,"_")+"_"+Math.random().toString(36).substr(2,4);
+  if(!r.updatedAt)r.updatedAt=r.date+"T00:00:00.000Z";
+});
+
+function openPhoto(recIdx, mediaIdx){
+  var r=data[recIdx];
+  if(!r||!r.media) return;
+  var imgs=r.media.filter(function(m){return m.type==='image';});
+  if(!imgs[mediaIdx]) return;
+  var modal=document.getElementById('photo-modal');
+  document.getElementById('photo-modal-img').src=imgs[mediaIdx].data;
+  modal.style.display='flex';
+  // 폰 뒤로가기/제스처로 탭이 닫히지 않게 가짜 히스토리 추가
+  if(!history.state || !history.state.photoOpen){
+    history.pushState({photoOpen:true}, '');
+  }
+}
+function closePhoto(){
+  var modal=document.getElementById('photo-modal');
+  if(modal.style.display==='none') return;
+  modal.style.display='none';
+  // 가짜 히스토리 제거(현재 모달 상태였을 때만)
+  if(history.state && history.state.photoOpen){
+    history.back();
+  }
+}
+// 폰 뒤로가기 버튼/스와이프 → 모달만 닫고 페이지는 유지
+window.addEventListener('popstate', function(){
+  var modal=document.getElementById('photo-modal');
+  if(modal && modal.style.display==='flex'){
+    modal.style.display='none';
+  }
+});
+
+function mergeData(local,server){
+  var map={};
+  function ensureId(r){
+    if(!r.id) r.id=r.date+'_'+(r.title||'').substring(0,10).replace(/\s/g,'_')+'_x';
+    if(!r.updatedAt) r.updatedAt=r.date+'T00:00:00.000Z';
+    if(!r.createdAt) r.createdAt=r.updatedAt;  // 기존 데이터 마이그레이션
+    return r;
+  }
+  // 로컬 먼저 넣고
+  local.forEach(function(r){r=ensureId(r); map[r.id]=r;});
+  // 서버: 더 최신이면 채택하되, 로컬 사진/영상은 손실 보호
+  server.forEach(function(r){
+    r=ensureId(r);
+    var localR=map[r.id];
+    if(!localR){ map[r.id]=r; return; }
+    // 서버가 더 최신일 때만 덮어씀 (같은 시각이면 로컬 우선)
+    if(r.updatedAt > localR.updatedAt){
+      // 로컬에 미디어 있고 서버는 없으면 → 미디어 보존
+      if(localR.media && localR.media.length>0 && (!r.media || r.media.length===0)){
+        r.media = localR.media;
+      }
+      // createdAt도 더 오래된 것 우선 (최초 등록 시각 보호)
+      if(localR.createdAt && (!r.createdAt || localR.createdAt < r.createdAt)){
+        r.createdAt = localR.createdAt;
+      }
+      map[r.id]=r;
+    }
+  });
+  var merged=Object.values(map);
+  merged.sort(function(a,b){ var dc=b.date.localeCompare(a.date); if(dc!==0)return dc; return (b.createdAt||b.updatedAt||'').localeCompare(a.createdAt||a.updatedAt||''); });
+  return merged;
+}
+
+var HOLIDAYS = new Map([
+  // 2024
+  ["2024-01-01","신정"],["2024-02-09","설연휴"],["2024-02-10","설날"],["2024-02-11","설연휴"],["2024-02-12","대체공휴일"],
+  ["2024-03-01","삼일절"],["2024-04-10","총선"],["2024-05-05","어린이날"],["2024-05-06","대체공휴일"],["2024-05-15","부처님오신날"],
+  ["2024-06-06","현충일"],["2024-08-15","광복절"],["2024-09-16","추석연휴"],["2024-09-17","추석"],["2024-09-18","추석연휴"],
+  ["2024-10-03","개천절"],["2024-10-09","한글날"],["2024-12-25","성탄절"],
+  // 2025
+  ["2025-01-01","신정"],["2025-01-28","설연휴"],["2025-01-29","설날"],["2025-01-30","설연휴"],
+  ["2025-03-01","삼일절"],["2025-05-05","어린이날"],["2025-05-06","대체공휴일"],["2025-05-15","부처님오신날"],
+  ["2025-06-06","현충일"],["2025-08-15","광복절"],
+  ["2025-10-03","개천절"],["2025-10-05","추석연휴"],["2025-10-06","추석"],["2025-10-07","추석연휴"],["2025-10-08","대체공휴일"],["2025-10-09","한글날"],
+  ["2025-12-25","성탄절"],
+  // 2026
+  ["2026-01-01","신정"],["2026-01-28","설연휴"],["2026-01-29","설날"],["2026-01-30","설연휴"],
+  ["2026-03-01","삼일절"],["2026-03-02","대체공휴일"],["2026-05-05","어린이날"],["2026-05-25","부처님오신날"],
+  ["2026-06-06","현충일"],["2026-08-15","광복절"],["2026-08-17","대체공휴일"],
+  ["2026-09-24","추석연휴"],["2026-09-25","추석"],["2026-09-26","추석연휴"],["2026-09-28","대체공휴일"],
+  ["2026-10-03","개천절"],["2026-10-05","대체공휴일"],["2026-10-09","한글날"],
+  ["2026-12-25","성탄절"],
+  // 2027
+  ["2027-01-01","신정"],["2027-01-27","설연휴"],["2027-01-28","설날"],["2027-01-29","설연휴"],
+  ["2027-03-01","삼일절"],["2027-05-05","어린이날"],["2027-05-24","부처님오신날"],
+  ["2027-06-06","현충일"],["2027-08-15","광복절"],
+  ["2027-10-04","추석연휴"],["2027-10-05","추석"],["2027-10-06","추석연휴"],
+  ["2027-10-03","개천절"],["2027-10-09","한글날"],
+  ["2027-12-25","성탄절"]
+]);
+var editIdx = -1;
+var serverLoaded = false;
+var serverSynced = false; // 서버에서 실제로 데이터를 받아온 적 있는지 (옛 로컬로 서버 덮어쓰기 방지)
+
+function dow(ds){
+  var d=new Date(ds+'T00:00:00');
+  return['일','월','화','수','목','금','토'][d.getDay()];
+}
+function dowN(ds){
+  var d=new Date(ds+'T00:00:00');
+  return d.getDay(); // 0=일,6=토
+}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function shortY(d){ return (d||'').replace(/\b(\d{2})(\d{2})-(\d{1,2})-(\d{1,2})\b/g,'$2-$3-$4'); }  // 2026-09-06 → 26-09-06
+var AI_SVG='<span title="AI가 만든 기록" style="display:inline-flex;align-items:center;vertical-align:middle;flex-shrink:0"><svg width="22" height="16" viewBox="0 0 30 22" aria-label="AI"><g stroke="#9b7fe0" stroke-width="0.7" opacity="0.5"><line x1="4" y1="5" x2="15" y2="4"/><line x1="4" y1="5" x2="15" y2="11"/><line x1="4" y1="5" x2="15" y2="18"/><line x1="4" y1="11" x2="15" y2="4"/><line x1="4" y1="11" x2="15" y2="11"/><line x1="4" y1="11" x2="15" y2="18"/><line x1="4" y1="17" x2="15" y2="4"/><line x1="4" y1="17" x2="15" y2="11"/><line x1="4" y1="17" x2="15" y2="18"/></g><g stroke="#4bb6c6" stroke-width="0.7" opacity="0.55"><line x1="15" y1="4" x2="26" y2="8"/><line x1="15" y1="4" x2="26" y2="14"/><line x1="15" y1="11" x2="26" y2="8"/><line x1="15" y1="11" x2="26" y2="14"/><line x1="15" y1="18" x2="26" y2="8"/><line x1="15" y1="18" x2="26" y2="14"/></g><circle cx="4" cy="5" r="2.1" fill="#b04bd6"/><circle cx="4" cy="11" r="2.1" fill="#b04bd6"/><circle cx="4" cy="17" r="2.1" fill="#b04bd6"/><circle cx="15" cy="4" r="2.1" fill="#2aa9c4"/><circle cx="15" cy="11" r="2.1" fill="#2aa9c4"/><circle cx="15" cy="18" r="2.1" fill="#2aa9c4"/><circle cx="26" cy="8" r="2.1" fill="#e8722c"/><circle cx="26" cy="14" r="2.1" fill="#e8722c"/></svg></span>';
+var AI_SVG2='<span title="AI가 정리한 기록" style="display:inline-flex;align-items:center;vertical-align:middle;flex-shrink:0"><svg width="20" height="16" viewBox="0 0 22 20" aria-label="AI정리"><line x1="1.5" y1="18.6" x2="21" y2="18.6" stroke="#888" stroke-width="0.8"/><rect x="3" y="11" width="4.5" height="7" rx="1" fill="#b04bd6"/><rect x="9" y="7" width="4.5" height="11" rx="1" fill="#2aa9c4"/><rect x="15" y="3" width="4.5" height="15" rx="1" fill="#e8722c"/></svg></span>';
+function hilite(s){
+  var html=esc(s);
+  // URL 자동 링크화 (유튜브는 썸네일 포함)
+  html=html.replace(/https?:\/\/[^\s\u3000<']+/g, function(url){
+    var trail='';
+    var m=url.match(/[.,;:!?)\]]+$/);
+    if(m){ trail=m[0]; url=url.slice(0,-trail.length); }
+    var ytMatch=url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
+    if(ytMatch){
+      var vid=ytMatch[1];
+      return '<a href="'+url+'" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;background:#fff5f5;border:1px solid #fcc;border-radius:6px;padding:4px 8px;margin:2px 2px;text-decoration:none;color:#c00;font-size:0.85em;vertical-align:middle">'
+        +'<img src="https://img.youtube.com/vi/'+vid+'/default.jpg" style="width:48px;height:36px;object-fit:cover;border-radius:3px;flex-shrink:0" loading="lazy" onerror="this.style.display=\'none\'">'
+        +'<span>▶ YouTube</span></a>'+trail;
+    }
+    return '<a href="'+url+'" target="_blank" rel="noopener" style="color:#1a4d9e;text-decoration:underline;word-break:break-all">'+url+'</a>'+trail;
+  });
+  // 부분 강조 마커
+  // 짧은 형식: ㅃX ㅃ(빨강), ㅍX ㅍ(파랑), ㄴX ㄴ(녹색), **X**(굵게)
+  html=html.replace(/\*\*([^\*]+?)\*\*/g, '<b>$1</b>');
+  html=html.replace(/ㅃ([^ㅃ]+?)ㅃ/g, '<span style="color:#d42020;font-weight:600">$1</span>');
+  html=html.replace(/ㅍ([^ㅍ]+?)ㅍ/g, '<span style="color:#1a4d9e;font-weight:600">$1</span>');
+  html=html.replace(/ㄴ([^ㄴ]+?)ㄴ/g, '<span style="color:#1a7a1a;font-weight:600">$1</span>');
+  // 긴 형식(이전 호환): ''Rred''X''Rred'' 등 - 중첩 가능
+  html=html.replace(/''BBold''([\s\S]*?)''BBold''/g, '<b>$1</b>');
+  html=html.replace(/''Rred''([\s\S]*?)''Rred''/g, '<span style="color:#d42020;font-weight:600">$1</span>');
+  html=html.replace(/''BBlue''([\s\S]*?)''BBlue''/g, '<span style="color:#1a4d9e;font-weight:600">$1</span>');
+  html=html.replace(/''GGreen''([\s\S]*?)''GGreen''/g, '<span style="color:#1a7a1a;font-weight:600">$1</span>');
+  // 유레카 강조
+  html=html.replace(/유레카/g,'<span style="color:#d42020;font-weight:700">유레카</span>');
+  // 날짜 표시: 26.09.05 / 2026.09.05 → 26-09-05 (태그 밖 텍스트만, 데이터는 안 바뀜)
+  html=html.split(/(<[^>]*>)/).map(function(p,i){ return (i%2===0)? p.replace(/\b(\d{2}|\d{4})[.\/](\d{1,2})[.\/](\d{1,2})\b/g,'$1-$2-$3').replace(/\b(\d{2})(\d{2})-(\d{1,2})-(\d{1,2})\b/g,'$2-$3-$4') : p; }).join('');
+  return html;
+}
+
+var calY=new Date(new Date().getTime()+9*60*60*1000).getFullYear(), calM=new Date(new Date().getTime()+9*60*60*1000).getMonth();
+
+function swTab(t){
+  var isL = t==='list';
+  document.getElementById('tb-list').classList.toggle('active', isL);
+  document.getElementById('tb-cal').classList.toggle('active', !isL);
+  document.getElementById('tb-list').style.opacity = isL ? '1' : '0.55';
+  document.getElementById('tb-cal').style.opacity = !isL ? '1' : '0.55';
+  document.getElementById('tb-list').style.boxShadow = isL ? 'inset 0 0 0 2px #fff' : 'none';
+  document.getElementById('tb-cal').style.boxShadow = !isL ? 'inset 0 0 0 2px #fff' : 'none';
+  document.getElementById('list-sec').style.display = isL ? '' : 'none';
+  document.getElementById('cal-sec').style.display = isL ? 'none' : 'block';
+  if(!isL) renderCal();
+}
+
+function calPrev(){ calM--; if(calM<0){calM=11;calY--;} renderCal(); }
+function calNext(){ calM++; if(calM>11){calM=0;calY++;} renderCal(); }
+
+function renderCal(){
+  var today=todayKST();
+  document.getElementById('cal-title').textContent=calY+'년 '+(calM+1)+'월';
+  var dows=['일','월','화','수','목','금','토'];
+  var h='';
+  var dcls=['csun','','','','','','csat'];
+  dows.forEach(function(d,i){ h+='<div class="cal-dow" style="'+(i===0?'color:#d42020':i===6?'color:#1a8a1a':'')+'" >'+d+'</div>'; });
+
+  var fF=document.getElementById('flt-f').checked;
+  var fS=document.getElementById('flt-s').checked;
+  var fL=document.getElementById('flt-l').checked;
+  var fE=document.getElementById('flt-e').checked;
+  var fC=document.getElementById('flt-c').checked;
+  var fStar=document.getElementById('flt-star').checked;
+  var fN=document.getElementById('flt-n').checked;
+  var fAIel=document.getElementById('flt-ai'); var fAI=fAIel?fAIel.checked:true;
+  var fPin=document.getElementById('flt-pin').checked;
+  var dm={};
+  data.forEach(function(r){
+    var show=false;
+    if(fF && r.vt==='F') show=true;
+    if(fS && r.vt==='S') show=true;
+    if(fL && r.vt==='L') show=true;
+    if(fE && r.vt==='E') show=true;
+    if(fC && r.vt==='C') show=true;
+    if(fStar && r.important) show=true;
+    if(fPin && r.pinned) show=true;
+    if(fN && r.vt==='A' && !isAIRec(r)) show=true;
+    if(fAI && isAIRec(r)) show=true;
+    if(document.getElementById('flt-all').checked && r.vt!=='F' && r.vt!=='S' && r.vt!=='A' && r.vt!=='L' && r.vt!=='E' && r.vt!=='C') show=true;
+    if(!show) return;
+    if(!dm[r.date])dm[r.date]=[];
+    dm[r.date].push(r);
+  });
+
+  var first=new Date(calY,calM,1), last=new Date(calY,calM+1,0);
+  for(var i=0;i<first.getDay();i++) h+='<div class="cal-cell other"></div>';
+
+  for(var d=1;d<=last.getDate();d++){
+    var ds=calY+'-'+String(calM+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    var dw=new Date(calY,calM,d).getDay();
+    var isHol=HOLIDAYS.has(ds);
+    var holName=isHol?HOLIDAYS.get(ds):'';
+    var cc='cal-cell'+(dw===0||isHol?' csun'+(isHol?' chol':''):dw===6?' csat':'')+(ds===today?' today':'');
+    h+='<div class="'+cc+'"><div class="cal-dn">'+d+(holName?'<span style="font-size:0.6rem;font-weight:400;margin-left:2px;color:#d42020">'+esc(holName)+'</span>':'')+'</div>';
+    if(dm[ds]){
+      var recs=dm[ds];
+      recs.forEach(function(r,i){
+        if(i>=6){ if(i===6) h+='<span style="font-size:0.65rem;color:#999;padding:0 2px">+'+(recs.length-6)+'개</span>'; return; }
+        var tc=r.vt==='F'?'tf':r.important?'ti':r.vt==='S'?'ts':'tn';
+        var member1=r.members?r.members.trim():'';
+        var tagTxt;
+        if(r.vt==='F'){
+          tagTxt='⛳🏌️ '+esc(r.venue||'필드');
+        } else if(r.vt==='S'){
+          tagTxt='🏌️‍♀️ '+esc(r.venue||'스크린');
+        } else if(r.vt==='E') {
+          tagTxt='E '+esc(r.venue||'영어');
+        } else if(r.vt==='A') {
+          tagTxt='🔍 '+esc((r.title||'').slice(0,10));
+        } else {
+          tagTxt=esc((r.title||'').slice(0,10));
+        }
+        if(member1) tagTxt+=' '+esc(member1);
+        h+='<span class="ctag '+tc+'" data-date="'+ds+'">'+tagTxt+'</span>';
+        if(!isAIRec(r)){
+          var clines=(r.title||'').split('\n').map(function(x){return x.trim();}).filter(Boolean);
+          var mm=(r.members||'').trim();
+          if(clines.length<2 && mm && clines.indexOf(mm)<0) clines.unshift(mm);
+          clines.slice(0,2).forEach(function(ln){ h+='<div class="ccore" data-date="'+ds+'">'+thBlink(hilite(ln))+'</div>'; });
+        }
+      });
+    }
+    h+='</div>';
+  }
+  var tot=first.getDay()+last.getDate(), rem=tot%7===0?0:7-tot%7;
+  for(var i=0;i<rem;i++) h+='<div class="cal-cell other"></div>';
+  var grid=document.getElementById('cal-grid');
+  grid.innerHTML=h;
+  // 이벤트 위임으로 클릭 처리
+  grid.onclick=function(e){
+    var tag=e.target.closest('.ctag, .ccore');
+    if(tag) showCpop(tag.dataset.date);
+  };
+}
+
+function showCpop(ds){
+  var recs=data.filter(function(r){return r.date===ds;});
+  if(!recs.length) return;
+  var dows=['일','월','화','수','목','금','토'];
+  document.getElementById('cpop-dt').textContent=ds+' ('+dows[new Date(ds).getDay()]+')';
+  var b='';
+  recs.forEach(function(r){
+    var cc=r.important?'ci':r.vt==='F'?'cf':r.vt==='S'?'cs':'';
+    var tags='';
+    if(r.vt==='F') tags+='<span class="cpop-tag" style="background:#d7ecdd;color:#2b7d3c">⛳🏌️ 필드</span>';
+    if(r.vt==='S') tags+='<span class="cpop-tag" style="background:#d7e5f7;color:#245fb0">🏌️‍♀️ 스크린</span>';
+    if(r.vt==='L') tags+='<span class="cpop-tag" style="background:#f2dcec;color:#a82789">人生</span>';
+    if(r.vt==='E') tags+='<span class="cpop-tag" style="background:#eddfca;color:#96591c">E 영어</span>';
+    if(r.vt==='C') tags+='<span class="cpop-tag" style="background:#f7e0c2;color:#b7620a">C 회사</span>';
+    if(r.vt==='A') tags+='<span class="cpop-tag" style="background:#d3e9e9;color:#0e8383">🔍 분석</span>';
+    if(r.sub){ var _sct=subTint(r.vt); tags+='<span class="cpop-tag" style="background:'+_sct.bg+';color:'+_sct.fg+'">'+esc(r.sub)+'</span>'; }
+    if(r.venue) tags+='<span class="cpop-tag" style="background:#888;font-weight:700">'+esc(r.venue)+'</span>';
+    if(r.members) tags+='<span class="cpop-tag" style="background:#4a7a4a;font-weight:700">'+esc(r.members)+'</span>';
+    if(r.important) tags+='<span class="cpop-tag" style="background:#d42020">🔴 중요</span>';
+    var tc='cpop-title'+(r.important?' imp':r.bold?' bold':'');
+    b+='<div class="cpop-card '+cc+'">'
+      +(tags?'<div class="cpop-tags">'+tags+'</div>':'')
+      +'<div class="'+tc+'">'+hilite(r.title)+'</div>'
+      +(r.memo?'<div class="cpop-memo">'+hilite(r.memo)+'</div>':'')
+      +'</div>';
+  });
+  document.getElementById('cpop-bd').innerHTML=b;
+  document.getElementById('cpop').classList.add('on');
+}
+function closeCpop(){ document.getElementById('cpop').classList.remove('on'); }
+document.addEventListener('click',function(e){
+  var pop=document.getElementById('cpop');
+  if(pop && pop.classList.contains('on') && e.target===pop) closeCpop();
+});
+
+
+function cardHtml(r, i){
+  var dw=dowN(r.date);
+  var isHol=HOLIDAYS.has(r.date);
+  var holName=isHol?HOLIDAYS.get(r.date):'';
+  var dateColor=(dw===0||isHol)?'sun':(dw===6?'sat':'');
+  var dateStr=shortY(r.date)+'('+dow(r.date)+(holName?', '+holName:'')+')';
+
+  var cardCls='card'+(r.important?' important':r.vt==='F'?' field':r.vt==='S'?' screen':'');
+  var _tt = r.title||'';
+  var isSum = /^\s*🤖/.test(_tt) || /AI요약/.test(_tt);      // 🤖 AI요약(LLM)
+  var isTidy = /^\s*📊/.test(_tt) || /AI정리/.test(_tt);     // 📊 AI정리(자동)
+  var isAI = r.ai || isSum || isTidy;
+  var vtHtml=r.vt==='F'?'<span style="font-size:0.95rem;letter-spacing:-4px;white-space:nowrap;display:inline-block;flex-shrink:0;vertical-align:middle">⛳🏌️</span>':r.vt==='S'?'<span style="font-size:1rem;vertical-align:middle">🏌️‍♀️</span>':r.vt==='L'?'<span class="vt vt-l">人</span>':r.vt==='E'?'<span class="vt vt-e">E</span>':r.vt==='C'?'<span class="vt vt-c">C</span>':r.vt==='A'?'<span class="vt vt-a" style="font-size:0.85rem">🔍</span>':'';
+  if(isTidy) vtHtml=AI_SVG2+'<span style="background:#d7e6f4;color:#2b76ab;font-weight:700;font-size:0.72rem;height:22px;padding:0 9px;border-radius:11px;display:inline-flex;align-items:center;box-sizing:border-box;flex-shrink:0;margin-left:2px">AI정리</span>';
+  else if(isAI) vtHtml=AI_SVG+'<span style="background:#d5efdf;color:#10894f;font-weight:700;font-size:0.72rem;height:22px;padding:0 9px;border-radius:11px;display:inline-flex;align-items:center;box-sizing:border-box;flex-shrink:0;margin-left:2px">AI요약</span>';
+  if(r.sub){   // 2단계 세부구분 뱃지(연한 톤)
+    var _sc=subTint(r.vt);
+    vtHtml+='<span style="background:'+_sc.bg+';color:'+_sc.fg+';font-weight:700;font-size:0.82rem;height:22px;padding:0 9px;border-radius:11px;display:inline-flex;align-items:center;box-sizing:border-box;flex-shrink:0;margin-left:3px">'+esc(r.sub)+'</span>';
+  }
+  var venueHtml=r.venue?'<span class="venue" style="font-weight:700">'+thBlink(esc(r.venue))+'</span>':'';
+  var member1=r.members?r.members.trim():'';
+  var memberHtml=member1?'<span class="venue" style="background:#e8f0e8;color:#2d6a2d;font-weight:700">'+thBlink(esc(member1))+'</span>':'';
+  var memoHtml=r.memo?'<div class="memo">'+thBlink(hilite(r.memo))+'</div>':'';
+
+  // 미디어 표시
+  var mediaHtml='';
+  if(r.media&&r.media.length){
+    mediaHtml='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">';
+    var bodyImgIdx=0;
+    r.media.forEach(function(m){
+      if(m.type==='image'){
+        mediaHtml+='<img src="'+m.data+'" style="max-width:160px;max-height:120px;border-radius:6px;border:1px solid #ddd;cursor:pointer" onclick="openPhoto('+i+','+bodyImgIdx+')">';
+        bodyImgIdx++;
+      } else {
+        mediaHtml+='<video src="'+m.data+'" controls style="max-width:240px;max-height:160px;border-radius:6px;border:1px solid #ddd"></video>';
+      }
+    });
+    mediaHtml+='</div>';
+  }
+
+  var hasBody=r.memo||mediaHtml;
+  return '<div class="'+cardCls+'" id="c'+i+'">'
+    +'<div class="row" onclick="tog('+i+')">'
+    +'<div class="row-top">'
+    +(r.pinned?'<span title="게시" style="font-weight:700">📌</span>':'')
+    +(r.important?'<span style="color:#d42020;font-weight:700">★</span>':'')
+    +'<span class="date '+dateColor+'">'+dateStr+'</span>'
+    +vtHtml+venueHtml+memberHtml
+    +'<span class="acts" onclick="event.stopPropagation()">'
+    +(hasBody?'<button class="btn-view" id="vb'+i+'" onclick="tog('+i+')">보기</button>':'')
+    +'<button onclick="ed('+i+')">수정</button>'
+    +'</span></div>'
+    +(function(){
+    var s='';
+    if(r.bold)s+='font-weight:700;';
+    if(r.color==='red')s+='color:#c00;';
+    else if(r.color==='green')s+='color:#1a7a1a;';
+    else if(r.color==='blue')s+='color:#1a4d9e;';
+    var thumbs='';
+    // 메모에서 유튜브 vid 먼저 추출 (이미지 개수 결정에 필요)
+    var ytVid=null;
+    if(r.memo){
+      var ytMatch=r.memo.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
+      if(ytMatch) ytVid=ytMatch[1];
+    }
+    // 이미지: 유튜브 있으면 1개, 없으면 최대 3개
+    if(r.media&&r.media.length){
+      var maxImg=ytVid?1:3;
+      var imgs=r.media.filter(function(m){return m.type==='image';}).slice(0,maxImg);
+      imgs.forEach(function(m,idx){
+        thumbs+='<img src="'+m.data+'" data-idx="'+i+'" data-midx="'+idx+'" class="thumb-img" style="width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid #ccc;cursor:pointer;flex-shrink:0" onclick="event.stopPropagation();openPhoto('+i+','+idx+')">';
+      });
+    }
+    // 유튜브 썸네일 1개 추가
+    if(ytVid){
+      thumbs+='<a href="https://youtu.be/'+ytVid+'" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="position:relative;display:inline-block;flex-shrink:0;text-decoration:none;line-height:0">'
+        +'<img src="https://img.youtube.com/vi/'+ytVid+'/default.jpg" style="width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid #ccc" onerror="this.style.display=\'none\'">'
+        +'<span style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:13px;text-shadow:0 1px 3px rgba(0,0,0,0.9);pointer-events:none">▶</span>'
+        +'</a>';
+    }
+    var _rTitle=r.title||'';
+    if(isAI) _rTitle=_rTitle.replace(/^\s*(?:🤖|📊)\s*(?:AI)?\s*(?:요약|정리)\s*·\s*/, '');   // 라벨은 윗줄로 이동, 본문엔 내용만
+    var titleLines=_rTitle.split('\n').map(function(x){return x.trim();}).filter(Boolean).slice(0,2);
+    var titleHtml=titleLines.map(function(ln){return '<div style="display:flex;align-items:flex-start;overflow:hidden"><span style="flex-shrink:0;font-size:1.3rem;font-weight:700;line-height:1;margin-top:-0.08em;margin-right:2px">·</span><span style="white-space:normal;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;min-width:0;line-height:1.4">'+thBlink(hilite(ln))+'</span></div>';}).join('');
+    if(isAI){ titleHtml=titleHtml.replace(/🤖/g, AI_SVG).replace(/📊/g, AI_SVG2); }   // 제목 🤖→신경망, 📊→막대그래프
+    return '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:4px"><div class="title" style="'+s+'">'+titleHtml+'</div>'+(thumbs?'<div style="display:flex;gap:3px;flex-shrink:0">'+thumbs+'</div>':'')+'</div>';
+  })()
+    +'</div>'
+    +'<div class="body" id="b'+i+'">'+(memoHtml)+(mediaHtml)+'</div>'
+    +'</div>';
+}
+
+function render(){
+  var q=document.getElementById('q').value.toLowerCase();
+  blinkKws = q.trim() ? [q.trim()] : [];
+  var fF=document.getElementById('flt-f').checked;
+  var fS=document.getElementById('flt-s').checked;
+  var fL=document.getElementById('flt-l').checked;
+  var fE=document.getElementById('flt-e').checked;
+  var fC=document.getElementById('flt-c').checked;
+  var fStar=document.getElementById('flt-star').checked;
+  var fN=document.getElementById('flt-n').checked;
+  var fAIel=document.getElementById('flt-ai'); var fAI=fAIel?fAIel.checked:true;
+  var fPin=document.getElementById('flt-pin').checked;
+  var matched=[];
+  for(var i=0;i<data.length;i++){
+    var r=data[i];
+    var text=(r.title+' '+(r.memo||'')+' '+(r.venue||'')+' '+(r.sub||'')).toLowerCase();
+    if(q && text.indexOf(q)<0) continue;
+    // vt/중요 필터 (OR 방식)
+    var show = false;
+    if(fF && r.vt==='F') show=true;
+    if(fS && r.vt==='S') show=true;
+    if(fL && r.vt==='L') show=true;
+    if(fE && r.vt==='E') show=true;
+    if(fC && r.vt==='C') show=true;
+    if(fStar && r.important) show=true;
+    if(fPin && r.pinned) show=true;
+    if(fN && r.vt==='A' && !isAIRec(r)) show=true;
+    if(fAI && isAIRec(r)) show=true;
+    if(document.getElementById('flt-all').checked && r.vt!=='F' && r.vt!=='S' && r.vt!=='A' && r.vt!=='L' && r.vt!=='E' && r.vt!=='C') show=true;
+    if(!show) continue;
+    matched.push(i);
+  }
+  var html='';
+  // 📌 게시 — 맨 위에 최신 1개만 표시
+  var topPin=-1;
+  for(var mk=0; mk<matched.length; mk++){ if(data[matched[mk]].pinned){ topPin=matched[mk]; break; } }
+  if(topPin>=0){
+    html+=cardHtml(data[topPin], topPin);
+  }
+  // 일반 목록 (연/월 구분)
+  var lastYear='', lastMonth='';
+  matched.forEach(function(i){
+    var r=data[i];
+    if(i===topPin) return;
+    var yr=r.date.slice(0,4), mo=r.date.slice(0,7);
+    if(!q){
+      if(yr!==lastYear){ html+='<div class="div-year">'+yr+'년</div>'; lastYear=yr; lastMonth=''; }
+      if(mo!==lastMonth){ var mNum=parseInt(r.date.slice(5,7)); html+='<div class="div-month">'+mNum+'월</div>'; lastMonth=mo; }
+    }
+    html+=cardHtml(r, i);
+  });
+  document.getElementById('list').innerHTML=html||'<div style="padding:40px;color:#aaa">검색 결과 없음</div>';
+  document.getElementById('cnt').textContent=(matched.length<data.length?matched.length+'/'+data.length:''+data.length)+'개';
+}
+
+function tog(i){
+  var b=document.getElementById('b'+i);
+  var vb=document.getElementById('vb'+i);
+  if(!b)return;
+  var open=b.style.display==='block';
+  b.style.display=open?'none':'block';
+  if(vb)vb.textContent=open?'보기':'닫기';
+}
+
+// 세부(2단) 뱃지 색: 구분별 연한 톤
+function subTint(vt){
+  switch(vt){
+    case 'F': return {bg:'#d7ecdd',fg:'#2b7d3c'};
+    case 'S': return {bg:'#d7e5f7',fg:'#245fb0'};
+    case 'A': return {bg:'#d3e9e9',fg:'#0e8383'};
+    case 'L': return {bg:'#f2dcec',fg:'#a82789'};
+    case 'E': return {bg:'#eddfca',fg:'#96591c'};
+    case 'C': return {bg:'#f7e0c2',fg:'#b7620a'};
+    default:  return {bg:'#e4e4e4',fg:'#555'};
+  }
+}
+// 구분 2단계: 어떤 구분이든 선택하면 세부 입력칸 표시(人生은 금융/연예/운동 추천)
+function mVtChanged(){
+  var v=document.getElementById('mVt').value;
+  var wrap=document.getElementById('mSubWrap'), inp=document.getElementById('mSub'), dl=document.getElementById('mSubList');
+  var show=(v!=='');
+  wrap.style.display=show?'block':'none';
+  if(!show){ inp.value=''; return; }
+  var preset=(v==='L')?['금융','연예','운동']:[];
+  var used={}; preset.forEach(function(x){ used[x]=1; });
+  (data||[]).forEach(function(r){ if(r&&r.vt===v && r.sub) used[r.sub]=1; });
+  dl.innerHTML=Object.keys(used).map(function(x){return '<option value="'+esc(x)+'">';}).join('');
+  inp.placeholder=(v==='L')?'금융/연예/운동 선택·입력':'세부 선택·입력';
+}
+function openAdd(){
+  if(!serverLoaded){alert("서버에서 데이터를 불러오는 중입니다. 잠시 후 다시 시도하세요.");return;}
+  editIdx=-1;
+  document.getElementById('mtitle').textContent='새 기록 추가';
+  document.getElementById('mDate').value=todayKST();
+  document.getElementById('mVt').value='';
+  document.getElementById('mSub').value=''; mVtChanged();
+  document.getElementById('mVenue').value='';
+  document.getElementById('mTitle').value='';
+  document.getElementById('mMemo').value='';
+  document.getElementById('mImp').checked=false;
+  document.getElementById('mPin').checked=false;
+  document.querySelectorAll('input[name=mColor]').forEach(function(rd,i){rd.checked=(i===0);});
+  document.getElementById('mBold').checked=false;
+  document.getElementById('mMedia').value='';
+  document.getElementById('mMediaPreview').innerHTML='';
+  pendingMedia=[];
+  document.getElementById('mDelBtn').style.display='none';
+  document.getElementById('mRegenBtn').style.display='none';
+  document.getElementById('ov').classList.add('open');
+}
+function ed(i){
+  editIdx=i; var r=data[i];
+  document.getElementById('mtitle').textContent='기록 수정';
+  document.getElementById('mDate').value=r.date;
+  document.getElementById('mVt').value=r.vt||'';
+  mVtChanged(); document.getElementById('mSub').value=r.sub||'';
+  document.getElementById('mVenue').value=r.venue||'';
+  document.getElementById('mMembers').value=r.members||'';
+  document.getElementById('mTitle').value=r.title||'';
+  document.getElementById('mMemo').value=r.memo||'';
+  document.getElementById('mImp').checked=!!r.important;
+  document.getElementById('mPin').checked=!!r.pinned;
+  var colorVal=r.color||'';
+  document.querySelectorAll('input[name=mColor]').forEach(function(rd){rd.checked=(rd.value===colorVal);});
+  document.getElementById('mBold').checked=!!r.bold;
+  document.getElementById('mMedia').value='';
+  pendingMedia=r.media?r.media.slice():[];
+  renderMediaPreview();
+  document.getElementById('mDelBtn').style.display='';
+  var _isAI = r.ai || /^\s*(?:🤖|📊)/.test(r.title||'');
+  document.getElementById('mRegenBtn').style.display = _isAI ? '' : 'none';
+  document.getElementById('ov').classList.add('open');
+}
+function regenAI(){
+  var kwRaw=(document.getElementById('mMembers').value||'').trim();
+  if(!kwRaw){ var t=document.getElementById('mTitle').value||''; var mm=t.match(/·\s*(.+)$/); kwRaw=mm?mm[1].trim():''; }
+  if(!kwRaw){ alert('키워드(멤버/원인 칸)가 비어있어요. 키워드를 넣고 다시 시도하세요.'); return; }
+  var key=themeAIKey(false); if(!key) return;
+  var groups=kwRaw.split(',').map(function(g){return g.split(/[&^]/).map(function(s){return s.trim();}).filter(Boolean);}).filter(function(g){return g.length;});
+  var flat=[]; groups.forEach(function(g){g.forEach(function(t){if(flat.indexOf(t)<0)flat.push(t);});});
+  var low=groups.map(function(g){return g.map(function(t){return t.toLowerCase();});});
+  var selfId = (editIdx>=0 && data[editIdx]) ? data[editIdx].id : null;
+  var res=data.filter(function(r){
+    if(selfId && r.id===selfId) return false;
+    if(/^\s*(?:🤖|📊)/.test(r.title||'')) return false;   // 다른 AI글도 제외
+    if(!low.length) return true;
+    var text=((r.title||'')+' '+(r.memo||'')+' '+(r.venue||'')+' '+(r.members||'')).toLowerCase();
+    return low.some(function(g){return g.every(function(t){return text.indexOf(t)>=0;});});
+  });
+  if(!res.length){ alert('그 키워드에 맞는 기록이 없어요.'); return; }
+  var btn=document.getElementById('mRegenBtn'); var old=btn.textContent; btn.textContent='요약중…'; btn.disabled=true;
+  var src=res.map(function(r){
+    return '['+(r.date||'')+']'
+      +(r.venue?(' 문제:'+thStrip(r.venue)):'')
+      +(r.members?(' 원인:'+thStrip(r.members)):'')
+      +(r.title?(' 대책:'+thStrip(r.title).replace(/\n/g,' / ')):'')
+      +(r.memo?(' 메모:'+thStrip(r.memo).replace(/\n/g,' ').slice(0,300)):'');
+  }).join('\n');
+  var kw=flat.join(', ');
+  var sys='당신은 골프 스윙 코치입니다. 사용자의 골프 일지 기록만을 근거로 특정 주제의 원인과 대책을 한국어로 간결하게 요약합니다. 기록에 없는 내용을 지어내지 마세요.';
+  var user='주제 키워드: '+kw+'\n\n아래는 내 골프 일지 기록들이야. 이 주제에 대해 (1) 반복되는 핵심 원인, (2) 효과가 있었던/권장되는 대책, (3) 한 줄 종합 조언 을 정리해줘. 소제목과 불릿으로 간결하게.\n그리고 맨 마지막 줄에 반드시 "한줄요약: <핵심을 한 문장으로>" 형식으로 써줘.\n\n=== 기록 ('+res.length+'건) ===\n'+src;
+  fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-opus-5',max_tokens:3000,system:sys,output_config:{effort:'low'},messages:[{role:'user',content:user}]})})
+  .then(function(r){return r.json();}).then(function(j){
+    btn.textContent=old; btn.disabled=false;
+    if(j.error){ alert('오류: '+(j.error.message||JSON.stringify(j.error))); return; }
+    var txt=(j.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('\n').trim();
+    if(!txt){ alert('응답이 비었어요. 다시 시도하세요.'); return; }
+    txt=dashDate(txt);
+    var oneline=thExtractOneLine(txt);
+    document.getElementById('mMemo').value=thColorize(txt,flat);
+    document.getElementById('mTitle').value='🤖 AI요약 · '+(oneline?thColorize(oneline,flat):thColorize(kw,flat));
+    document.getElementById('mVt').value='A';
+    alert('✅ AI 재요약 완료! 내용 확인 후 저장을 누르세요.');
+  }).catch(function(e){ btn.textContent=old; btn.disabled=false; alert('통신 실패: '+e); });
+}
+function delModal(){if(editIdx<0)return;if(!confirm('삭제할까요?'))return;if(!confirm('정말 삭제합니다!'))return;var i=editIdx;closeOv();dl(i);}
+var pendingMedia=[];
+
+function renderMediaPreview(){
+  var p=document.getElementById('mMediaPreview');
+  p.innerHTML='';
+  pendingMedia.forEach(function(m,idx){
+    var wrap=document.createElement('div');
+    wrap.style.cssText='position:relative;display:inline-block';
+    var el=m.type==='image'?document.createElement('img'):document.createElement('video');
+    el.src=m.data; el.style.cssText='max-width:100px;max-height:80px;border-radius:5px;border:1px solid #ccc';
+    if(m.type==='video'){el.controls=true;}
+    var btn=document.createElement('button');
+    btn.textContent='✕'; btn.dataset.idx=idx;
+    btn.style.cssText='position:absolute;top:-4px;right:-4px;background:#e44;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;padding:0;line-height:18px';
+    btn.onclick=function(){pendingMedia.splice(+this.dataset.idx,1);renderMediaPreview();};
+    wrap.appendChild(el); wrap.appendChild(btn);
+    p.appendChild(wrap);
+  });
+}
+
+function readMediaFile(file){
+  return new Promise(function(resolve){
+    var reader=new FileReader();
+    reader.onload=function(ev){
+      if(file.type.indexOf('image')===0){
+        // 이미지: 1280px 리사이즈 + JPEG 0.7 압축
+        var img=new Image();
+        img.onload=function(){
+          var MAX=1280, w=img.width, h=img.height;
+          if(w>MAX||h>MAX){ if(w>h){ h=Math.round(h*MAX/w); w=MAX; } else { w=Math.round(w*MAX/h); h=MAX; } }
+          var canvas=document.createElement('canvas');
+          canvas.width=w; canvas.height=h;
+          canvas.getContext('2d').drawImage(img,0,0,w,h);
+          resolve({type:'image', data:canvas.toDataURL('image/jpeg',0.7)});
+        };
+        img.onerror=function(){ resolve({type:'image', data:ev.target.result}); };
+        img.src=ev.target.result;
+      } else {
+        resolve({type:'video', data:ev.target.result}); // 영상은 그대로
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+}
+document.getElementById('mMedia').addEventListener('change',function(e){
+  var files=Array.from(e.target.files);
+  Promise.all(files.map(readMediaFile)).then(function(results){
+    pendingMedia=pendingMedia.concat(results);
+    renderMediaPreview();
+  });
+});
+// 📋 Ctrl+V(붙여넣기)로 클립보드 사진을 바로 추가 — 편집창 열려있을 때만
+document.addEventListener('paste',function(e){
+  var ov=document.getElementById('ov'); if(!ov||!ov.classList.contains('open')) return;
+  var items=(e.clipboardData&&e.clipboardData.items)?e.clipboardData.items:[];
+  var files=[];
+  for(var i=0;i<items.length;i++){ if(items[i].kind==='file'){ var f=items[i].getAsFile(); if(f&&f.type.indexOf('image')===0) files.push(f); } }
+  if(!files.length) return;           // 텍스트 붙여넣기는 그대로 통과
+  e.preventDefault();                 // 사진일 때만 가로채서 첨부로
+  Promise.all(files.map(readMediaFile)).then(function(results){
+    pendingMedia=pendingMedia.concat(results);
+    renderMediaPreview();
+    try{ var mp=document.getElementById('mMediaPreview'); if(mp) mp.scrollIntoView({block:'nearest'}); }catch(_){}
+  });
+});
+
+function save(){
+  idbSave(data);                                                   // 사진 포함 전체 저장(용량 큼)
+  try{localStorage.setItem('golfLog',JSON.stringify(data));}catch(e){} // 백업(용량 넘으면 조용히 실패)
+}
+// ===== IndexedDB (사진 포함 전체 저장 → localStorage 5MB 한계 해결) =====
+var IDB=null;
+function idbOpen(cb){
+  try{
+    var req=indexedDB.open('golfDB',1);
+    req.onupgradeneeded=function(e){ try{e.target.result.createObjectStore('kv');}catch(_){} };
+    req.onsuccess=function(e){ IDB=e.target.result; cb(); };
+    req.onerror=function(){ cb(); };
+  }catch(e){ cb(); }
+}
+function idbSave(arr){
+  if(!IDB) return;
+  try{ var tx=IDB.transaction('kv','readwrite'); tx.objectStore('kv').put(JSON.stringify(arr),'golfLog'); }catch(e){}
+}
+function idbLoad(cb){
+  if(!IDB){ cb(null); return; }
+  try{
+    var tx=IDB.transaction('kv','readonly'); var rq=tx.objectStore('kv').get('golfLog');
+    rq.onsuccess=function(){ try{ cb(rq.result?JSON.parse(rq.result):null); }catch(e){ cb(null); } };
+    rq.onerror=function(){ cb(null); };
+  }catch(e){ cb(null); }
+}
+
+var themeExtraAt='';
+var themeExtraDel=[];
+function thExKey(x){ return x&&(x.id||x.data); }
+function mergeExtra(a,b,tomb){
+  var t={}; (tomb||[]).forEach(function(d){ t[d]=1; });
+  var seen={}, out=[];
+  (a||[]).concat(b||[]).forEach(function(x){ var k=thExKey(x); if(k && !seen[k] && !t[k]){ seen[k]=1; out.push(x); } });
+  return out;
+}
+function mergeTomb(a,b){ var s={},o=[]; (a||[]).concat(b||[]).forEach(function(d){ if(d&&!s[d]){ s[d]=1; o.push(d); } }); return o; }
+function themeExtraSaveLocal(){
+  // ⚠️ 테마 사진은 로컬에 저장하지 않음(기기 저장공간 보호). 서버(themeExtraPush)에만 저장.
+  // 이전 버전이 남긴 로컬 캐시가 있으면 삭제해 공간을 즉시 확보.
+  try{ if(IDB) IDB.transaction('kv','readwrite').objectStore('kv').delete('themeExtra'); }catch(e){}
+  try{ localStorage.removeItem('themeExtra'); }catch(e){}
+}
+function themeExtraPush(){
+  try{
+    postRows([{id:'__theme_extra__', data:{id:'__theme_extra__', extra:themeExtra, del:themeExtraDel, updatedAt:themeExtraAt}, updated_at:new Date().toISOString()}])
+    .catch(function(){});
+  }catch(e){}
+}
+function themeExtraSave(){ themeExtraAt=nowKST(); themeExtraSaveLocal(); themeExtraPush(); }
+function themeExtraLoadLocal(cb){
+  // 로컬 캐시는 쓰지 않음 → 서버에서만 병합(themeExtraPull). 남아있던 로컬 캐시는 정리.
+  themeExtraSaveLocal();
+  if(cb)cb();
+}
+function themeExtraPull(cb){
+  try{
+    fetch(SUPABASE_URL+'/rest/v1/golf_posts?id=eq.__theme_extra__&select=data', {headers:sbH()})
+    .then(function(r){ return r.ok?r.json():[]; })
+    .then(function(arr){
+      var d=(arr&&arr[0]&&arr[0].data)?arr[0].data:null;
+      var srvEx=(d&&Array.isArray(d.extra))?d.extra:[];
+      var srvDel=(d&&Array.isArray(d.del))?d.del:[];
+      var newDel=mergeTomb(themeExtraDel, srvDel);
+      var merged=mergeExtra(themeExtra, srvEx, newDel);
+      var changedLocal=(merged.length!==themeExtra.length)||(newDel.length!==themeExtraDel.length);
+      var changedSrv=(merged.length!==srvEx.length)||(newDel.length!==srvDel.length);
+      themeExtra=merged; themeExtraDel=newDel;
+      if(changedLocal){ if(!themeExtraAt) themeExtraAt=nowKST(); themeExtraSaveLocal(); }
+      if(changedSrv){ if(!themeExtraAt) themeExtraAt=nowKST(); themeExtraPush(); }
+      if(cb)cb();
+    }).catch(function(){ if(cb)cb(); });
+  }catch(e){ if(cb)cb(); }
+}
+
+function closeOv(){document.getElementById('ov').classList.remove('open');}
+function saveMod(){
+  var date=document.getElementById('mDate').value;
+  var title=document.getElementById('mTitle').value.trim();
+  if(!date){alert('날짜는 필수!');return;}
+  if(!title){alert('키워드는 필수!');return;}
+  var wantPin=document.getElementById('mPin').checked;
+  var now = nowKST();
+  var _vt=document.getElementById('mVt').value;
+  var _sub=(_vt!=='')?document.getElementById('mSub').value.trim():'';
+  var rec={
+    date:date,vt:_vt,sub:_sub,
+    venue:document.getElementById('mVenue').value.trim(),
+    members:document.getElementById('mMembers').value.trim(),
+    title:title,memo:document.getElementById('mMemo').value.trim(),
+    important:document.getElementById('mImp').checked,
+    pinned:wantPin,
+    color:document.querySelector('input[name=mColor]:checked').value,
+    bold:document.getElementById('mBold').checked,
+    media:pendingMedia.slice(),
+    updatedAt: now
+  };
+  if(editIdx>=0){
+    var existing = data[editIdx];
+    rec.id = existing.id || (date+'_'+(title||'').substring(0,10).replace(/\s/g,'_')+'_'+Math.random().toString(36).substr(2,4));
+    rec.createdAt = existing.createdAt || existing.updatedAt || now;  // 최초 등록 시각 영구 보존
+    data[editIdx]=rec;
+  } else {
+    rec.id = date+'_'+(title||'').substring(0,10).replace(/\s/g,'_')+'_'+Math.random().toString(36).substr(2,4);
+    rec.createdAt = now;  // 새 기록: 최초 등록 시각 = 지금
+    data.push(rec);
+  }
+  data.sort(function(a,b){ var dc=b.date.localeCompare(a.date); if(dc!==0)return dc; return (b.createdAt||b.updatedAt||'').localeCompare(a.createdAt||a.updatedAt||''); });
+  pushRecord(rec); closeOv(); render();
+}
+function dl(i){var id=data[i]&&data[i].id;data.splice(i,1);save();if(id)deleteRecord(id);render();}
+function dlConfirm(i){if(!confirm('삭제할까요?'))return;if(!confirm('정말 삭제합니다!'))return;dl(i);}
+
+// 파일로 내보내기
+function exportFile(){
+  var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='golf-log-'+stampKST()+'.json';
+  a.click();
+  try{ localStorage.setItem('lastBackup', String(Date.now())); localStorage.removeItem('backupSnooze'); }catch(e){}
+  var _b=document.getElementById('backupBanner'); if(_b) _b.style.display='none';
+}
+// ===== 자동 백업 도우미 =====
+function exportApp(){   // 프로그램(앱 HTML) 파일로 저장
+  try{
+    fetch(location.pathname, {cache:'no-store'}).then(function(r){return r.text();}).then(function(html){
+      var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));
+      a.download='golf-app-'+stampKST()+'.html'; a.click();
+    }).catch(function(){});
+  }catch(e){}
+}
+function updateAutoBkLabel(){ var el=document.getElementById('autoBkState'); if(el) el.textContent=(localStorage.getItem('autoBackup')==='1'?'켜짐 ✅':'꺼짐'); }
+function toggleAutoBackup(){
+  var on = localStorage.getItem('autoBackup')==='1';
+  if(on){ try{localStorage.setItem('autoBackup','0');}catch(e){} alert('자동백업을 껐어요.'); }
+  else {
+    try{localStorage.setItem('autoBackup','1');}catch(e){}
+    alert('자동백업을 켰어요 ✅\n앱을 열 때 7일마다 데이터+프로그램 파일이 자동 저장돼요.\n(폰에서 처음엔 "다운로드 허용"을 물어볼 수 있어요 → 허용)');
+    autoBackupRun(true);   // 켜자마자 한 번 실행
+  }
+  updateAutoBkLabel();
+  var d=document.getElementById('more-dropdown'); if(d) d.classList.remove('open');
+}
+function autoBackupRun(force){
+  if(localStorage.getItem('autoBackup')!=='1') return;
+  if(!data || !data.length) return;
+  var d=backupDays();
+  if(!force && d!==null && d<7) return;    // 7일마다 (켤 때는 즉시)
+  exportFile();                             // 데이터 저장(+lastBackup 기록)
+  setTimeout(exportApp, 900);               // 프로그램 저장(약간 텀)
+}
+function backupDays(){ try{ var t=localStorage.getItem('lastBackup'); if(!t) return null; return Math.floor((Date.now()-parseInt(t))/86400000); }catch(e){ return null; } }
+function backupDismiss(){ try{ localStorage.setItem('backupSnooze', String(Date.now())); }catch(e){} var b=document.getElementById('backupBanner'); if(b) b.style.display='none'; }
+function checkBackupReminder(){
+  var b=document.getElementById('backupBanner'); if(!b) return;
+  if(!data || !data.length){ b.style.display='none'; return; }        // 데이터 없으면 알림 안 함
+  try{ var sn=localStorage.getItem('backupSnooze'); if(sn && (Date.now()-parseInt(sn))<7*86400000){ b.style.display='none'; return; } }catch(e){}  // '나중에' 누르면 7일 숨김
+  var d=backupDays(), THRESH=30, msg='';
+  if(d===null){ msg='📦 아직 백업파일을 저장한 적이 없어요. 소중한 기록을 파일로도 백업해두세요.'; }
+  else if(d>=THRESH){ msg='📦 마지막 백업 '+d+'일 전이에요. 다시 백업할 때가 됐어요.'; }
+  else { b.style.display='none'; return; }
+  document.getElementById('backupMsg').textContent=msg;
+  b.style.display='flex';
+}
+// 파일에서 불러오기
+function importFile(){
+  var input=document.createElement('input');
+  input.type='file'; input.accept='.json';
+  input.onchange=function(e){
+    var file=e.target.files[0]; if(!file)return;
+    var reader=new FileReader();
+    reader.onload=function(ev){
+      try{
+        var imported=JSON.parse(ev.target.result);
+        if(!Array.isArray(imported))throw new Error();
+        var before=data.length;
+        if(!confirm('파일 '+imported.length+'개를 현재 '+before+'개에 합칩니다.\n(현재 데이터는 안 지워지고 합쳐져요)\n계속?'))return;
+        data=mergeData(data.slice(), imported);  // 교체 아님 → 합치기(둘 다 보존)
+        save(); render(); bulkPushAll();
+        alert('가져오기 완료!\n'+before+'개 + 파일 '+imported.length+'개 → 합쳐서 '+data.length+'개');
+      }catch(e){alert('파일 형식이 올바르지 않습니다.');}
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+function exportExcel(){
+  // ── 색상 정의 ──────────────────────────────────────────
+  var VT_BG  ={'F':'2d7a2d','S':'1a4d9e','L':'b0208c','E':'8b4513','C':'dc6400'};
+  var VT_LBL ={'F':'필드','S':'스크린','L':'人生','E':'영어','C':'회사'};
+  var IMP_BG ='d42020';
+  var HDR_BG ='1f497d';
+
+  // ── 공유 문자열 테이블 ─────────────────────────────────
+  var sst=[], sstMap={};
+  function si(s){ s=String(s||''); if(sstMap[s]===undefined){sstMap[s]=sst.length;sst.push(s);} return sstMap[s]; }
+
+  // ── 스타일 인덱스 매핑 ────────────────────────────────
+  // styleIdx: 0=기본, 1=헤더, 2=중요행, 3~7=구분색(F/S/L/E/C), 8=중요+굵게(제목셀)
+  // numFmtId=0, fontId, fillId, borderId, xfId 순서로 정의
+  // fonts: 0=기본, 1=헤더(흰굵), 2=중요(빨굵), 3~7=vt색(흰굵), 8=중요제목(빨굵)
+  // fills: 0=없음, 1=없음(패턴 필수), 2=헤더, 3=중요, 4~8=vt색
+
+  var vtKeys=['F','S','L','E','C'];
+
+  function xmlEsc(s){
+    // XML 1.0이 금지하는 제어문자 제거(0x00-0x08, 0x0B, 0x0C, 0x0E-0x1F)
+    return String(s||'')
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,'')
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── 셀 빌더 ───────────────────────────────────────────
+  function sc(col,row,sIdx,strIdx){ return '<c r="'+col+row+'" t="s" s="'+sIdx+'"><v>'+strIdx+'</v></c>'; }
+
+  // ── 행 빌더 ───────────────────────────────────────────
+  var cols=['A','B','C','D','E','F','G'];
+  function buildRow(rowNum, vals, sIdxArr){
+    var cells='';
+    for(var i=0;i<vals.length;i++) cells+=sc(cols[i],rowNum,sIdxArr[i],si(vals[i]));
+    return '<row r="'+rowNum+'">'+cells+'</row>';
+  }
+
+  // ── 데이터 행 생성 (레코드당 2행: 1행=기본정보, 2행=내용) ──────
+  var sheetRows='';
+  var rowNum=1;
+  sheetRows+=buildRow(rowNum,['날짜','구분','중요','장소','동반자','제목'],[1,1,1,1,1,1]);
+  rowNum++;
+
+  data.forEach(function(r){
+    var vt=r.vt||'';
+    var vtIdx=vtKeys.indexOf(vt);
+    var isImp=!!r.important;
+
+    var vtBgSIdx  = vtIdx>=0 ? (3+vtIdx) : 0;
+    var vtTxtSIdx = vtIdx>=0 ? (9+vtIdx) : 0;
+    var otherSIdx = isImp ? 8 : (vtIdx>=0 ? vtTxtSIdx : 0);
+
+    // 1행: 날짜/구분/중요/장소/동반자/제목
+    var dows=['일','월','화','수','목','금','토'];
+    var dw=r.date?dowN(r.date):1;
+    var isHolXl=HOLIDAYS.has(r.date);
+    var dateSIdx=(dw===0||isHolXl)?14:(dw===6?15:0); // 일/공휴=빨강, 토=파랑
+    var dateStr=r.date ? shortY(r.date)+'('+dows[dw]+')' : '';
+    sheetRows+=buildRow(rowNum,[
+      dateStr,
+      VT_LBL[vt]||vt||'',
+      isImp?'★':'',
+      r.venue||'',
+      r.members||'',
+      r.title||''
+    ],[dateSIdx, vtBgSIdx, isImp?8:0, otherSIdx, otherSIdx, otherSIdx]);
+    rowNum++;
+
+    // 2행: F열에 내용 (A~E 빈칸)
+    var memo=(r.memo||'').replace(/\r?\n/g,' ');
+    sheetRows+=buildRow(rowNum,['','','','','',memo],[0,0,0,0,0,otherSIdx]);
+    rowNum++;
+  });
+
+  // ── SST XML ───────────────────────────────────────────
+  var sstXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    +'<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="'+sst.length+'" uniqueCount="'+sst.length+'">'
+    +sst.map(function(s){ return '<si><t xml:space="preserve">'+xmlEsc(s)+'</t></si>'; }).join('')
+    +'</sst>';
+
+  // ── Styles XML ────────────────────────────────────────
+  function font(color,bold,sz){
+    return '<font>'+(bold?'<b/>':'')+'<sz val="'+(sz||11)+'"/><color rgb="FF'+color+'"/><name val="맑은 고딕"/></font>';
+  }
+  function fill(color){
+    if(!color) return '<fill><patternFill patternType="none"/></fill>';
+    return '<fill><patternFill patternType="solid"><fgColor rgb="FF'+color+'"/></patternFill></fill>';
+  }
+  function xf(fontId,fillId,borderId,wrap){
+    return '<xf numFmtId="0" fontId="'+fontId+'" fillId="'+fillId+'" borderId="'+borderId+'" xfId="0"'
+      +(wrap?' applyAlignment="1"><alignment wrapText="1"/></xf':'/>')+' ';
+  }
+
+  // fonts: 0=기본, 1=헤더(흰굵), 3~7=vt흰굵(B배경용), 8=중요빨굵, 9~13=vt컬러굵(나머지)
+  var fontsXml='<fonts count="16">'
+    +font('000000',false)   // 0 기본
+    +font('FFFFFF',true)    // 1 헤더
+    +font('000000',false)   // 2 미사용
+    +vtKeys.map(function(k){ return font('FFFFFF',true); }).join('') // 3~7 vt 흰굵(B열)
+    +font('d42020',true)    // 8 중요 빨굵
+    +vtKeys.map(function(k){ return font(VT_BG[k],true); }).join('') // 9~13 vt컬러굵
+    +font('d42020',true)    // 14 일/공휴 빨강굵
+    +font('1a4d9e',true)    // 15 토 파랑굵
+    +'</fonts>';
+
+  // fills: 0=없음, 1=없음(필수), 2=헤더, 3~7=vt색
+  var fillsXml='<fills count="'+(3+vtKeys.length)+'">'
+    +fill('')+fill('')      // 0,1 필수
+    +fill(HDR_BG)           // 2 헤더
+    +vtKeys.map(function(k){ return fill(VT_BG[k]); }).join('') // 3~7
+    +'</fills>';
+
+  var bordersXml='<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>';
+
+  // xfs: 0=기본, 1=헤더, 3~7=vt배경, 8=중요빨굵글자, 9~13=vt컬러굵글자
+  var cellXfsXml='<cellXfs>'
+    +xf(0,0,0,false)   // 0 기본
+    +xf(1,2,0,false)   // 1 헤더
+    +xf(0,0,0,false)   // 2 미사용
+    +vtKeys.map(function(k,i){ return xf(3+i,3+i,0,false); }).join('') // 3~7 vt배경
+    +xf(8,0,0,false)   // 8 중요 빨굵글자
+    +vtKeys.map(function(k,i){ return xf(9+i,0,0,false); }).join('') // 9~13 vt컬러굵글자
+    +xf(14,0,0,false)  // 14 일/공휴 빨강굵
+    +xf(15,0,0,false)  // 15 토 파랑굵
+    +'</cellXfs>';
+
+  var stylesXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    +'<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+    +fontsXml+fillsXml+bordersXml
+    +'<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'
+    +cellXfsXml
+    +'</styleSheet>';
+
+  // ── Sheet XML ─────────────────────────────────────────
+  var sheetXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    +'<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+    +'<cols>'
+    +'<col min="1" max="1" width="12" customWidth="1"/>'
+    +'<col min="2" max="2" width="8" customWidth="1"/>'
+    +'<col min="3" max="3" width="5" customWidth="1"/>'
+    +'<col min="4" max="4" width="14" customWidth="1"/>'
+    +'<col min="5" max="5" width="14" customWidth="1"/>'
+    +'<col min="6" max="6" width="22" customWidth="1"/>'
+    +'<col min="7" max="7" width="40" customWidth="1"/>'
+    +'</cols>'
+    +'<sheetData>'+sheetRows+'</sheetData>'
+    +'</worksheet>';
+
+  // ── OOXML 파일 구조 (ZIP) ─────────────────────────────
+  // JSZip 없이 직접 ZIP 바이너리 생성
+  function strToU8(str){
+    // TextEncoder는 이모지(surrogate pair, U+10000 이상)도 4바이트 UTF-8로 정상 인코딩
+    if(typeof TextEncoder!=='undefined') return new TextEncoder().encode(str);
+    // 폴백: surrogate pair 처리 포함한 수동 인코딩
+    var bytes=[];
+    for(var i=0;i<str.length;i++){
+      var c=str.charCodeAt(i);
+      // surrogate pair 결합
+      if(c>=0xD800&&c<=0xDBFF&&i+1<str.length){
+        var c2=str.charCodeAt(i+1);
+        if(c2>=0xDC00&&c2<=0xDFFF){
+          c=0x10000+((c-0xD800)<<10)+(c2-0xDC00);
+          i++;
+        }
+      }
+      if(c<0x80){bytes.push(c);}
+      else if(c<0x800){bytes.push(0xc0|(c>>6),0x80|(c&0x3f));}
+      else if(c<0x10000){bytes.push(0xe0|(c>>12),0x80|((c>>6)&0x3f),0x80|(c&0x3f));}
+      else{bytes.push(0xf0|(c>>18),0x80|((c>>12)&0x3f),0x80|((c>>6)&0x3f),0x80|(c&0x3f));}
+    }
+    return new Uint8Array(bytes);
+  }
+
+  function crc32(buf){
+    var table=[];
+    for(var n=0;n<256;n++){var c=n;for(var k=0;k<8;k++)c=c&1?0xedb88320^(c>>>1):c>>>1;table[n]=c;}
+    var crc=0xffffffff;
+    for(var i=0;i<buf.length;i++)crc=table[(crc^buf[i])&0xff]^(crc>>>8);
+    return (crc^0xffffffff)>>>0;
+  }
+
+  function u32le(n){return [n&0xff,(n>>8)&0xff,(n>>16)&0xff,(n>>24)&0xff];}
+  function u16le(n){return [n&0xff,(n>>8)&0xff];}
+
+  function makeLocalFile(name,data){
+    var nameBytes=strToU8(name);
+    var crc=crc32(data);
+    var hdr=[0x50,0x4b,0x03,0x04,0x14,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00]
+      .concat(u32le(crc)).concat(u32le(data.length)).concat(u32le(data.length))
+      .concat(u16le(nameBytes.length)).concat(u16le(0));
+    return {local:new Uint8Array(hdr.concat(Array.from(nameBytes)).concat(Array.from(data))),
+            name:nameBytes,crc:crc,size:data.length};
+  }
+
+  function buildZip(files){
+    var parts=[], offsets=[], pos=0;
+    files.forEach(function(f){
+      offsets.push(pos);
+      parts.push(f.local);
+      pos+=f.local.length;
+    });
+    var cdEntries=[], cdSize=0;
+    files.forEach(function(f,i){
+      var cd=[0x50,0x4b,0x01,0x02,0x14,0x00,0x14,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00]
+        .concat(u32le(f.crc)).concat(u32le(f.size)).concat(u32le(f.size))
+        .concat(u16le(f.name.length)).concat(u16le(0)).concat(u16le(0))
+        .concat(u16le(0)).concat(u16le(0)).concat(u32le(0)).concat(u32le(offsets[i]))
+        .concat(Array.from(f.name));
+      cdEntries.push(new Uint8Array(cd));
+      cdSize+=cd.length;
+    });
+    var eocd=[0x50,0x4b,0x05,0x06,0x00,0x00,0x00,0x00]
+      .concat(u16le(files.length)).concat(u16le(files.length))
+      .concat(u32le(cdSize)).concat(u32le(pos)).concat(u16le(0));
+    var total=pos+cdSize+eocd.length;
+    var out=new Uint8Array(total), cur=0;
+    parts.forEach(function(p){out.set(p,cur);cur+=p.length;});
+    cdEntries.forEach(function(c){out.set(c,cur);cur+=c.length;});
+    out.set(new Uint8Array(eocd),cur);
+    return out;
+  }
+
+  var rels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    +'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+    +'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'
+    +'</Relationships>';
+
+  var wbRels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    +'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+    +'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'
+    +'<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/>'
+    +'<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'
+    +'</Relationships>';
+
+  var wbXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    +'<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+    +'<sheets><sheet name="골프일지" sheetId="1" r:id="rId1"/></sheets>'
+    +'</workbook>';
+
+  var ct='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    +'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+    +'<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+    +'<Default Extension="xml" ContentType="application/xml"/>'
+    +'<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
+    +'<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
+    +'<Override PartName="/xl/sharedStrings.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"/>'
+    +'<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'
+    +'</Types>';
+
+  var files=[
+    makeLocalFile('[Content_Types].xml',        strToU8(ct)),
+    makeLocalFile('_rels/.rels',                strToU8(rels)),
+    makeLocalFile('xl/workbook.xml',            strToU8(wbXml)),
+    makeLocalFile('xl/_rels/workbook.xml.rels', strToU8(wbRels)),
+    makeLocalFile('xl/worksheets/sheet1.xml',   strToU8(sheetXml)),
+    makeLocalFile('xl/sharedStrings.xml',       strToU8(sstXml)),
+    makeLocalFile('xl/styles.xml',              strToU8(stylesXml))
+  ];
+
+  var zipData=buildZip(files);
+  var blob=new Blob([zipData],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  var today=new Date();
+  var ds=today.getFullYear()+''+(today.getMonth()+1<10?'0':'')+(today.getMonth()+1)+''+(today.getDate()<10?'0':'')+today.getDate();
+  a.href=url; a.download='골프일지_'+ds+'.xlsx';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+var FLT_IDS=['flt-f','flt-s','flt-n','flt-ai','flt-l','flt-e','flt-c','flt-star','flt-pin'];
+function isAIRec(r){ return !!(r && (r.ai || /^\s*(?:🤖|📊)/.test(r.title||'') || /AI(?:요약|정리)/.test(r.title||''))); }
+function saveFilters(){
+  try{
+    var st={};
+    FLT_IDS.forEach(function(id){var el=document.getElementById(id); if(el) st[id]=el.checked;});
+    localStorage.setItem('golfFilters2', JSON.stringify(st));
+  }catch(e){}
+}
+function loadFilters(){
+  try{
+    var raw=localStorage.getItem('golfFilters2');
+    if(!raw) return;
+    var st=JSON.parse(raw);
+    FLT_IDS.forEach(function(id){var el=document.getElementById(id); if(el&&typeof st[id]==='boolean') el.checked=st[id];});
+    var allOn=FLT_IDS.every(function(id){var el=document.getElementById(id); return el&&el.checked;});
+    var allEl=document.getElementById('flt-all'); if(allEl) allEl.checked=allOn;
+    syncFilterUI();
+  }catch(e){}
+}
+function fltChange(type){
+  if(type==='all'){
+    var all=document.getElementById('flt-all').checked;
+    document.getElementById('flt-f').checked=all;
+    document.getElementById('flt-s').checked=all;
+    document.getElementById('flt-n').checked=all;
+    var _ai=document.getElementById('flt-ai'); if(_ai) _ai.checked=all;
+    document.getElementById('flt-l').checked=all;
+    document.getElementById('flt-e').checked=all;
+    document.getElementById('flt-c').checked=all;
+    document.getElementById('flt-star').checked=all;
+    document.getElementById('flt-pin').checked=all;
+  } else {
+    var f=document.getElementById('flt-f').checked;
+    var s=document.getElementById('flt-s').checked;
+    var l=document.getElementById('flt-l').checked;
+    var e=document.getElementById('flt-e').checked;
+    var c=document.getElementById('flt-c').checked;
+    var star=document.getElementById('flt-star').checked;
+    var pin=document.getElementById('flt-pin').checked;
+    var n=document.getElementById('flt-n').checked;
+    var _aiEl=document.getElementById('flt-ai'); var ai=_aiEl?_aiEl.checked:true;
+    document.getElementById('flt-all').checked=(f&&s&&l&&e&&c&&star&&pin&&n&&ai);
+  }
+  saveFilters(); syncFilterUI(); render(); renderCal();
+}
+function syncFilterUI(){
+  document.querySelectorAll('.vt-filter label').forEach(function(lb){
+    var cb=lb.querySelector('input[type=checkbox]');
+    if(cb) lb.classList.toggle('on', cb.checked);
+  });
+}
+
+document.getElementById('q').addEventListener('input',render);
+document.getElementById('ov').addEventListener('click',function(e){if(e.target===this&&confirm('취소할까요?'))closeOv();});
+
+
+
+
+// GAS URL 복원
+
+// 저장 데이터 로드: IndexedDB 우선(사진 포함 전체) → 없으면 localStorage에서 자동 이전
+idbOpen(function(){
+  try{ if(IDB) IDB.transaction('kv','readwrite').objectStore('kv').delete('themeExtra'); }catch(e){}  // 테마사진 로컬캐시 제거 → 저장공간 확보
+  try{ localStorage.removeItem('themeExtra'); }catch(e){}
+  // API 키 복구: localStorage에 없고 IDB에 있으면 되살림
+  try{ if(IDB){ var _rqk=IDB.transaction('kv','readonly').objectStore('kv').get('anthropicKey'); _rqk.onsuccess=function(){ try{ if(_rqk.result && !localStorage.getItem('anthropicKey')) localStorage.setItem('anthropicKey', _rqk.result); }catch(e){} }; } }catch(e){}
+  idbLoad(function(d){
+    if(Array.isArray(d)&&d.length>0){ data=d; }
+    else {
+      try{
+        var lsData=localStorage.getItem('golfLog');
+        if(lsData){ var parsed=JSON.parse(lsData); if(Array.isArray(parsed)&&parsed.length>0){ data=parsed; idbSave(data); } }
+      }catch(e){}
+    }
+    // 🆘 로컬이 비었거나 거의 없으면(=기기 저장이 지워짐) 서버에서 전체 자동 복구
+    if(!data || data.length < 5){ try{ localStorage.removeItem('golfSyncAt2'); }catch(e){} }
+    loadFilters();
+    syncFilterUI();
+    render();
+    checkBackupReminder();
+    updateAutoBkLabel();
+    loadFromServer();
+  });
+});
+
+</script>
+
+<div class="cpop" id="cpop" onclick="if(event.target===this)closeCpop()">
+  <div class="cpop-box">
+    <div class="cpop-hd">
+      <h3 id="cpop-dt"></h3>
+      <button onclick="closeCpop()">&#10005;</button>
+    </div>
+    <div id="cpop-bd"></div>
+  </div>
+</div>
+<div id="photo-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:10001;align-items:center;justify-content:center" onclick="closePhoto()">
+  <img id="photo-modal-img" src="" style="max-width:95%;max-height:95%;border-radius:8px">
+</div>
+<script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js');
+}
+</script>
+
+<!-- 🎬 테마 모음집 -->
+<div id="theme-ov" style="display:none;position:fixed;inset:0;background:#f4f4ef;z-index:10000;overflow:auto">
+  <div style="position:sticky;top:0;background:#1b3a1b;color:#fff;padding:8px 12px;display:flex;align-items:center;gap:6px;z-index:2;flex-wrap:wrap">
+    <b style="font-size:0.95rem;margin-right:2px">🎬</b>
+    <button onclick="closeTheme();swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;font-weight:700;min-width:3.2em;text-align:center">목록</button>
+    <button onclick="closeTheme();swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;font-size:0.78rem;font-weight:700;min-width:3.2em;text-align:center">달력</button>
+    <button onclick="runTheme()" style="background:rgba(255,255,255,0.4);color:#fff;border:1px solid rgba(255,255,255,0.5);border-radius:6px;padding:4px 10px;font-size:0.78rem;font-weight:700;min-width:3.2em;text-align:center">테마</button>
+    <button id="thSortBtn" onclick="thToggleSort()" style="margin-left:auto;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.4);color:#fff;border-radius:6px;padding:3px 9px;font-size:0.8rem">⬇ 내림차순(최신먼저)</button>
+  </div>
+  <div style="padding:6px 10px;background:#fff;border-bottom:1px solid #ddd">
+    <!-- 1줄: 필터칩 먼저 -->
+    <div class="th-filter" style="display:flex;flex-wrap:wrap;gap:3px;align-items:center;font-size:0.8rem;margin-bottom:5px">
+      <label><input type="checkbox" id="thAll" checked onchange="thToggleAll(this)"> 전체</label>
+      <label><input type="checkbox" class="thcat" data-k="F" checked onchange="thSyncAll();runTheme()"> ⛳🏌️</label>
+      <label><input type="checkbox" class="thcat" data-k="S" checked onchange="thSyncAll();runTheme()"> 🏌️‍♀️</label>
+      <label><input type="checkbox" class="thcat" data-k="A" checked onchange="thSyncAll();runTheme()"> 🔍</label>
+      <label><input type="checkbox" class="thcat" data-k="ai" checked onchange="thSyncAll();runTheme()"> <svg width="20" height="14" viewBox="0 0 30 22" style="vertical-align:middle"><g stroke="#9b7fe0" stroke-width="0.7" opacity="0.5"><line x1="4" y1="5" x2="15" y2="4"/><line x1="4" y1="5" x2="15" y2="11"/><line x1="4" y1="5" x2="15" y2="18"/><line x1="4" y1="11" x2="15" y2="4"/><line x1="4" y1="11" x2="15" y2="11"/><line x1="4" y1="11" x2="15" y2="18"/><line x1="4" y1="17" x2="15" y2="4"/><line x1="4" y1="17" x2="15" y2="11"/><line x1="4" y1="17" x2="15" y2="18"/></g><g stroke="#4bb6c6" stroke-width="0.7" opacity="0.55"><line x1="15" y1="4" x2="26" y2="8"/><line x1="15" y1="4" x2="26" y2="14"/><line x1="15" y1="11" x2="26" y2="8"/><line x1="15" y1="11" x2="26" y2="14"/><line x1="15" y1="18" x2="26" y2="8"/><line x1="15" y1="18" x2="26" y2="14"/></g><circle cx="4" cy="5" r="2.1" fill="#b04bd6"/><circle cx="4" cy="11" r="2.1" fill="#b04bd6"/><circle cx="4" cy="17" r="2.1" fill="#b04bd6"/><circle cx="15" cy="4" r="2.1" fill="#2aa9c4"/><circle cx="15" cy="11" r="2.1" fill="#2aa9c4"/><circle cx="15" cy="18" r="2.1" fill="#2aa9c4"/><circle cx="26" cy="8" r="2.1" fill="#e8722c"/><circle cx="26" cy="14" r="2.1" fill="#e8722c"/></svg></label>
+      <label><input type="checkbox" class="thcat" data-k="L" checked onchange="thSyncAll();runTheme()"> 人生</label>
+      <label><input type="checkbox" class="thcat" data-k="E" checked onchange="thSyncAll();runTheme()"> 영어</label>
+      <label><input type="checkbox" class="thcat" data-k="C" checked onchange="thSyncAll();runTheme()"> 회사</label>
+      <label><input type="checkbox" class="thcat" data-k="star" checked onchange="thSyncAll();runTheme()"> ★</label>
+      <label><input type="checkbox" class="thcat" data-k="pin" checked onchange="thSyncAll();runTheme()"> 📌</label>
+    </div>
+    <!-- 2줄: 기간 + 키워드 + 버튼 -->
+    <div style="display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:0.8rem">
+      <input type="date" id="thTo" title="시작(오늘)" style="font-size:0.7rem;padding:3px 1px;width:82px;flex-shrink:0">
+      <span style="flex-shrink:0">~</span>
+      <input type="date" id="thFrom" title="끝(과거)" style="font-size:0.7rem;padding:3px 1px;width:82px;flex-shrink:0">
+      <input type="text" id="thKw" list="thKwList" placeholder="키워드 또는 질문(예: 슬라이스 원인 분석해줘)" style="width:110px;min-width:70px;flex:1 1 90px;font-size:0.85rem;padding:4px 6px;border:1px solid #ccc;border-radius:6px" onkeydown="if(event.key==='Enter'){thKwSave();runTheme();}">
+      <datalist id="thKwList"></datalist>
+      <button onclick="document.getElementById('thKw').value='';document.getElementById('thKw').focus()" title="키워드 지우기" style="background:#eee;color:#888;border:1px solid #ccc;border-radius:6px;padding:5px 8px;font-size:0.82rem;font-weight:700;flex-shrink:0">✕</button>
+      <button onclick="thKwSave();runTheme()" style="background:#2d7a2d;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:0.82rem;font-weight:700;flex-shrink:0">🔍찾기</button>
+      <button onclick="themeAsk()" style="background:#159957;color:#fff;border:none;border-radius:6px;padding:5px 9px;font-size:0.82rem;font-weight:700;flex-shrink:0">🤖질문</button>
+      <button id="thAnalyzeBtn" onclick="thToggleMode()" style="background:#7a3fb8;color:#fff;border:none;border-radius:6px;padding:5px 9px;font-size:0.82rem;font-weight:700;flex-shrink:0">📊분석</button>
+      <button onclick="themeAddMedia()" style="background:#b8860b;color:#fff;border:none;border-radius:6px;padding:5px 9px;font-size:0.82rem;font-weight:700;flex-shrink:0">➕사진</button>
+      <button onclick="saveTheme()" style="background:#1a4d9e;color:#fff;border:none;border-radius:6px;padding:5px 9px;font-size:0.82rem;font-weight:700;flex-shrink:0">💾저장</button>
+      <button onclick="openKeyModal()" style="background:#555;color:#fff;border:none;border-radius:6px;padding:5px 9px;font-size:0.82rem;font-weight:700;flex-shrink:0">🔑키</button>
+    </div>
+  </div>
+  <div id="thInfo" style="padding:6px 12px;font-size:0.82rem;color:#555"></div>
+  <div id="thBody" style="padding:0 10px 40px"></div>
+  <button onclick="closeTheme()" title="테마 닫기" style="position:fixed;bottom:16px;right:16px;z-index:5;background:rgba(27,58,27,0.85);color:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:0.9rem;box-shadow:0 2px 6px rgba(0,0,0,0.3)">✕</button>
+  <!-- 🔑 API 키 입력(붙여넣기 잘 되는 전용 입력창) -->
+  <div id="keyModal" style="display:none;position:fixed;inset:0;z-index:10005;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;padding:16px">
+    <div style="background:#fff;border-radius:12px;max-width:460px;width:100%;padding:18px;box-shadow:0 6px 24px rgba(0,0,0,0.3)">
+      <h3 style="margin:0 0 6px;font-size:1.05rem">🔑 Anthropic API 키</h3>
+      <p style="font-size:0.8rem;color:#666;margin:0 0 10px;line-height:1.5"><code>sk-ant-</code>… 키를 붙여넣고 저장하세요. <b>이 기기에만</b> 저장됩니다(서버로 안 감).</p>
+      <input id="keyInput" type="text" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="sk-ant-... 붙여넣기" style="width:100%;box-sizing:border-box;font-size:0.9rem;padding:11px;border:2px solid #159957;border-radius:8px">
+      <div style="font-size:0.72rem;color:#999;margin-top:6px">붙여넣기: 입력칸 탭 후 Ctrl+V, 또는 길게 눌러 '붙여넣기'</div>
+      <div style="display:flex;gap:6px;justify-content:space-between;align-items:center;margin-top:12px">
+        <button onclick="delKeyModal()" style="background:none;border:1px solid #ccc;border-radius:7px;padding:7px 10px;color:#888;font-size:0.8rem">키 삭제</button>
+        <span style="display:flex;gap:6px">
+          <button onclick="closeKeyModal()" style="background:#eee;border:1px solid #ccc;border-radius:7px;padding:8px 14px">취소</button>
+          <button onclick="saveKeyModal()" style="background:#159957;color:#fff;border:none;border-radius:7px;padding:8px 18px;font-weight:700">저장</button>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+var themeSort='desc';
+var themeExportMode=false;
+var themeExtra=[];
+var themeMode='list';
+var blinkKws=[];
+function thBlink(html){
+  if(!blinkKws||!blinkKws.length||!html) return html;
+  var pat=[], idxMap={};
+  blinkKws.forEach(function(k,i){ if(k){ pat.push(k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')); idxMap[k.toLowerCase()]=i; } });
+  if(!pat.length) return html;
+  var re=new RegExp('('+pat.join('|')+')','gi');
+  var parts=html.split(/(<[^>]*>)/);
+  for(var i=0;i<parts.length;i++){ if(i%2===0){ parts[i]=parts[i].replace(re,function(mm){ var idx=idxMap[mm.toLowerCase()]; if(idx==null) idx=0; return '<span class="thbl thbl'+(idx%6)+'">'+mm+'</span>'; }); } }
+  return parts.join('');
+}
+function dashDate(t){ return (t||'').replace(/\b(\d{2}|\d{4})[.\/](\d{1,2})[.\/](\d{1,2})\b/g,'$1-$2-$3'); }
+function thClean1(s){ return (s||'').replace(/^\**\s*(?:한\s*줄\s*요약|한\s*줄\s*조언|종합\s*조언|핵심\s*조언|요약|핵심)\s*[:：\-]?[ \t]*/,'').replace(/\*\*/g,'').replace(/^[\-•·*#>\s]+/,'').replace(/[·\s]+$/,'').trim(); }
+function thExtractOneLine(txt){
+  if(!txt) return '';
+  // 1) "한줄요약: ~" / "종합 조언: ~" 처럼 라벨+콜론이 있는 줄
+  var m=txt.match(/(?:한\s*줄\s*요약|한\s*줄\s*조언|종합\s*조언|핵심\s*조언)\s*[:：\-][ \t]*(.+)/);
+  if(m){ var c1=thClean1(m[1]); if(c1.length>=4) return c1; }
+  var lines=txt.split('\n').map(function(x){return x.trim();});
+  // 2) '조언/요약' 헤더(## 3) 한 줄 종합 조언 등) 다음의 첫 실질 줄
+  for(var i=0;i<lines.length;i++){
+    if(/(?:한\s*줄|종합)\s*조언|한\s*줄\s*요약/.test(lines[i]) && !/[:：\-]\s*\S+\s*$/.test(lines[i])){
+      for(var j=i+1;j<lines.length;j++){ if(!lines[j]) continue; if(/^#/.test(lines[j])) break; var c=thClean1(lines[j]); if(c.length>=5) return c; break; }
+    }
+  }
+  return '';   // 제대로 된 요약을 못 찾으면 빈 값 → 제목은 키워드로 폴백
+}
+function thColorize(text, kws){
+  // 저장 본문에 키워드별 색강조 마크 삽입(ㅃ빨강·ㅍ파랑·ㄴ녹색, 4번째부터 **굵게**)
+  if(!text||!kws||!kws.length) return text;
+  var marks=['ㅃ','ㅍ','ㄴ'];
+  var arr=kws.map(function(k,i){return {k:(k||'').trim(),i:i};}).filter(function(o){return o.k;});
+  arr.sort(function(a,b){return b.k.length-a.k.length;});  // 긴 키워드 먼저(부분겹침 방지)
+  arr.forEach(function(o){
+    var e=o.k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    var re=new RegExp(e,'g');
+    var mk=(o.i<3)?marks[o.i]:'**';
+    text=text.replace(re, mk+o.k+mk);
+  });
+  return text;
+}
+function thKwSave(){
+  var v=(document.getElementById('thKw').value||'').trim();
+  if(!v) return;
+  var h=[]; try{ h=JSON.parse(localStorage.getItem('thKwHist')||'[]'); }catch(e){}
+  h=h.filter(function(x){return x!==v;}); h.unshift(v); h=h.slice(0,12);
+  try{ localStorage.setItem('thKwHist', JSON.stringify(h)); localStorage.setItem('thKwLast', v); }catch(e){}
+  thKwFillList();
+}
+function thKwFillList(){
+  var dl=document.getElementById('thKwList'); if(!dl) return;
+  var h=[]; try{ h=JSON.parse(localStorage.getItem('thKwHist')||'[]'); }catch(e){}
+  dl.innerHTML=h.map(function(x){return '<option value="'+esc(x)+'">';}).join('');
+}
+function openTheme(){
+  themeMode='list';
+  var _ab=document.getElementById('thAnalyzeBtn'); if(_ab) _ab.textContent='📊 분석';
+  var t=new Date(new Date().getTime()+9*3600*1000).toISOString().slice(0,10);
+  document.getElementById('thTo').value=t;
+  document.getElementById('thFrom').value='';
+  document.getElementById('thKw').value = '';   // 열 때 이전 키워드 자동복원 안함(엎어침 등 잔류 방지)
+  thKwFillList();
+  document.getElementById('thInfo').textContent='기간·키워드·구분을 정하고 🔍찾기. (기간 비우면 전체)';
+  document.getElementById('thBody').innerHTML='';
+  document.getElementById('theme-ov').style.display='block';
+  thSyncFilterUI();
+  themeExtraLoadLocal(function(){ runTheme(); themeExtraPull(function(){ runTheme(); }); });
+}
+function closeTheme(){ document.getElementById('theme-ov').style.display='none'; try{document.querySelectorAll('#thBody video').forEach(function(v){v.pause();});}catch(e){} }
+function thToggleSort(){ themeSort=(themeSort==='desc'?'asc':'desc'); document.getElementById('thSortBtn').textContent=(themeSort==='desc'?'⬇ 내림차순(최신먼저)':'⬆ 오름차순(과거먼저)'); runTheme(); }
+function thSyncFilterUI(){ document.querySelectorAll('#theme-ov .th-filter label').forEach(function(lb){ var cb=lb.querySelector('input[type=checkbox]'); if(cb) lb.classList.toggle('on', cb.checked); }); }
+function thToggleAll(cb){ document.querySelectorAll('#theme-ov .thcat').forEach(function(b){ b.checked=cb.checked; }); thSyncFilterUI(); runTheme(); }
+function thSyncAll(){ var boxes=document.querySelectorAll('#theme-ov .thcat'); var all=true; boxes.forEach(function(b){ if(!b.checked) all=false; }); var a=document.getElementById('thAll'); if(a) a.checked=all; thSyncFilterUI(); }
+function thCatPass(r){
+  var boxes=document.querySelectorAll('#theme-ov .thcat');
+  var allChecked=true; boxes.forEach(function(b){ if(!b.checked) allChecked=false; });
+  if(allChecked) return true;
+  var ok=false;
+  boxes.forEach(function(b){ if(!b.checked) return; var k=b.getAttribute('data-k');
+    if((k==='F'&&r.vt==='F')||(k==='S'&&r.vt==='S')||(k==='A'&&r.vt==='A'&&!isAIRec(r))||(k==='ai'&&isAIRec(r))||(k==='L'&&r.vt==='L')||(k==='E'&&r.vt==='E')||(k==='C'&&r.vt==='C')||(k==='star'&&r.important)||(k==='pin'&&r.pinned)) ok=true;
+  });
+  return ok;
+}
+function themeMatch(){
+  var from=document.getElementById('thFrom').value, to=document.getElementById('thTo').value;
+  // 쉼표(,)=또는(OR) 그룹, 그룹 안 &또는^=그리고(AND)
+  var raw=document.getElementById('thKw').value||'';
+  var groups=raw.split(',').map(function(g){ return g.split(/[&^]/).map(function(s){return s.trim();}).filter(Boolean); }).filter(function(g){return g.length;});
+  var flat=[]; groups.forEach(function(g){ g.forEach(function(t){ if(flat.indexOf(t)<0) flat.push(t); }); });
+  var lowGroups=groups.map(function(g){ return g.map(function(t){return t.toLowerCase();}); });
+  var res=data.filter(function(r){
+    if(from && (r.date||'')<from) return false;
+    if(to && (r.date||'')>to) return false;
+    if(!thCatPass(r)) return false;
+    if(lowGroups.length){
+      var text=((r.title||'')+' '+(r.memo||'')+' '+(r.venue||'')+' '+(r.members||'')).toLowerCase();
+      var ok=lowGroups.some(function(g){ return g.every(function(t){ return text.indexOf(t)>=0; }); });
+      if(!ok) return false;
+    }
+    return true;
+  });
+  res.sort(function(a,b){ var c=(a.date||'').localeCompare(b.date||''); return themeSort==='desc'?-c:c; });
+  return {res:res, kws:flat, from:from, to:to};
+}
+function themePhoto(src){
+  if(!src) return;
+  var modal=document.getElementById('photo-modal');
+  if(!modal) return;
+  document.getElementById('photo-modal-img').src=src;
+  modal.style.display='flex';
+  if(!history.state || !history.state.photoOpen){ history.pushState({photoOpen:true}, ''); }
+}
+function thTog(id,btn){ var e=document.getElementById(id); if(!e)return; var open=e.style.display!=='none'; e.style.display=open?'none':'block'; if(btn)btn.textContent=open?'보기':'닫기'; if(open){ try{e.querySelectorAll('video').forEach(function(v){v.pause();});}catch(x){} } }
+function themeItemHtml(r,idx){
+  var id='thb'+idx;
+  var body='';
+  if(r.memo) body+='<div style="line-height:1.7;color:#333;white-space:pre-wrap;font-size:0.9rem;margin-top:4px">'+thBlink(hilite(r.memo))+'</div>';
+  if(r.media && r.media.length){
+    body+='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">';
+    r.media.forEach(function(m){
+      if(m.type==='image'){ body+='<img src="'+m.data+'" onclick="if(window.themePhoto)themePhoto(this.src)" style="max-width:180px;max-height:150px;border-radius:6px;border:1px solid #ddd;cursor:pointer">'; }
+      else { body+='<div><video src="'+m.data+'" controls playsinline style="max-width:280px;max-height:200px;border-radius:6px;border:1px solid #ddd;display:block"></video>'
+        +'<div style="display:flex;gap:4px;margin-top:3px">'
+        +['0.25','0.5','1'].map(function(sp){ return '<button onclick="this.closest(\'div\').querySelector(\'video\').playbackRate='+sp+'" style="font-size:0.75rem;padding:2px 8px;border:1px solid #bbb;border-radius:4px;background:#f5f5f5">'+sp+'x</button>'; }).join('')
+        +'</div></div>'; }
+    });
+    body+='</div>';
+  }
+  var h='<div style="background:#fff;border-radius:10px;border-left:4px solid #2d7a2d;margin:8px 0;padding:8px 10px;box-shadow:0 1px 3px rgba(0,0,0,0.08)">';
+  h+='<div style="display:flex;align-items:flex-start;gap:6px">';
+  h+='<div style="flex:1;min-width:0">';
+  h+='<div style="font-weight:700;color:#1a7a1a;font-size:0.9rem;margin-bottom:2px">'+esc(shortY(r.date||''))+(r.venue?' · '+thBlink(esc(r.venue)):'')+(r.members?' · '+thBlink(esc(r.members)):'')+'</div>';
+  if(r.title) h+='<div style="font-weight:700;line-height:1.5">'+thBlink(hilite(r.title))+'</div>';
+  h+='</div>';
+  if(body && !themeExportMode) h+='<button onclick="thTog(\''+id+'\',this)" style="flex-shrink:0;background:#eef2ff;border:1px solid #c3cde8;border-radius:6px;padding:3px 11px;font-size:0.8rem;color:#1a4d9e;font-weight:700">보기</button>';
+  h+='</div>';
+  if(body){ h += themeExportMode ? ('<div style="margin-top:4px">'+body+'</div>') : ('<div id="'+id+'" style="display:none">'+body+'</div>'); }
+  h+='</div>';
+  return h;
+}
+function themeAddMedia(){
+  var inp=document.createElement('input'); inp.type='file'; inp.accept='image/*,video/*'; inp.multiple=true;
+  inp.onchange=function(e){ var fs=e.target.files; var left=fs.length; if(!left) return;
+    Array.prototype.forEach.call(fs,function(f){ var rd=new FileReader(); rd.onload=function(ev){ themeExtra.push({id:(Date.now().toString(36)+Math.random().toString(36).slice(2,7)),type:(f.type.indexOf('video')===0?'video':'image'),data:ev.target.result}); left--; if(left<=0){ themeExtraSave(); runTheme(); } }; rd.readAsDataURL(f); });
+  };
+  inp.click();
+}
+function themeDelExtra(i){ var it=themeExtra[i]; themeExtra.splice(i,1); var k=it&&(it.id||it.data); if(k) themeExtraDel.push(k); themeExtraSave(); runTheme(); }
+function themeExtraHtml(withDel){
+  if(!themeExtra.length) return '';
+  var h='<div style="background:#fff8e6;border:1px solid #f0d98a;border-radius:10px;margin:8px 0;padding:8px 10px"><b style="font-size:0.85rem">➕ 직접 추가한 자료</b><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">';
+  themeExtra.forEach(function(x,i){
+    h+='<div style="position:relative">'+(x.type==='image'?'<img src="'+x.data+'" onclick="if(window.themePhoto)themePhoto(this.src)" style="max-width:160px;max-height:130px;border-radius:6px;border:1px solid #ddd;cursor:pointer">':'<video src="'+x.data+'" controls playsinline style="max-width:240px;max-height:170px;border-radius:6px;border:1px solid #ddd"></video>')
+      +(withDel?'<button onclick="themeDelExtra('+i+')" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.6);color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:0.8rem">✕</button>':'')+'</div>';
+  });
+  h+='</div></div>';
+  return h;
+}
+function renderTheme(m){
+  document.getElementById('thInfo').textContent='📅 '+(m.from||'처음')+' ~ '+(m.to||'오늘')+' / 키워드: '+(m.kws.length?m.kws.join(', '):'(전체)')+' / '+(themeSort==='desc'?'최신먼저':'과거먼저')+'  → '+m.res.length+'건'+(themeExtra.length?(' + 직접추가 '+themeExtra.length):'');
+  var body=document.getElementById('thBody');
+  var html=themeExtraHtml(true);
+  if(!m.res.length && !themeExtra.length){ html+='<div style="padding:20px;text-align:center;color:#999">조건에 맞는 기록이 없어요. 기간·키워드·구분을 바꿔보세요.</div>'; }
+  else { html+=m.res.map(themeItemHtml).join(''); }
+  body.innerHTML=html;
+}
+function thStrip(s){ return (s||'').replace(/[ㅃㅍㄴ]/g,'').replace(/\*\*/g,''); }
+function thSplit(s){ return thStrip(s).split(/[,\/·、|]+/).map(function(x){return x.trim();}).filter(Boolean); }
+function themeAgg(res){
+  var causes={}, probs={}, sols=[];
+  res.forEach(function(r){
+    thSplit(r.members).forEach(function(c){ var k=c.toLowerCase(); if(!causes[k]) causes[k]={t:c,n:0}; causes[k].n++; });
+    thSplit(r.venue).forEach(function(p){ var k=p.toLowerCase(); if(!probs[k]) probs[k]={t:p,n:0}; probs[k].n++; });
+    (r.title||'').split('\n').forEach(function(ln){ var t=thStrip(ln).replace(/^[·.\s]+/,'').trim(); if(t) sols.push({t:t,date:r.date||''}); });
+  });
+  var toArr=function(o){ return Object.keys(o).map(function(k){return o[k];}).sort(function(a,b){return b.n-a.n;}); };
+  return {causes:toArr(causes), probs:toArr(probs), sols:sols};
+}
+function thChip(t,n,bg){ return '<span style="display:inline-block;background:'+bg+';border-radius:12px;padding:2px 9px;margin:2px;font-size:0.82rem">'+esc(t)+(n>1?' <b>×'+n+'</b>':'')+'</span>'; }
+function renderAnalyze(m){
+  var res=m.res;
+  document.getElementById('thInfo').textContent='📊 분석 · '+(m.kws.length?m.kws.join(', '):'전체')+' · '+res.length+'건';
+  var body=document.getElementById('thBody');
+  if(!res.length){ body.innerHTML='<div style="padding:20px;text-align:center;color:#999">분석할 기록이 없어요. 기간·키워드를 바꿔보세요.</div>'; return; }
+  var ag=themeAgg(res);
+  var h='';
+  h+='<div style="margin:8px 0;display:flex;gap:6px;flex-wrap:wrap;align-items:center">'
+    +'<button onclick="themeSaveAnalysis()" style="background:#1a7a1a;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:0.9rem;font-weight:700">📌 이 AI정리를 기록으로 저장</button>'
+    +'<button onclick="themeAI()" style="background:#7a3fb8;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:0.9rem;font-weight:700">🤖 AI요약</button>'
+    +'<span style="font-size:0.72rem;color:#999">AI는 API키 필요 · 저장은 키 없이 OK</span></div>';
+  h+='<div id="thAI"></div>';
+  if(ag.probs.length){ h+='<div style="background:#fff;border-radius:10px;padding:8px 10px;margin:8px 0;box-shadow:0 1px 3px rgba(0,0,0,0.06)"><b style="color:#c0392b;font-size:0.9rem">🔴 문제/구장</b><div style="margin-top:5px">'+ag.probs.map(function(x){return thChip(x.t,x.n,'#fdecea');}).join('')+'</div></div>'; }
+  if(ag.causes.length){ h+='<div style="background:#fff;border-radius:10px;padding:8px 10px;margin:8px 0;box-shadow:0 1px 3px rgba(0,0,0,0.06)"><b style="color:#b8860b;font-size:0.9rem">🟡 원인/멤버 (빈출순)</b><div style="margin-top:5px">'+ag.causes.map(function(x){return thChip(x.t,x.n,'#fdf3d8');}).join('')+'</div></div>'; }
+  h+='<div style="background:#fff;border-radius:10px;padding:8px 10px;margin:8px 0;box-shadow:0 1px 3px rgba(0,0,0,0.06)"><b style="color:#1a7a1a;font-size:0.9rem">🟢 대책·핵심 ('+ag.sols.length+')</b><div style="margin-top:6px">';
+  ag.sols.forEach(function(s){ h+='<div style="display:flex;gap:8px;padding:3px 0;border-bottom:1px solid #f2f2f2;font-size:0.9rem;line-height:1.5"><span style="flex-shrink:0;color:#999;font-size:0.76rem;width:76px">'+esc(s.date)+'</span><span style="min-width:0">'+thBlink(esc(s.t))+'</span></div>'; });
+  h+='</div></div>';
+  body.innerHTML=h;
+}
+function themeSaveAnalysis(){
+  var m=themeMatch();
+  if(!m.res.length){ alert('저장할 내용이 없어요. 키워드로 먼저 찾아주세요.'); return; }
+  if(m.kws.length===0 && !confirm('키워드 없이 전체('+m.res.length+'건)를 저장하면 내용이 아주 길어요.\n키워드를 넣는 걸 권해요. 그래도 저장할까요?')) return;
+  var ag=themeAgg(m.res);
+  var kw=m.kws.join(', ')||'전체';
+  var lines=[];
+  lines.push('■ 문제/구장: '+(ag.probs.length?ag.probs.map(function(x){return x.t+(x.n>1?'×'+x.n:'');}).join(', '):'-'));
+  lines.push('■ 원인/멤버(빈출): '+(ag.causes.length?ag.causes.map(function(x){return x.t+(x.n>1?'×'+x.n:'');}).join(', '):'-'));
+  lines.push('■ 대책·핵심 ('+ag.sols.length+'):');
+  var cap=ag.sols.slice(0,60);
+  cap.forEach(function(s){ lines.push('· '+(s.date?('['+s.date+'] '):'')+s.t); });
+  if(ag.sols.length>cap.length) lines.push('… 외 '+(ag.sols.length-cap.length)+'개');
+  var memo=lines.join('\n');
+  memo=thColorize(dashDate(memo), m.kws);       // 날짜 하이픈 + 키워드 색강조
+  var titleKw=thColorize(kw, m.kws);            // 제목 키워드도 색강조
+  if(!confirm('이 AI정리를 새 기록 1개로 저장할까요?\n(키워드: '+kw+' · '+m.res.length+'건)')) return;
+  var now=nowKST();
+  var today=(new Date(new Date().getTime()+9*3600*1000)).toISOString().slice(0,10);
+  var rec={ date:today, vt:'A', ai:true, venue:'', members:kw, title:'📊 AI정리 · '+titleKw, memo:memo,
+    important:false, pinned:false, color:'', bold:false, media:[], updatedAt:now, createdAt:now };
+  rec.id = today+'_SUM_'+Math.random().toString(36).substr(2,5);
+  data.push(rec);
+  data.sort(function(a,b){ var dc=(b.date||'').localeCompare(a.date||''); if(dc!==0)return dc; return (b.createdAt||b.updatedAt||'').localeCompare(a.createdAt||a.updatedAt||''); });
+  pushRecord(rec);
+  alert('✅ 저장했어요! 목록에서 🔍분석 글로 볼 수 있어요.');
+  render();
+}
+function thToggleMode(){ themeMode=(themeMode==='list'?'analyze':'list'); var b=document.getElementById('thAnalyzeBtn'); if(b) b.textContent=(themeMode==='analyze'?'📋 목록':'📊 분석'); runTheme(); }
+var themeLastAI='';
+var themeLastKw='';
+var themeLastOneLine='';
+function themeSaveAsEntry(){
+  if(!themeLastAI){ alert('먼저 🤖AI요약을 만들어 주세요.'); return; }
+  if(!confirm('이 AI요약을 새 기록 1개로 저장할까요?\n(구분: 🔍분석 · 서버에도 저장되어 다른 기기에서도 보임)')) return;
+  var now=nowKST();
+  var today=(new Date(new Date().getTime()+9*3600*1000)).toISOString().slice(0,10);
+  var kw=themeLastKw||'AI요약';
+  var kwArr=kw.split(/,\s*/).filter(Boolean);
+  var titleTxt = '🤖 AI요약 · ' + (themeLastOneLine ? thColorize(themeLastOneLine,kwArr) : thColorize(kw,kwArr));
+  var rec={ date:today, vt:'A', ai:true, venue:'', members:kw, title:titleTxt, memo:thColorize(themeLastAI,kwArr),
+            important:false, pinned:false, color:'', bold:false, media:[], updatedAt:now, createdAt:now };
+  rec.id = today+'_AI_'+Math.random().toString(36).substr(2,5);
+  data.push(rec);
+  data.sort(function(a,b){ var dc=(b.date||'').localeCompare(a.date||''); if(dc!==0)return dc; return (b.createdAt||b.updatedAt||'').localeCompare(a.createdAt||a.updatedAt||''); });
+  pushRecord(rec);
+  alert('✅ 저장했어요! 목록에서 🔍분석 글로 볼 수 있어요.');
+  render();
+}
+function idbKeyPut(v){ try{ if(IDB) IDB.transaction('kv','readwrite').objectStore('kv').put(v,'anthropicKey'); }catch(e){} }
+function idbKeyDel(){ try{ if(IDB) IDB.transaction('kv','readwrite').objectStore('kv').delete('anthropicKey'); }catch(e){} }
+function themeAIKey(reset){
+  if(reset){ localStorage.removeItem('anthropicKey'); idbKeyDel(); }
+  var k=localStorage.getItem('anthropicKey')||'';
+  if(!k){ openKeyModal(); return ''; }   // 붙여넣기 잘 되는 전용 입력창(팝업 대체)
+  return k;
+}
+function openKeyModal(){ var m=document.getElementById('keyModal'); if(!m) return; var i=document.getElementById('keyInput'); try{ i.value=localStorage.getItem('anthropicKey')||''; }catch(e){} m.style.display='flex'; setTimeout(function(){ try{ i.focus(); i.select(); }catch(e){} },60); }
+function closeKeyModal(){ var m=document.getElementById('keyModal'); if(m) m.style.display='none'; }
+function saveKeyModal(){ var i=document.getElementById('keyInput'); var k=((i&&i.value)||'').trim(); if(!k){ alert('키를 붙여넣어 주세요.'); return; } try{ localStorage.setItem('anthropicKey',k); }catch(e){} try{ idbKeyPut(k); }catch(e){} closeKeyModal(); alert('✅ API 키 저장 완료!\n이제 🤖질문·AI요약을 쓸 수 있어요.'); }
+function delKeyModal(){ try{ localStorage.removeItem('anthropicKey'); }catch(e){} try{ idbKeyDel(); }catch(e){} var i=document.getElementById('keyInput'); if(i) i.value=''; alert('키를 지웠어요.'); }
+function mdLite(t){
+  var h=esc(t);
+  h=h.replace(/^\s*#{1,6}\s*(.+)$/gm,'<b style="font-size:0.95rem">$1</b>'); // ## 소제목 → 굵게(마커 제거)
+  h=h.replace(/\*\*([^*\n]+)\*\*/g,'<b>$1</b>');                              // **굵게**
+  return h;
+}
+function themeAskShow(html){
+  var body=document.getElementById('thBody'); if(!body) return;
+  var box=document.getElementById('thAskBox');
+  if(!box){ box=document.createElement('div'); box.id='thAskBox'; body.insertBefore(box, body.firstChild); }
+  box.innerHTML=html;
+}
+function themeAsk(){
+  var q=(document.getElementById('thKw').value||'').trim();
+  if(!q){ alert('키워드 칸에 질문을 적어주세요.\n예: 슬라이스 나는 이유 원인 분석해줘'); return; }
+  var key=themeAIKey(false); if(!key) return;
+  // ── 기간(월) 파싱: "9월","2026-09","이번달","지난달","최근" (날짜는 date필드로 필터) ──
+  var _n=new Date(Date.now()+9*3600*1000), _cy=_n.getUTCFullYear(), _cm=_n.getUTCMonth()+1, _mm;
+  var dateFrom='', dateLabel='';
+  if(_mm=q.match(/(20\d{2})\s*[년.\-\/]\s*(\d{1,2})\s*월?/)){ dateFrom=_mm[1]+'-'+String(+_mm[2]).padStart(2,'0'); dateLabel=_mm[1]+'년 '+(+_mm[2])+'월'; }
+  else if(/이번\s*달|금월|이달/.test(q)){ dateFrom=_cy+'-'+String(_cm).padStart(2,'0'); dateLabel='이번달'; }
+  else if(/지난\s*달|저번\s*달|전월/.test(q)){ var _pm=_cm-1,_py=_cy; if(_pm<1){_pm=12;_py--;} dateFrom=_py+'-'+String(_pm).padStart(2,'0'); dateLabel='지난달'; }
+  else if(_mm=q.match(/(?:^|\s)(\d{1,2})\s*월/)){ dateFrom=_cy+'-'+String(+_mm[1]).padStart(2,'0'); dateLabel=_cy+'년 '+(+_mm[1])+'월'; }  // 연도없는 N월 = 올해 그 달
+  else if(/최근/.test(q)){ dateLabel='최근'; }
+  var inRange=function(r){ if(!dateFrom) return true; return String(r.date||'').indexOf(dateFrom)===0; };
+  // ── 구분(타입) 인식: 필드/스크린/인생/영어/회사 → vt 필터 (분석은 동작어라 제외) ──
+  var typeMap={'필드':'F','스크린':'S','인생':'L','人生':'L','영어':'E','회사':'C'};
+  var wantVt={}; Object.keys(typeMap).forEach(function(w){ if(q.indexOf(w)>=0) wantVt[typeMap[w]]=1; });
+  var vtKeys=Object.keys(wantVt);
+  var vtNames={F:'필드',S:'스크린',A:'분석',L:'人生',E:'영어',C:'회사'};
+  if(vtKeys.length){ dateLabel=(dateLabel?dateLabel+' ':'')+vtKeys.map(function(k){return vtNames[k];}).join('·'); }
+  // ── 키워드 토큰(날짜·군말·범용어·타입어 제외) ──
+  var stop=/^(나는|나|내|이유|원인|분석|분석해줘|분석해조|해줘|해조|왜|어떻게|무엇|뭐|좀|주라|주세요|알려줘|정리|정리해줘|요약|요약해줘|요약해조|요약해|대책|방법|하는|되는|것|거|들|해줄|볼까|어떤|경우|때|더|좀더|관련|모아|모아서|찾아|찾아서|골프|스윙|기록|일지|전체|모두|다|필드|스크린|인생|人生|영어|회사)$/;
+  var qc=q.replace(/20\d{2}\s*[년.\-\/]\s*\d{1,2}\s*월?/g,' ').replace(/\d{1,2}\s*월/g,' ').replace(/이번\s*달|지난\s*달|저번\s*달|금월|이달|전월|최근/g,' ');
+  var toks=qc.replace(/[?？.,!·]/g,' ').split(/\s+/).filter(function(w){ return w.length>=2 && !stop.test(w); });
+  var hay=function(r){ return (r.venue||'')+' '+(r.members||'')+' '+(r.title||'')+' '+(r.memo||''); };
+  var pool=(data||[]).filter(function(r){ return r && !r.deleted && String(r.id||'').indexOf('__')!==0; });
+  var kwOk=function(r){ return !toks.length || toks.some(function(t){ return hay(r).indexOf(t)>=0; }); };
+  var vtOk=function(r){ return !vtKeys.length || wantVt[r.vt]===1; };
+  var res=pool.filter(function(r){ return inRange(r) && vtOk(r) && kwOk(r); });
+  if(!res.length && toks.length && (dateFrom||vtKeys.length)) res=pool.filter(function(r){ return inRange(r) && vtOk(r); });  // 키워드 완화
+  if(!res.length && vtKeys.length && dateFrom) res=pool.filter(inRange);                                                     // 타입 완화(기간만)
+  if(!res.length && dateFrom) res=pool.filter(inRange);
+  if(!res.length && toks.length) res=pool.filter(function(r){ return toks.some(function(t){ return hay(r).indexOf(t)>=0; }); });
+  res.sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+  var used=res.slice(0,100);
+  if(!used.length){ alert('해당 기간·구분·단어의 기록을 못 찾았어요.\n예: "9월 필드 분석", "슬라이스 원인", "이번달 뒷땅".'); return; }
+  var usedSummary=used.slice(0,50).map(function(r){ return (r.date||'')+(vtNames[r.vt]?('('+vtNames[r.vt]+')'):''); }).join(', ');
+  themeAskShow('<div style="background:#e7f6ee;border:1px solid #a9e0c4;border-radius:10px;padding:12px;margin:8px 0;color:#159957;font-weight:700">🤖 "'+esc(q)+'" 분석 중… '+(dateLabel?('['+esc(dateLabel)+'] '):'')+used.length+'건 참고 (10~30초)<div style="font-weight:400;font-size:0.7rem;color:#5a8a6f;margin-top:5px;line-height:1.5">📋 참고 기록: '+esc(usedSummary)+(used.length>50?(' …외 '+(used.length-50)+'건'):'')+'</div></div>');
+  var src=used.map(function(r){
+    return '['+(r.date||'')+']'
+      +(r.venue?(' 문제:'+thStrip(r.venue)):'')
+      +(r.members?(' 원인:'+thStrip(r.members)):'')
+      +(r.title?(' 대책:'+thStrip(r.title).replace(/\n/g,' / ')):'')
+      +(r.memo?(' 메모:'+thStrip(r.memo).replace(/\n/g,' ').slice(0,300)):'');
+  }).join('\n');
+  var sys='당신은 골프 스윙 코치입니다. 사용자의 골프 일지 기록을 근거로 질문에 한국어로 간결하고 실전적으로 답합니다. 기록에 있는 내용을 우선 근거로 삼고, 기록에 없어 일반 지식으로 보완할 때는 "(일반적으로)"라고 표시하세요.';
+  var user='질문: '+q+(dateLabel?('\n(대상 기간: '+dateLabel+')'):'')+'\n\n아래는 내 골프 일지 기록이야'+(dateLabel?('('+dateLabel+' 기준으로 추린 것)'):'')+'. 이 기록을 근거로 위 질문에 답해줘. (1) 반복되는 핵심 원인 (2) 효과 있었던/권장 대책 (3) 한 줄 종합 조언. 소제목·불릿으로 간결하게.\n맨 마지막 줄에 반드시 "한줄요약: <핵심 한 문장>" 형식으로 써줘.\n\n=== 기록('+used.length+'건'+(dateLabel?(' · '+dateLabel):'')+') ===\n'+src;
+  fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-opus-5',max_tokens:3000,system:sys,output_config:{effort:'low'},messages:[{role:'user',content:user}]})
+  }).then(function(resp){ return resp.json(); }).then(function(j){
+    if(j.error){ themeAskShow('<div style="background:#fdecea;border-radius:10px;padding:12px;color:#c0392b;font-size:0.85rem">⚠️ 오류: '+esc(j.error.message||JSON.stringify(j.error))+'<br><button onclick="themeAIKey(true);themeAsk()" style="margin-top:6px;font-size:0.8rem;border:1px solid #c0392b;background:#fff;border-radius:6px;padding:3px 10px">키 다시 입력</button></div>'); return; }
+    var txt=(j.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('\n').trim();
+    if(!txt) txt='(응답이 비었어요. 다시 시도해 주세요.)';
+    txt=dashDate(txt);
+    themeLastAI=txt; themeLastKw=q; themeLastOneLine=thExtractOneLine(txt);
+    themeAskShow('<div style="background:#eefaf3;border:1px solid #a9e0c4;border-radius:10px;padding:12px;margin:8px 0"><div style="font-weight:700;color:#159957;margin-bottom:6px;font-size:0.92rem">🤖 '+esc(q)+' <button onclick="document.getElementById(\'thAskBox\').innerHTML=\'\'" style="float:right;font-size:0.68rem;background:none;border:1px solid #ccc;border-radius:5px;padding:1px 6px;color:#999">닫기</button></div><div style="white-space:pre-wrap;line-height:1.7;font-size:0.9rem;color:#222">'+mdLite(txt)+'</div><div style="margin-top:10px;text-align:center"><button onclick="themeSaveAsEntry()" style="background:#1a7a1a;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:0.9rem;font-weight:700">📌 이 답변을 기록으로 저장</button></div></div>');
+  }).catch(function(e){ themeAskShow('<div style="background:#fdecea;border-radius:10px;padding:12px;color:#c0392b;font-size:0.85rem">⚠️ 통신 실패: '+esc(String(e))+'<br>키 확인 또는 잠시 후 재시도.</div>'); });
+}
+function themeAI(){
+  var m=themeMatch();
+  if(!m.res.length){ alert('분석할 기록이 없어요.'); return; }
+  var key=themeAIKey(false); if(!key) return;
+  var ai=document.getElementById('thAI'); if(!ai) return;
+  ai.innerHTML='<div style="background:#f3e9fb;border-radius:10px;padding:12px;margin:8px 0;color:#7a3fb8">🤖 AI가 원인·대책을 정리하는 중… (10~30초)</div>';
+  var src=m.res.map(function(r){
+    return '['+(r.date||'')+']'
+      +(r.venue?(' 문제:'+thStrip(r.venue)):'')
+      +(r.members?(' 원인:'+thStrip(r.members)):'')
+      +(r.title?(' 대책:'+thStrip(r.title).replace(/\n/g,' / ')):'')
+      +(r.memo?(' 메모:'+thStrip(r.memo).replace(/\n/g,' ').slice(0,300)):'');
+  }).join('\n');
+  var kw=m.kws.join(', ')||'전체';
+  var sys='당신은 골프 스윙 코치입니다. 사용자의 골프 일지 기록만을 근거로 특정 주제의 원인과 대책을 한국어로 간결하게 요약합니다. 기록에 없는 내용을 지어내지 마세요.';
+  var user='주제 키워드: '+kw+'\n\n아래는 내 골프 일지 기록들이야. 이 주제에 대해 (1) 반복되는 핵심 원인, (2) 효과가 있었던/권장되는 대책, (3) 한 줄 종합 조언 을 정리해줘. 소제목과 불릿으로 간결하게.\n그리고 맨 마지막 줄에 반드시 "한줄요약: <핵심을 한 문장으로>" 형식으로 써줘.\n\n=== 기록 ('+m.res.length+'건) ===\n'+src;
+  fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-opus-5',max_tokens:3000,system:sys,output_config:{effort:'low'},messages:[{role:'user',content:user}]})
+  }).then(function(resp){ return resp.json(); }).then(function(j){
+    if(j.error){ ai.innerHTML='<div style="background:#fdecea;border-radius:10px;padding:12px;color:#c0392b;font-size:0.85rem">⚠️ 오류: '+esc(j.error.message||JSON.stringify(j.error))+'<br><button onclick="themeAIKey(true);themeAI()" style="margin-top:6px;font-size:0.8rem;border:1px solid #c0392b;background:#fff;border-radius:6px;padding:3px 10px">키 다시 입력</button></div>'; return; }
+    var txt=(j.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('\n').trim();
+    if(!txt) txt='(응답이 비었어요. 다시 시도해 주세요.)';
+    txt=dashDate(txt);                        // 날짜 26.09.05 → 26-09-05
+    themeLastAI=txt; themeLastKw=kw;
+    themeLastOneLine=thExtractOneLine(txt);   // 한줄요약(핵심) 추출
+    ai.innerHTML='<div style="background:#f7f0fc;border:1px solid #d9b8f0;border-radius:10px;padding:12px;margin:8px 0"><div style="font-weight:700;color:#7a3fb8;margin-bottom:6px;font-size:0.9rem">🤖 AI요약 <button onclick="themeAIKey(true);alert(\'API키를 지웠어요.\')" style="float:right;font-size:0.68rem;background:none;border:1px solid #ccc;border-radius:5px;padding:1px 6px;color:#999">키삭제</button></div><div style="white-space:pre-wrap;line-height:1.7;font-size:0.9rem;color:#222">'+mdLite(txt)+'</div><div style="margin-top:10px;text-align:center"><button onclick="themeSaveAsEntry()" style="background:#1a7a1a;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:0.9rem;font-weight:700">📌 이 AI요약을 기록으로 저장</button></div></div>';
+  }).catch(function(e){ ai.innerHTML='<div style="background:#fdecea;border-radius:10px;padding:12px;color:#c0392b;font-size:0.85rem">⚠️ 통신 실패: '+esc(String(e))+'<br>키 확인 또는 잠시 후 재시도.</div>'; });
+}
+function runTheme(){ var m=themeMatch(); blinkKws=m.kws; if(themeMode==='analyze') renderAnalyze(m); else renderTheme(m); }
+function saveTheme(){
+  var m=themeMatch();
+  if(!m.res.length && !themeExtra.length){ alert('저장할 내용이 없어요. 먼저 🔍찾기로 결과를 만들어주세요.'); return; }
+  var title='골프 테마모음 '+(m.kws.join('_')||'전체')+' '+(m.from||'')+'~'+(m.to||'');
+  themeExportMode=true;
+  var html='<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(title)+'</title>'
+    +'<style>body{font-family:sans-serif;background:#efefea;margin:0;padding:10px;color:#222}h1{font-size:1.1rem}img,video{max-width:100%}.thbl{color:#fff;border-radius:2px;padding:0 2px;font-weight:700;animation:thblink 0.7s steps(1,end) infinite}@keyframes thblink{50%{opacity:0.3}}.thbl0{background:#e11d1d}.thbl1{background:#1a4d9e}.thbl2{background:#1a7a1a}.thbl3{background:#7a3fb8}.thbl4{background:#c76a00}.thbl5{background:#0d8a8a}</style></head><body>'
+    +'<h1>🎬 '+esc(title)+'</h1><div style="color:#555;font-size:0.85rem;margin-bottom:10px">'+m.res.length+'건 · '+esc((m.from||'')+' ~ '+(m.to||''))+'</div>'
+    +themeExtraHtml(false)
+    +m.res.map(themeItemHtml).join('')
+    +'</body></html>';
+  themeExportMode=false;
+  var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));
+  a.download='golf-theme-'+(m.kws.join('_')||'all')+'-'+(m.from||'')+'.html'; a.click();
+}
+</script>
+</body></html>';
+  var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));
+  a.download='golf-theme-'+(m.kws.join('_')||'all')+'-'+(m.from||'')+'.html'; a.click();
+}
+</script>
+
+<!-- 🏢 기산전자 회의록 -->
+<div id="mtg-ov" style="display:none;position:fixed;inset:0;background:#f4f4ef;z-index:10000;overflow:auto">
+  <div style="position:sticky;top:0;background:#26324a;color:#fff;padding:8px 12px;display:flex;align-items:center;gap:6px;z-index:2;flex-wrap:wrap">
+    <button onclick="closeMtg();swTab('list')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:3px 10px;font-size:0.78rem;font-weight:700;min-width:3.2em;text-align:center">목록</button>
+    <button onclick="closeMtg();swTab('cal')" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:3px 10px;font-size:0.78rem;font-weight:700;min-width:3.2em;text-align:center">달력</button>
+    <button onclick="closeMtg();openTheme()" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:3px 10px;font-size:0.78rem;font-weight:700;min-width:3.2em;text-align:center">테마</button>
+    <b style="font-size:0.95rem">🏢 기산전자 회의록</b>
+    <button onclick="mtgPrev()" style="background:rgba(255,255,255,0.16);color:#fff;border:1px solid rgba(255,255,255,0.35);border-radius:6px;padding:3px 9px;font-size:0.78rem;font-weight:700">◀</button>
+    <b id="mtgTitle" style="min-width:6.5em;text-align:center;font-size:0.95rem"></b>
+    <button onclick="mtgNext()" style="background:rgba(255,255,255,0.16);color:#fff;border:1px solid rgba(255,255,255,0.35);border-radius:6px;padding:3px 9px;font-size:0.78rem;font-weight:700">▶</button>
+    <button onclick="mtgAdd('')" style="background:#2d7a2d;color:#fff;border:none;border-radius:6px;padding:3px 11px;font-size:0.78rem;font-weight:700">+ 회의</button>
+    <button onclick="mtgAutoFill()" style="background:rgba(255,255,255,0.16);color:#fff;border:1px solid rgba(255,255,255,0.35);border-radius:6px;padding:3px 9px;font-size:0.78rem;font-weight:700">정기 자동채우기</button>
+    <button onclick="mtgImport()" style="background:rgba(255,255,255,0.16);color:#fff;border:1px solid rgba(255,255,255,0.35);border-radius:6px;padding:3px 9px;font-size:0.78rem;font-weight:700">📥 가져오기</button>
+    <button onclick="gcalConnect()" style="background:#1a73e8;color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:0.78rem;font-weight:700">📅 구글캘린더</button>
+    <button onclick="mtgSyncNow()" style="background:#2d7a2d;color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:0.78rem;font-weight:700">🔄 동기화</button>
+    <button onclick="closeMtg()" style="margin-left:auto;background:none;border:1px solid rgba(255,255,255,0.4);color:#fff;border-radius:6px;padding:3px 10px;font-size:0.85rem">✕ 닫기</button>
+  </div>
+  <div style="padding:6px 12px;font-size:0.74rem;color:#555;display:flex;gap:12px;flex-wrap:wrap"><span><b style="color:#1a4d9e">●</b> 월간</span><span><b style="color:#7a3fb8">●</b> AI</span><span><b style="color:#2d7a2d">●</b> 주간</span><span><b style="color:#0d8a8a">●</b> 품질</span><span><b style="color:#c76a00">●</b> 업무</span></div>
+  <div id="mtgCal" style="padding:4px 8px 50px"></div>
+  <button onclick="closeMtg()" title="닫기" style="position:fixed;bottom:16px;right:16px;z-index:3;background:rgba(38,50,74,0.9);color:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:0.9rem;box-shadow:0 2px 6px rgba(0,0,0,0.3)">✕</button>
+  <!-- 회의 입력 폼 -->
+  <div id="mtgForm" style="display:none;position:fixed;inset:0;z-index:10002;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;padding:12px">
+    <div style="background:#fff;border-radius:12px;max-width:520px;width:100%;max-height:92vh;overflow:auto;padding:16px;box-shadow:0 6px 24px rgba(0,0,0,0.3)">
+      <h3 id="mtgFTitle" style="margin:0 0 12px;font-size:1.05rem">회의 추가</h3>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+        <label style="font-size:0.85rem;font-weight:700">종류<br><select id="mtgType" onchange="mtgTypeChange()" style="font-size:0.9rem;padding:5px 8px;border:1px solid #ccc;border-radius:6px;margin-top:3px"></select></label>
+        <label style="font-size:0.85rem;font-weight:700">날짜<br><input type="date" id="mtgDate" style="font-size:0.9rem;padding:5px 6px;border:1px solid #ccc;border-radius:6px;margin-top:3px"></label>
+      </div>
+      <label style="font-size:0.85rem;font-weight:700">참석자<br><input type="text" id="mtgAtt" placeholder="예: 회장님, 김상무, 박부장..." style="width:100%;box-sizing:border-box;font-size:0.9rem;padding:6px 8px;border:1px solid #ccc;border-radius:6px;margin:3px 0 10px"></label>
+      <label style="font-size:0.85rem;font-weight:700">주요 보고내용<br><textarea id="mtgReport" rows="10" style="width:100%;box-sizing:border-box;font-size:0.9rem;padding:6px 8px;border:1px solid #ccc;border-radius:6px;margin:3px 0 10px;resize:vertical"></textarea></label>
+      <label style="font-size:0.85rem;font-weight:700">회장님 지시사항<br><textarea id="mtgOrders" rows="10" style="width:100%;box-sizing:border-box;font-size:0.9rem;padding:6px 8px;border:1px solid #ccc;border-radius:6px;margin:3px 0 6px;resize:vertical"></textarea></label>
+      <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:10px">
+        <button id="mtgDelBtn" onclick="mtgDelForm()" style="background:#d42020;color:#fff;border:none;border-radius:7px;padding:8px 14px;font-weight:700">삭제</button>
+        <button onclick="mtgFormClose()" style="background:#eee;border:1px solid #ccc;border-radius:7px;padding:8px 14px">취소</button>
+        <button onclick="mtgSaveForm()" style="background:#2d7a2d;color:#fff;border:none;border-radius:7px;padding:8px 18px;font-weight:700">저장</button>
+      </div>
+    </div>
+  </div>
+  <!-- 구글 캘린더 선택 가져오기 -->
+  <div id="gcalModal" style="display:none;position:fixed;inset:0;z-index:10003;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;padding:12px">
+    <div style="background:#fff;border-radius:12px;max-width:560px;width:100%;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 6px 24px rgba(0,0,0,0.3)">
+      <div style="padding:14px 16px 8px;border-bottom:1px solid #eee">
+        <h3 style="margin:0;font-size:1.05rem">📅 구글 캘린더에서 회의 가져오기</h3>
+        <div id="gcalSub" style="font-size:0.78rem;color:#888;margin-top:3px">불러오는 중…</div>
+      </div>
+      <div style="padding:6px 12px;display:flex;gap:8px;align-items:center;border-bottom:1px solid #f2f2f2;flex-wrap:wrap">
+        <label style="font-size:0.8rem;font-weight:700"><input type="checkbox" id="gcalAll" onchange="gcalToggleAll(this.checked)" style="vertical-align:middle"> 전체선택</label>
+        <span style="font-size:0.74rem;color:#aaa">각 항목 종류를 골라 체크 → 가져오기</span>
+      </div>
+      <div id="gcalList" style="overflow:auto;padding:6px 12px;flex:1;min-height:60px"></div>
+      <div style="display:flex;gap:6px;justify-content:flex-end;padding:10px 16px;border-top:1px solid #eee">
+        <button onclick="gcalKeyReset()" style="background:none;border:1px solid #ccc;border-radius:7px;padding:7px 12px;font-size:0.78rem;color:#888;margin-right:auto">키재설정</button>
+        <button onclick="gcalClose()" style="background:#eee;border:1px solid #ccc;border-radius:7px;padding:8px 14px">취소</button>
+        <button onclick="gcalImport()" style="background:#1a73e8;color:#fff;border:none;border-radius:7px;padding:8px 18px;font-weight:700">가져오기</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+// ===== 기산전자 회의록 =====
+var MTG_TYPES=[{k:'월간',c:'#1a4d9e'},{k:'AI',c:'#7a3fb8'},{k:'주간',c:'#2d7a2d'},{k:'품질',c:'#0d8a8a'},{k:'업무',c:'#c76a00'}];
+var MTG_MIGRATE={'월간회의':'월간','AI회의':'AI','주간회의':'주간','품질회의':'품질','업무회의':'업무'};
+function mtgMigrateTypes(){ var ch=false; (meetings||[]).forEach(function(m){ if(m && MTG_MIGRATE[m.type]){ m.type=MTG_MIGRATE[m.type]; ch=true; } }); return ch; }
+var meetings=[];
+var mtgY=new Date(new Date().getTime()+9*3600*1000).getFullYear();
+var mtgM=new Date(new Date().getTime()+9*3600*1000).getMonth(); // 0-11
+var mtgEditId=null;
+function mtgColor(t){ for(var i=0;i<MTG_TYPES.length;i++){ if(MTG_TYPES[i].k===t) return MTG_TYPES[i].c; } return '#666'; }
+function mtgMerge(a,b){
+  var map={};
+  (a||[]).forEach(function(x){ if(x&&x.id) map[x.id]=x; });
+  (b||[]).forEach(function(x){ if(!x||!x.id) return; var cur=map[x.id]; if(!cur || (x.updatedAt||'')>(cur.updatedAt||'')) map[x.id]=x; });
+  return Object.keys(map).map(function(k){return map[k];});
+}
+function mtgSaveLocal(){
+  var payload; try{ payload=JSON.stringify(meetings); }catch(e){ return; }
+  try{ if(IDB){ IDB.transaction('kv','readwrite').objectStore('kv').put(payload,'meetings'); } }catch(e){}
+  try{ localStorage.setItem('meetings',payload); }catch(e){}
+}
+function mtgLoadLocal(cb){
+  function fromLS(){ try{ var s=localStorage.getItem('meetings'); meetings=s?(JSON.parse(s)||[]):[]; }catch(e){ meetings=[]; } if(cb)cb(); }
+  if(IDB){ try{ var rq=IDB.transaction('kv','readonly').objectStore('kv').get('meetings'); rq.onsuccess=function(){ if(rq.result){ try{ meetings=JSON.parse(rq.result)||[]; }catch(e){ meetings=[]; } if(cb)cb(); } else fromLS(); }; rq.onerror=fromLS; return; }catch(e){} }
+  fromLS();
+}
+function mtgPush(){
+  try{ postRows([{id:'__meetings__', data:{id:'__meetings__', list:meetings, updatedAt:nowKST()}, updated_at:new Date().toISOString()}]).catch(function(){}); }catch(e){}
+}
+function mtgPull(cb){
+  try{
+    fetch(SUPABASE_URL+'/rest/v1/golf_posts?id=eq.__meetings__&select=data',{headers:sbH()})
+    .then(function(r){ return r.ok?r.json():[]; })
+    .then(function(arr){
+      var srv=(arr&&arr[0]&&arr[0].data&&Array.isArray(arr[0].data.list))?arr[0].data.list:[];
+      var merged=mtgMerge(meetings, srv);
+      var _b=''; try{_b=JSON.stringify(meetings);}catch(e){}
+      var _sv=''; try{_sv=JSON.stringify(srv);}catch(e){}
+      var _a=''; try{_a=JSON.stringify(merged);}catch(e){}
+      meetings=merged;
+      if(_a!==_b) mtgSaveLocal();       // 로컬 반영
+      if(_a!==_sv) mtgPush();           // 서버에 없던 내용 올림
+      if(cb)cb();
+    }).catch(function(){ if(cb)cb(); });
+  }catch(e){ if(cb)cb(); }
+}
+function mtgCountLive(list){ return (list||[]).filter(function(m){return m && !m.deleted;}).length; }
+function mtgReadServer(){
+  return fetch(SUPABASE_URL+'/rest/v1/golf_posts?id=eq.__meetings__&select=data',{headers:sbH()})
+    .then(function(r){ if(!r.ok) throw new Error('읽기 HTTP '+r.status); return r.json(); })
+    .then(function(arr){ return (arr&&arr[0]&&arr[0].data&&Array.isArray(arr[0].data.list))?arr[0].data.list:[]; });
+}
+function mtgSyncNow(){
+  var myN0=mtgCountLive(meetings);
+  mtgReadServer()
+  .then(function(srv){
+    var srvN=mtgCountLive(srv);
+    meetings=mtgMerge(meetings, srv); mtgSaveLocal();
+    var myN=mtgCountLive(meetings);
+    // 올리기
+    return postRows([{id:'__meetings__',data:{id:'__meetings__',list:meetings,updatedAt:nowKST()},updated_at:new Date().toISOString()}])
+      .then(function(){
+        // 올린 뒤 서버 재확인(진짜 저장됐는지)
+        return mtgReadServer().then(function(srv2){
+          var srvN2=mtgCountLive(srv2);
+          mtgRenderCal();
+          if(srvN2>=myN && myN>0){
+            alert('✅ 동기화 완료\n\n올리기 전 서버: '+srvN+'건\n내 기기: '+myN+'건\n올린 뒤 서버 재확인: '+srvN2+'건 ✔\n\n서버에 정상 저장됐어요. 다른 기기에서 🔄 누르면 받아집니다.');
+          } else {
+            alert('⚠️ 올렸는데 서버에 안 남아요!\n\n올린 뒤 서버 재확인: '+srvN2+'건 (기대: '+myN+'건)\n\n→ 서버 쓰기가 거부되는 상태예요(권한/RLS 등). 이 메시지를 그대로 알려주세요.');
+          }
+        });
+      })
+      .catch(function(e){ mtgRenderCal(); alert('⚠️ 서버 저장(올리기) 실패\n'+String(e)+'\n\n읽기는 됨(서버 '+srvN+'건, 내 기기 '+myN+'건). 서버 쓰기 권한/네트워크 문제.'); });
+  })
+  .catch(function(e){ alert('⚠️ 서버 읽기 실패\n'+String(e)+'\n\n네트워크/서버 접속 문제. 내 기기 회의: '+myN0+'건'); });
+}
+function openMtg(){
+  var t=new Date(new Date().getTime()+9*3600*1000);
+  mtgY=t.getFullYear(); mtgM=t.getMonth();
+  document.getElementById('mtg-ov').style.display='block';
+  try{ gcalPrewarm(); }catch(e){}
+  mtgLoadLocal(function(){ mtgRenderCal(); mtgPull(function(){ mtgRenderCal(); }); });
+}
+function closeMtg(){ document.getElementById('mtg-ov').style.display='none'; }
+function mtgPrev(){ mtgM--; if(mtgM<0){mtgM=11;mtgY--;} mtgRenderCal(); }
+function mtgNext(){ mtgM++; if(mtgM>11){mtgM=0;mtgY++;} mtgRenderCal(); }
+function mtg2(n){ return (n<10?'0':'')+n; }
+function mtgDateStr(y,m,d){ return y+'-'+mtg2(m+1)+'-'+mtg2(d); }
+function mtgForDate(ds){ return meetings.filter(function(x){ return !x.deleted && x.date===ds; }); }
+function mtgWeekNo(y,m,d){ var dt=new Date(y,m,d); var jan1=new Date(y,0,1); var doy=Math.floor((dt-jan1)/86400000)+1; return Math.ceil((doy+jan1.getDay())/7); }
+function mtgTypeChange(){ var t=document.getElementById('mtgType').value; var a=document.getElementById('mtgAtt'); if(!a) return; if(t==='품질'){ if(a.value==='회장님') a.value=''; } else { if(a.value==='') a.value='회장님'; } }
+function mtgDedup(){
+  var groups={}, changed=false;
+  (meetings||[]).forEach(function(m){ if(!m||m.deleted) return; var k=m.date+'|'+m.type; (groups[k]=groups[k]||[]).push(m); });
+  Object.keys(groups).forEach(function(k){
+    var arr=groups[k]; if(arr.length<2) return;
+    function sc(m){ return ((m.attendees||'').trim()?1:0)+((m.report||'').trim()?2:0)+((m.orders||'').trim()?2:0); }
+    arr.sort(function(a,b){ var d=sc(b)-sc(a); if(d) return d; return (b.updatedAt||'')>(a.updatedAt||'')?1:-1; });
+    for(var i=1;i<arr.length;i++){ arr[i].deleted=true; arr[i].updatedAt=nowKST(); changed=true; }
+  });
+  return changed;
+}
+function mtgFixQuality(){ var ch=false; (meetings||[]).forEach(function(m){ if(!m||m.deleted) return;
+  if(m.type==='품질'){ if((m.attendees||'')==='회장님'){ m.attendees=''; m.updatedAt=nowKST(); ch=true; } }
+  else { if(!(m.attendees||'').trim()){ m.attendees='회장님'; m.updatedAt=nowKST(); ch=true; } }
+}); return ch; }
+function mtgRemoveHolidayAuto(){
+  if(typeof HOLIDAYS==='undefined') return false;
+  var AUTO={'월간':1,'AI':1,'주간':1,'품질':1}; var ch=false;
+  (meetings||[]).forEach(function(m){ if(!m||m.deleted) return;
+    if(AUTO[m.type] && HOLIDAYS.has(m.date) && !(m.report||'').trim() && !(m.orders||'').trim()){ m.deleted=true; m.updatedAt=nowKST(); ch=true; }
+  });
+  return ch;
+}
+function mtgRenderCal(){
+  var _ch=false; if(mtgMigrateTypes()) _ch=true; if(mtgFixQuality()) _ch=true; if(mtgRemoveHolidayAuto()) _ch=true; if(mtgDedup()) _ch=true; if(_ch){ mtgSaveLocal(); mtgPush(); }
+  var head=document.getElementById('mtgTitle'); if(head) head.textContent=mtgY+'년 '+(mtgM+1)+'월';
+  var first=new Date(mtgY,mtgM,1); var startDow=first.getDay(); var days=new Date(mtgY,mtgM+1,0).getDate();
+  var dows=['일','월','화','수','목','금','토'];
+  var h='<div style="display:grid;grid-template-columns:0.5fr 1fr 1fr 1fr 1fr 1fr 0.5fr;gap:1px;background:#ddd;border:1px solid #ddd">';
+  dows.forEach(function(d,i){ h+='<div style="background:#eef;padding:4px 0;text-align:center;font-weight:700;font-size:0.8rem;color:'+(i===0?'#d42020':i===6?'#1a6ac0':'#333')+'">'+d+'</div>'; });
+  for(var b=0;b<startDow;b++){ h+='<div style="background:#fafafa;min-height:170px"></div>'; }
+  for(var day=1;day<=days;day++){
+    var ds=mtgDateStr(mtgY,mtgM,day);
+    var dow=new Date(mtgY,mtgM,day).getDay();
+    var list=mtgForDate(ds);
+    var mt=list[0];
+    var isHol=(typeof HOLIDAYS!=='undefined')&&HOLIDAYS.has(ds);
+    var holName=isHol?HOLIDAYS.get(ds):'';
+    var dcol=(isHol||dow===0)?'#d42020':(dow===6?'#1a6ac0':'#444');
+    h+='<div onclick="mtgAdd(\''+ds+'\')" style="background:'+(isHol?'#fdeceb':'#fff')+';min-height:170px;padding:3px 4px;cursor:pointer;position:relative;vertical-align:top">';
+    // 날짜 + 회의이름(같은 줄)
+    h+='<div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">';
+    h+='<span style="font-size:0.78rem;font-weight:700;color:'+dcol+'">'+day+'</span>';
+    if(isHol){ h+='<span style="font-size:0.6rem;color:#d42020;font-weight:700">'+esc(holName)+'</span>'; }
+    if(dow===0){ h+='<span style="font-size:0.6rem;color:#c98;font-weight:700">'+mtgWeekNo(mtgY,mtgM,day)+'주</span>'; }
+    if(mt){
+      h+='<span onclick="event.stopPropagation();mtgEdit(\''+mt.id+'\')" style="background:'+mtgColor(mt.type)+';color:#fff;border-radius:4px;padding:1px 6px;font-size:0.68rem;font-weight:700;cursor:pointer">'+esc(mt.type)+'</span>';
+      if((mt.attendees||'').trim()){ h+='<span onclick="event.stopPropagation();mtgEdit(\''+mt.id+'\')" style="font-size:0.72rem;color:#333;font-weight:600;cursor:pointer">'+esc(mt.attendees.trim())+'</span>'; }
+    }
+    h+='</div>';
+    if(mt){
+      var parts=[];
+      if((mt.report||'').trim()) parts.push(mt.report.trim());
+      if((mt.orders||'').trim()) parts.push('📢 '+mt.orders.trim());
+      var body=parts.join('\n');
+      if(body) h+='<div onclick="event.stopPropagation();mtgEdit(\''+mt.id+'\')" style="padding:2px 1px 0;font-size:0.74rem;line-height:1.4;white-space:pre-wrap;word-break:break-word;color:#333;cursor:pointer">'+esc(body)+'</div>';
+    }
+    h+='</div>';
+  }
+  h+='</div>';
+  document.getElementById('mtgCal').innerHTML=h;
+}
+function mtgAutoFill(){
+  if(!confirm(mtgY+'년 '+(mtgM+1)+'월의 정기회의(월간=첫 월요일, AI=둘째 월요일, 주간=매주 수요일, 품질=매주 목요일)를 빈 양식으로 추가할까요?')) return;
+  var days=new Date(mtgY,mtgM+1,0).getDate(); var firstMon=0;
+  for(var d=1;d<=days;d++){ if(new Date(mtgY,mtgM,d).getDay()===1){ firstMon=d; break; } }
+  function addIf(ds,type){ if(typeof HOLIDAYS!=='undefined'&&HOLIDAYS.has(ds)) return; /* 공휴일엔 정기회의 안 넣음 */ if(!meetings.some(function(x){return !x.deleted&&x.date===ds&&x.type===type;})){ meetings.push({id:'mtg_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),type:type,date:ds,attendees:(type==='품질'?'':'회장님'),report:'',orders:'',updatedAt:nowKST()}); } }
+  if(firstMon){ addIf(mtgDateStr(mtgY,mtgM,firstMon),'월간'); var ai=firstMon+7; if(ai<=days) addIf(mtgDateStr(mtgY,mtgM,ai),'AI'); }
+  for(var d2=1;d2<=days;d2++){ var dw=new Date(mtgY,mtgM,d2).getDay(); if(dw===3) addIf(mtgDateStr(mtgY,mtgM,d2),'주간'); if(dw===4) addIf(mtgDateStr(mtgY,mtgM,d2),'품질'); }
+  mtgSaveLocal(); mtgPush(); mtgRenderCal();
+}
+function mtgOpts(sel){ return MTG_TYPES.map(function(t){ return '<option'+(t.k===sel?' selected':'')+'>'+t.k+'</option>'; }).join(''); }
+function mtgAdd(ds){
+  mtgEditId=null;
+  document.getElementById('mtgFTitle').textContent='회의 추가';
+  document.getElementById('mtgType').innerHTML=mtgOpts('주간');
+  document.getElementById('mtgDate').value=ds||mtgDateStr(mtgY,mtgM,1);
+  document.getElementById('mtgAtt').value='회장님';
+  document.getElementById('mtgReport').value='';
+  document.getElementById('mtgOrders').value='';
+  document.getElementById('mtgDelBtn').style.display='none';
+  document.getElementById('mtgForm').style.display='flex';
+}
+function mtgEdit(id){
+  var m=meetings.filter(function(x){return x.id===id;})[0]; if(!m) return;
+  mtgEditId=id;
+  document.getElementById('mtgFTitle').textContent='회의 수정';
+  document.getElementById('mtgType').innerHTML=mtgOpts(m.type);
+  document.getElementById('mtgDate').value=m.date||'';
+  document.getElementById('mtgAtt').value=m.attendees||'';
+  document.getElementById('mtgReport').value=m.report||'';
+  document.getElementById('mtgOrders').value=m.orders||'';
+  document.getElementById('mtgDelBtn').style.display='';
+  document.getElementById('mtgForm').style.display='flex';
+}
+function mtgFormClose(){ document.getElementById('mtgForm').style.display='none'; }
+function mtgSaveForm(){
+  var date=document.getElementById('mtgDate').value;
+  if(!date){ alert('날짜를 넣어주세요.'); return; }
+  var rec={ type:document.getElementById('mtgType').value, date:date,
+    attendees:document.getElementById('mtgAtt').value.trim(),
+    report:document.getElementById('mtgReport').value.trim(),
+    orders:document.getElementById('mtgOrders').value.trim(),
+    updatedAt:nowKST() };
+  if(mtgEditId){ var m=meetings.filter(function(x){return x.id===mtgEditId;})[0]; if(m){ m.type=rec.type;m.date=rec.date;m.attendees=rec.attendees;m.report=rec.report;m.orders=rec.orders;m.updatedAt=rec.updatedAt;m.deleted=false; } }
+  else { rec.id='mtg_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6); meetings.push(rec); }
+  mtgSaveLocal(); mtgPush(); mtgFormClose(); mtgRenderCal();
+}
+function mtgDelForm(){
+  if(!mtgEditId) return; if(!confirm('이 회의를 삭제할까요?')) return;
+  var m=meetings.filter(function(x){return x.id===mtgEditId;})[0]; if(m){ m.deleted=true; m.updatedAt=nowKST(); }
+  mtgSaveLocal(); mtgPush(); mtgFormClose(); mtgRenderCal();
+}
+function mtgImport(){
+  var input=document.createElement('input'); input.type='file'; input.accept='.json';
+  input.onchange=function(e){ var f=e.target.files[0]; if(!f) return; var rd=new FileReader();
+    rd.onload=function(ev){ try{ var arr=JSON.parse(ev.target.result); if(!Array.isArray(arr)) throw 0;
+      arr.forEach(function(x){ if(x&&!x.id) x.id='mtg_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6); if(x&&!x.updatedAt) x.updatedAt=nowKST(); });
+      var before=meetings.length; meetings=mtgMerge(meetings,arr);
+      mtgSaveLocal(); mtgPush(); mtgRenderCal();
+      alert('회의 가져오기 완료: '+before+' → '+meetings.filter(function(z){return !z.deleted;}).length+'개');
+    }catch(er){ alert('파일 형식이 올바르지 않습니다.'); } };
+    rd.readAsText(f);
+  };
+  input.click();
+}
+// ===== 구글 캘린더 연동 가져오기 =====
+var gcalItems=[];
+function gcalPad(n){ return (n<10?'0':'')+n; }
+function gcalClientId(reset){
+  if(reset){ try{ localStorage.removeItem('gcalClientId'); }catch(e){} }
+  var cid=''; try{ cid=localStorage.getItem('gcalClientId')||''; }catch(e){}
+  if(!cid){
+    cid=prompt('구글 OAuth 클라이언트 ID를 입력하세요 (xxxxx.apps.googleusercontent.com).\n\n[처음 한 번만 설정]\n1) Google Cloud Console → API 및 서비스 → 사용자 인증 정보\n2) "OAuth 클라이언트 ID 만들기" → 웹 애플리케이션\n3) 승인된 JavaScript 원본에 아래 주소를 추가:\n   '+location.origin+'\n4) Calendar API 사용 설정\n5) 만들어진 클라이언트 ID를 여기에 붙여넣기\n\n(폰/PC에만 저장되며 서버로 안 보냅니다.)');
+    if(cid){ cid=cid.trim(); try{ localStorage.setItem('gcalClientId',cid); }catch(e){} }
+  }
+  return cid;
+}
+function gcalKeyReset(){ gcalClientId(true); alert('구글 클라이언트 ID를 지웠어요. 다시 [📅 구글캘린더]를 누르면 새로 입력합니다.'); gcalClose(); }
+var gcalGISloaded=false, gcalTokenClient=null, gcalTCid='';
+function gcalLoadGIS(cb){
+  if(window.google && google.accounts && google.accounts.oauth2){ gcalGISloaded=true; if(cb)cb(true); return; }
+  var s=document.createElement('script'); s.src='https://accounts.google.com/gsi/client'; s.async=true; s.defer=true;
+  s.onload=function(){ gcalGISloaded=!!(window.google&&google.accounts&&google.accounts.oauth2); if(cb)cb(gcalGISloaded); };
+  s.onerror=function(){ if(cb)cb(false); };
+  document.head.appendChild(s);
+}
+function gcalInitClient(cid){
+  if(!(window.google&&google.accounts&&google.accounts.oauth2)) return false;
+  if(gcalTokenClient && gcalTCid===cid) return true;
+  try{
+    gcalTokenClient=google.accounts.oauth2.initTokenClient({
+      client_id:cid,
+      scope:'https://www.googleapis.com/auth/calendar.readonly',
+      callback:function(resp){ if(resp && resp.access_token){ gcalFetch(resp.access_token); } else { alert('구글 인증에 실패했어요.'); } },
+      error_callback:function(err){ var ty=(err&&err.type)||''; if(ty==='popup_failed_to_open'){ alert('팝업이 차단됐어요.\n브라우저 주소창의 팝업 차단을 허용하고 [📅 구글캘린더]를 다시 눌러주세요.'); } else if(ty==='popup_closed'){ /* 사용자가 닫음 */ } else { alert('구글 인증 오류: '+ty+'\n승인된 원본에 '+location.origin+' 이 등록됐는지(반영에 수분~수시간), 클라이언트 ID가 맞는지 확인하세요.'); } }
+    });
+    gcalTCid=cid; return true;
+  }catch(e){ alert('구글 인증 초기화 실패: '+e); return false; }
+}
+// 미리 로드해두면 클릭 즉시 팝업이 열려 popup_failed_to_open 방지
+function gcalPrewarm(){
+  gcalLoadGIS(function(ok){ if(!ok) return; var c=''; try{ c=localStorage.getItem('gcalClientId')||''; }catch(e){} if(c) gcalInitClient(c); });
+}
+function gcalConnect(){
+  var had=false; try{ had=!!localStorage.getItem('gcalClientId'); }catch(e){}
+  var cid=gcalClientId(false); if(!cid) return;
+  // 모듈이 아직이면 로드만 하고 한 번 더 누르게 안내(클릭 제스처 유지 위해)
+  if(!(window.google&&google.accounts&&google.accounts.oauth2)){
+    gcalLoadGIS(function(ok){ if(ok){ gcalInitClient(cid); alert('구글 로그인 모듈이 준비됐어요.\n[📅 구글캘린더]를 한 번 더 눌러주세요.'); } else { alert('구글 로그인 모듈을 불러오지 못했어요. 인터넷 연결을 확인하세요.'); } });
+    return;
+  }
+  if(!gcalInitClient(cid)){ alert('잠시 후 [📅 구글캘린더]를 다시 눌러주세요.'); return; }
+  // 클라이언트 ID를 방금 처음 입력했다면 제스처가 소모됐을 수 있어 재클릭 안내
+  if(!had){ alert('클라이언트 ID가 저장됐어요.\n[📅 구글캘린더]를 한 번 더 눌러 로그인하세요.'); return; }
+  gcalTokenClient.requestAccessToken();
+}
+function gcalGuessType(t){
+  t=t||'';
+  if(/품질/.test(t)) return '품질';
+  if(/월간/.test(t)) return '월간';
+  if(/\bAI\b|AI/.test(t)) return 'AI';
+  if(/주간/.test(t)) return '주간';
+  return '업무';
+}
+function gcalFetch(token){
+  document.getElementById('gcalModal').style.display='flex';
+  document.getElementById('gcalSub').textContent=mtgY+'년 '+(mtgM+1)+'월 일정 불러오는 중…';
+  document.getElementById('gcalList').innerHTML='<div style="padding:16px;text-align:center;color:#999">불러오는 중…</div>';
+  var gA=document.getElementById('gcalAll'); if(gA) gA.checked=false;
+  var nY=(mtgM===11)?mtgY+1:mtgY, nMnum=(mtgM===11)?1:mtgM+2;
+  var tmin=mtgY+'-'+gcalPad(mtgM+1)+'-01T00:00:00+09:00';
+  var tmax=nY+'-'+gcalPad(nMnum)+'-01T00:00:00+09:00';
+  var url='https://www.googleapis.com/calendar/v3/calendars/primary/events?singleEvents=true&orderBy=startTime&maxResults=250'
+    +'&timeMin='+encodeURIComponent(tmin)+'&timeMax='+encodeURIComponent(tmax);
+  fetch(url,{headers:{'Authorization':'Bearer '+token}})
+  .then(function(r){ return r.json(); })
+  .then(function(j){
+    if(j.error){ document.getElementById('gcalList').innerHTML='<div style="padding:16px;color:#c0392b">오류: '+esc(j.error.message||'')+'</div>'; return; }
+    var items=(j.items||[]).filter(function(e){ return e.status!=='cancelled' && (e.start&&(e.start.dateTime||e.start.date)); });
+    gcalRender(items);
+  }).catch(function(e){ document.getElementById('gcalList').innerHTML='<div style="padding:16px;color:#c0392b">통신 실패: '+esc(String(e))+'</div>'; });
+}
+function gcalRender(items){
+  gcalItems=items.map(function(e){
+    var st=e.start.dateTime?e.start.dateTime.slice(0,10):e.start.date;
+    return { id:e.id, date:st, title:e.summary||'(제목없음)', desc:e.description||'' };
+  });
+  document.getElementById('gcalSub').textContent=mtgY+'년 '+(mtgM+1)+'월 · 일정 '+gcalItems.length+'개';
+  var box=document.getElementById('gcalList');
+  if(!gcalItems.length){ box.innerHTML='<div style="padding:20px;text-align:center;color:#999">이 달에 일정이 없어요. 위 ◀▶로 달을 바꿔보세요.</div>'; return; }
+  var h='';
+  gcalItems.forEach(function(it,i){
+    var g=gcalGuessType(it.title);
+    var opts=MTG_TYPES.map(function(t){ return '<option'+(t.k===g?' selected':'')+'>'+t.k+'</option>'; }).join('');
+    var chk=/회의|미팅|회장|보고/.test(it.title)?' checked':'';
+    h+='<label style="display:flex;gap:7px;align-items:flex-start;padding:7px 2px;border-bottom:1px solid #f2f2f2">'
+      +'<input type="checkbox" class="gcalChk" data-idx="'+i+'"'+chk+' style="margin-top:4px">'
+      +'<span style="flex:1;min-width:0"><span style="font-size:0.72rem;color:#888">'+esc(it.date)+'</span>'
+      +'<span style="font-size:0.9rem;display:block;word-break:break-all">'+esc(it.title)+'</span></span>'
+      +'<select class="gcalType" data-idx="'+i+'" style="font-size:0.78rem;padding:4px;border:1px solid #ccc;border-radius:5px;flex-shrink:0">'+opts+'</select>'
+      +'</label>';
+  });
+  box.innerHTML=h;
+}
+function gcalToggleAll(on){ var cs=document.querySelectorAll('#gcalList .gcalChk'); for(var i=0;i<cs.length;i++){ cs[i].checked=on; } }
+function gcalClose(){ document.getElementById('gcalModal').style.display='none'; }
+function gcalImport(){
+  var chks=document.querySelectorAll('#gcalList .gcalChk');
+  var types=document.querySelectorAll('#gcalList .gcalType');
+  var picked=[];
+  for(var i=0;i<chks.length;i++){
+    if(!chks[i].checked) continue;
+    var idx=parseInt(chks[i].getAttribute('data-idx'),10);
+    var it=gcalItems[idx]; if(!it) continue;
+    var type=types[i]?types[i].value:'업무';
+    picked.push({ id:'gcal_'+String(it.id).replace(/[^A-Za-z0-9_]/g,''), type:type, date:it.date,
+      attendees:(type==='품질'?'':'회장님'), report:(it.title||'')+(it.desc?('\n'+it.desc):''), orders:'', updatedAt:nowKST() });
+  }
+  if(!picked.length){ alert('가져올 일정을 체크하세요.'); return; }
+  var before=meetings.filter(function(z){return !z.deleted;}).length;
+  meetings=mtgMerge(meetings, picked);
+  mtgSaveLocal(); mtgPush(); gcalClose(); mtgRenderCal();
+  alert('구글 캘린더에서 '+picked.length+'개 가져왔어요. (총 '+before+' → '+meetings.filter(function(z){return !z.deleted;}).length+'개)');
+}
+// 시작 시 회의 로컬 로드(메모리 확보 → 동기화 병합 안전) + 서버 최신 반영
+try{ mtgLoadLocal(function(){ try{ mtgPull(); }catch(e){} }); }catch(e){}
+
+// ===== 📸 현재 화면 스크린샷 (html2canvas 지연로딩 → 공유/저장) =====
+function _snapDL(blob,name){ var url=URL.createObjectURL(blob); var a=document.createElement("a"); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){URL.revokeObjectURL(url);},2000); }
+function _snapRun(){
+  var btn=document.getElementById("snapBtn");
+  var prev=btn?btn.innerHTML:""; if(btn){ btn.innerHTML="⏳"; btn.style.visibility="hidden"; }
+  try{
+    html2canvas(document.body,{ x:window.scrollX, y:window.scrollY, width:window.innerWidth, height:window.innerHeight,
+      useCORS:true, backgroundColor:"#efefea", scale:Math.min(2,(window.devicePixelRatio||1)) })
+    .then(function(canvas){
+      if(btn){ btn.style.visibility="visible"; btn.innerHTML=prev; }
+      canvas.toBlob(function(blob){
+        if(!blob){ alert("캡처 실패(다시 시도)"); return; }
+        var name="강Story_"+(typeof stampKST==="function"?stampKST():Date.now())+".png";
+        try{ var file=new File([blob],name,{type:"image/png"});
+          if(navigator.canShare && navigator.canShare({files:[file]})){ navigator.share({files:[file],title:name}).catch(function(){}); return; }
+        }catch(e){}
+        _snapDL(blob,name);
+      },"image/png");
+    }).catch(function(e){ if(btn){ btn.style.visibility="visible"; btn.innerHTML=prev; } alert("캡처 오류: "+e); });
+  }catch(e){ if(btn){ btn.style.visibility="visible"; btn.innerHTML=prev; } alert("캡처 오류: "+e); }
+}
+function snapShot(){
+  if(window.html2canvas){ _snapRun(); return; }
+  var btn=document.getElementById("snapBtn"); if(btn) btn.innerHTML="⏳";
+  var s=document.createElement("script"); s.src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+  s.onload=function(){ _snapRun(); };
+  s.onerror=function(){ if(btn) btn.innerHTML="📸"; alert("스크린샷 도구 로딩 실패(인터넷 확인 후 다시)"); };
+  document.head.appendChild(s);
+}
+</script>
+
+</body>
+</html>
