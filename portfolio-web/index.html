@@ -146,8 +146,7 @@
 
 <div class="modal" id="chartModal">
   <div class="msheet" style="max-width:640px">
-    <h3 style="margin:0 0 4px">📈 총자산 추이</h3>
-    <p style="margin:0 0 10px">앱을 열 때마다 그날 총액이 자동 기록돼요. 여러 날 열수록 그래프가 촘촘해집니다.</p>
+    <h3 style="margin:0 0 6px">📈 총자산 추이</h3>
     <div id="chartBox" style="overflow-x:auto"></div>
     <input type="date" id="chartDatePick" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
     <div class="row2" style="justify-content:space-between;align-items:center">
@@ -162,7 +161,7 @@
   <header class="hero">
     <div class="hero-top">
       <div>
-        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.33</span></div>
+        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.34</span></div>
         <div class="updated" id="updated">준비 중…</div>
       </div>
       <div class="controls" style="flex-shrink:0">
@@ -834,10 +833,9 @@ function showChart(){
   const eToday=h.find(x=>x.d===todayStr())||{};
   // 엑셀형 입력 그리드: 가로=날짜, 세로=내앱(자동)/네이버/카카오/토스 (천원)
   const datesAsc=[...h].sort((a,b)=>a.d.localeCompare(b.d)); // 왼→오른 = 과거→최근
-  let inp='<div style="margin-bottom:10px">'
-    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;flex-wrap:wrap;gap:6px">'
-    +'<span style="font-size:12px;color:var(--sub)">천원 단위 입력 · <b>내앱 숫자칸 탭</b>=그날 기관별 기록</span>'
-    +'<span><button class="ghost" onclick="chartScrollToWeek()" style="padding:4px 8px;font-size:12px">📍 금주</button> <button class="ghost" onclick="chartGenMondays()" style="padding:4px 8px;font-size:12px">📅 매주월</button> <span style="font-size:11px;color:var(--sub)">+날짜</span> <input type="date" onchange="chartAddDateFromInput(this)" title="날짜 추가" style="padding:3px 4px;font-size:11px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--fg)"> <button class="primary" onclick="chartSaveGrid()" style="padding:4px 12px;font-size:12px">저장</button></span></div>'
+  let inp='<div style="margin-bottom:6px">'
+    +'<div style="display:flex;justify-content:flex-start;align-items:center;margin-bottom:5px;flex-wrap:wrap;gap:6px">'
+    +'<button class="ghost" onclick="chartScrollToWeek()" style="padding:4px 8px;font-size:12px">📍 금주</button> <button class="ghost" onclick="chartGenMondays()" style="padding:4px 8px;font-size:12px">📅 매주월</button> <span style="font-size:11px;color:var(--sub)">+날짜</span> <input type="date" onchange="chartAddDateFromInput(this)" title="날짜 추가" style="padding:3px 4px;font-size:11px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--fg)"> <button class="primary" onclick="chartSaveGrid()" style="padding:4px 12px;font-size:12px">저장</button></div>'
     +'<div id="chartScroll" style="overflow:auto;max-height:240px;border:1px solid var(--line);border-radius:8px"><table id="chartGrid" style="border-collapse:collapse;font-size:11px;white-space:nowrap">'
     +'<thead><tr style="position:sticky;top:0;background:var(--card);z-index:2">'
     +'<th style="position:sticky;left:0;background:var(--card);padding:5px 6px;text-align:left;border-bottom:1px solid var(--line);border-right:1px solid var(--line);z-index:3">기관\\날짜</th>';
