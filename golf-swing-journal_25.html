@@ -169,7 +169,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.20 · 26-09-23</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.21 · 26-09-23</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -187,6 +187,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
         <button onclick="exportFile();toggleMore()">💾 백업파일 저장 (앱→파일)</button>
         <button onclick="importFile();toggleMore()">📂 파일에서 불러오기 (파일→앱)</button>
         <button onclick="resyncAll();toggleMore()">📥 서버에서 전체받기 (클라우드→앱)</button>
+        <button onclick="openGallery()">🖼 전체 사진첩 (모든 사진)</button>
         <button onclick="checkUnsynced();">🔍 미동기화 확인 (폰↔서버)</button>
         <button onclick="toggleAutoBackup()">🔁 자동백업 <span id="autoBkState" style="font-weight:700"></span></button>
         <button onclick="openSettings();toggleMore()">⚙️ 연동 설정</button>
@@ -636,10 +637,21 @@ function renderPhoto(){
     cnt.textContent=photoImgs.length+'장';
     body.style.overflow='auto';
     var html='<div style="display:grid;grid-template-columns:repeat('+photoCols+',1fr);gap:4px;padding:4px">';
-    photoImgs.forEach(function(src,i){ html+='<img src="'+src+'" onclick="photoPick('+i+')" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:5px;cursor:pointer;border:'+(i===photoIdx?'2px solid #4a9a4a':'1px solid #333')+'">'; });
+    photoImgs.forEach(function(src,i){ html+='<img src="'+src+'" loading="lazy" onclick="photoPick('+i+')" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:5px;cursor:pointer;border:'+(i===photoIdx?'2px solid #4a9a4a':'1px solid #333')+'">'; });
     html+='</div>';
     body.innerHTML=html;
   }
+}
+// 🖼 전체 사진첩: 모든 기록의 사진을 한 갤러리로(최신순), 4장 그리드로 열기
+function openGallery(){
+  try{ toggleMore(); }catch(e){}
+  var items=[];
+  (data||[]).forEach(function(r){ if(r && !r.deleted && r.media){ r.media.forEach(function(m){ if(m && m.type==='image' && m.data) items.push(m.data); }); } });
+  if(!items.length){ alert('사진이 있는 기록이 없어요.'); return; }
+  photoImgs=items; photoIdx=0; photoCols=4;
+  renderPhoto();
+  document.getElementById('photo-modal').style.display='flex';
+  if(!history.state || !history.state.photoOpen){ history.pushState({photoOpen:true}, ''); }
 }
 function closePhoto(){
   var modal=document.getElementById('photo-modal');
