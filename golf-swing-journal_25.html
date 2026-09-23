@@ -52,6 +52,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .date.sat{color:#1a8a1a}
 
 .vt{font-size:0.72rem;font-weight:700;height:22px;padding:0 9px;border-radius:11px;flex-shrink:0;display:inline-flex;align-items:center;box-sizing:border-box}
+.pcbtn{background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:6px;padding:5px 11px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;opacity:0.7}
 .vt-f{background:#d7ecdd;color:#2b7d3c}.vt-s{background:#d7e5f7;color:#245fb0}.vt-l{background:#f2dcec;color:#a82789}.vt-e{background:#eddfca;color:#96591c}.vt-c{background:#f7e0c2;color:#b7620a}.vt-a{background:#d3e9e9;color:#0e8383}
 .venue{font-size:0.82rem;color:#555;background:#eee;height:22px;line-height:22px;padding:0 9px;border-radius:11px;flex-shrink:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-sizing:border-box}
 
@@ -168,7 +169,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.19 · 26-09-19</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.20 · 26-09-23</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -599,17 +600,45 @@ data.forEach(function(r){
   if(!r.updatedAt)r.updatedAt=r.date+"T00:00:00.000Z";
 });
 
+var photoImgs=[], photoIdx=0, photoCols=1;
 function openPhoto(recIdx, mediaIdx){
   var r=data[recIdx];
   if(!r||!r.media) return;
   var imgs=r.media.filter(function(m){return m.type==='image';});
-  if(!imgs[mediaIdx]) return;
-  var modal=document.getElementById('photo-modal');
-  document.getElementById('photo-modal-img').src=imgs[mediaIdx].data;
-  modal.style.display='flex';
+  if(!imgs.length) return;
+  photoImgs=imgs.map(function(m){return m.data;});
+  photoIdx=Math.max(0, Math.min(mediaIdx||0, photoImgs.length-1));
+  photoCols=1;
+  renderPhoto();
+  document.getElementById('photo-modal').style.display='flex';
   // 폰 뒤로가기/제스처로 탭이 닫히지 않게 가짜 히스토리 추가
   if(!history.state || !history.state.photoOpen){
     history.pushState({photoOpen:true}, '');
+  }
+}
+function photoSetCols(c){ photoCols=c; renderPhoto(); }
+function photoNav(d){ if(photoCols!==1||!photoImgs.length) return; photoIdx=(photoIdx+d+photoImgs.length)%photoImgs.length; renderPhoto(); }
+function photoPick(i){ photoIdx=i; photoCols=1; renderPhoto(); }
+function renderPhoto(){
+  var body=document.getElementById('photo-body'), cnt=document.getElementById('photo-count'), nav=document.getElementById('photo-nav');
+  ['pc1','pc2','pc4'].forEach(function(id){ var b=document.getElementById(id); if(b){ b.style.outline='none'; b.style.opacity='0.7'; } });
+  var ab=document.getElementById({1:'pc1',2:'pc2',4:'pc4'}[photoCols]); if(ab){ ab.style.outline='2px solid #fff'; ab.style.opacity='1'; }
+  if(photoCols===1){
+    nav.style.display = photoImgs.length>1 ? 'flex':'none';
+    cnt.textContent=(photoIdx+1)+' / '+photoImgs.length;
+    body.style.overflow='hidden';
+    body.innerHTML='<div id="photo-swipe" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:0 4px"><img src="'+photoImgs[photoIdx]+'" style="max-width:100%;max-height:100%;border-radius:6px;object-fit:contain"></div>';
+    var el=document.getElementById('photo-swipe'), x0=null;
+    el.addEventListener('touchstart', function(e){ x0=e.touches[0].clientX; }, {passive:true});
+    el.addEventListener('touchend', function(e){ if(x0===null)return; var dx=e.changedTouches[0].clientX-x0; if(Math.abs(dx)>40) photoNav(dx<0?1:-1); x0=null; }, {passive:true});
+  } else {
+    nav.style.display='none';
+    cnt.textContent=photoImgs.length+'장';
+    body.style.overflow='auto';
+    var html='<div style="display:grid;grid-template-columns:repeat('+photoCols+',1fr);gap:4px;padding:4px">';
+    photoImgs.forEach(function(src,i){ html+='<img src="'+src+'" onclick="photoPick('+i+')" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:5px;cursor:pointer;border:'+(i===photoIdx?'2px solid #4a9a4a':'1px solid #333')+'">'; });
+    html+='</div>';
+    body.innerHTML=html;
   }
 }
 function closePhoto(){
@@ -1768,8 +1797,21 @@ idbOpen(function(){
     <div id="cpop-bd"></div>
   </div>
 </div>
-<div id="photo-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:10001;align-items:center;justify-content:center" onclick="closePhoto()">
-  <img id="photo-modal-img" src="" style="max-width:95%;max-height:95%;border-radius:8px">
+<div id="photo-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.94);z-index:10001;flex-direction:column">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;flex-shrink:0">
+    <span id="photo-count" style="color:#fff;font-size:0.9rem;font-weight:700"></span>
+    <span style="display:flex;gap:5px">
+      <button id="pc1" class="pcbtn" onclick="photoSetCols(1)">1장</button>
+      <button id="pc2" class="pcbtn" onclick="photoSetCols(2)">2장</button>
+      <button id="pc4" class="pcbtn" onclick="photoSetCols(4)">4장</button>
+      <button class="pcbtn" onclick="closePhoto()" style="background:#c0392b">✕</button>
+    </span>
+  </div>
+  <div id="photo-body" style="flex:1;min-height:0;position:relative"></div>
+  <div id="photo-nav" style="display:none;align-items:center;justify-content:center;gap:24px;padding:12px;flex-shrink:0">
+    <button class="pcbtn" onclick="photoNav(-1)" style="font-size:1.2rem;padding:8px 22px">‹ 이전</button>
+    <button class="pcbtn" onclick="photoNav(1)" style="font-size:1.2rem;padding:8px 22px">다음 ›</button>
+  </div>
 </div>
 <script>
 if('serviceWorker' in navigator){
@@ -1947,9 +1989,8 @@ function themeMatch(){
 }
 function themePhoto(src){
   if(!src) return;
-  var modal=document.getElementById('photo-modal');
-  if(!modal) return;
-  document.getElementById('photo-modal-img').src=src;
+  var modal=document.getElementById('photo-modal'); if(!modal) return;
+  photoImgs=[src]; photoIdx=0; photoCols=1; renderPhoto();
   modal.style.display='flex';
   if(!history.state || !history.state.photoOpen){ history.pushState({photoOpen:true}, ''); }
 }
