@@ -139,6 +139,7 @@
     <div class="row2">
       <button class="ghost" id="ioReset">🔄 관리자 최신본 불러오기</button>
       <button class="ghost" id="ioExport">⬇ 내보내기(백업)</button>
+      <button class="ghost" id="ioHardRefresh" style="color:#2f6fb0;font-weight:700">⟳ 강제 최신화</button>
       <button class="ghost" id="ioClose">닫기</button>
     </div>
   </div>
@@ -161,7 +162,7 @@
   <header class="hero">
     <div class="hero-top">
       <div>
-        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.34</span></div>
+        <div class="titrow"><h1 id="title">내 자산 한눈에 보기</h1><span class="ver">v01.00.35</span></div>
         <div class="updated" id="updated">준비 중…</div>
       </div>
       <div class="controls" style="flex-shrink:0">
@@ -1006,6 +1007,13 @@ $("#ioFile").onchange=e=>{ const f=e.target.files[0]; if(!f)return; const r=new 
 $("#ioExport").onclick=()=>{ const blob=new Blob([JSON.stringify(PORT,null,2)],{type:"application/json"});
   const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="portfolio.json"; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); };
 $("#ioReset").onclick=()=>{ if(confirm("관리자(Claude)가 갱신한 최신 보유종목으로 불러올까요? 폰에서 직접 편집한 내용은 사라집니다.")){ loadEmbedded(); closeIO(); document.title=PORT.title; $("#title").textContent=PORT.title; refresh(); } };
+$("#ioHardRefresh").onclick=()=>{ if(!confirm("앱을 최신버전으로 강제 업데이트합니다.\n(보유내역·차트 등 데이터는 그대로 유지)\n계속?")) return;
+  var jobs=[];
+  try{ if('serviceWorker' in navigator){ jobs.push(navigator.serviceWorker.getRegistrations().then(rs=>Promise.all(rs.map(r=>r.unregister()))).catch(()=>{})); } }catch(e){}
+  try{ if(window.caches && caches.keys){ jobs.push(caches.keys().then(ks=>Promise.all(ks.map(k=>caches.delete(k)))).catch(()=>{})); } }catch(e){}
+  Promise.all(jobs).catch(()=>{}).then(()=>{ var b=location.href.split('#')[0].split('?')[0]; location.replace(b+'?v='+Date.now()); });
+  setTimeout(()=>{ var b=location.href.split('#')[0].split('?')[0]; location.replace(b+'?v='+Date.now()); }, 1500);
+};
 
 // ---------- 이벤트 & 시작 ----------
 $("#chartBtn").onclick=showChart;
