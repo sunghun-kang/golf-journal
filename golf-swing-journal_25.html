@@ -169,7 +169,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.26 · 26-09-26</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.27 · 26-09-26</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -1203,7 +1203,7 @@ function regenAI(){
   if(!res.length){ alert('그 키워드에 맞는 기록이 없어요.'); return; }
   var btn=document.getElementById('mRegenBtn'); var old=btn.textContent; btn.textContent='요약중…'; btn.disabled=true;
   var src=res.map(function(r){
-    return '['+(r.date||'')+']'
+    return '['+(r.date||'')+(r.date?'('+dow(r.date)+')':'')+']'
       +(r.venue?(' 문제:'+thStrip(r.venue)):'')
       +(r.members?(' 원인:'+thStrip(r.members)):'')
       +(r.title?(' 대책:'+thStrip(r.title).replace(/\n/g,' / ')):'')
@@ -1211,7 +1211,7 @@ function regenAI(){
   }).join('\n');
   var kw=flat.join(', ');
   var sys='당신은 골프 스윙 코치입니다. 사용자의 골프 일지 기록만을 근거로 특정 주제의 원인과 대책을 한국어로 간결하게 요약합니다. 기록에 없는 내용을 지어내지 마세요.';
-  var user='주제 키워드: '+kw+'\n\n아래는 내 골프 일지 기록들이야. 이 주제에 대해 (1) 반복되는 핵심 원인, (2) 효과가 있었던/권장되는 대책, (3) 한 줄 종합 조언 을 정리해줘. 소제목과 불릿으로 간결하게.\n그리고 맨 마지막 줄에 반드시 "한줄요약: <핵심을 한 문장으로>" 형식으로 써줘.\n\n=== 기록 ('+res.length+'건) ===\n'+src;
+  var user='주제 키워드: '+kw+'\n\n아래는 내 골프 일지 기록들이야. 이 주제에 대해 (1) 반복되는 핵심 원인, (2) 효과가 있었던/권장되는 대책, (3) 한 줄 종합 조언 을 정리해줘. 소제목과 불릿으로 간결하게.\n※ 날짜로 인용할 땐 최신부터(내림차순), 날짜 뒤에 (요일)까지 표기. 예: 9/19(토).\n그리고 맨 마지막 줄에 반드시 "한줄요약: <핵심을 한 문장으로>" 형식으로 써줘.\n\n=== 기록 ('+res.length+'건) ===\n'+src;
   fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-opus-5',max_tokens:3000,system:sys,output_config:{effort:'low'},messages:[{role:'user',content:user}]})})
   .then(function(r){return r.json();}).then(function(j){
     btn.textContent=old; btn.disabled=false;
@@ -2145,7 +2145,7 @@ function themeSaveAnalysis(){
   lines.push('■ 원인/멤버(빈출): '+(ag.causes.length?ag.causes.map(function(x){return x.t+(x.n>1?'×'+x.n:'');}).join(', '):'-'));
   lines.push('■ 대책·핵심 ('+ag.sols.length+'):');
   var cap=ag.sols.slice(0,60);
-  cap.forEach(function(s){ lines.push('· '+(s.date?('['+s.date+'] '):'')+s.t); });
+  cap.forEach(function(s){ lines.push('· '+(s.date?('['+s.date+'('+dow(s.date)+')] '):'')+s.t); });
   if(ag.sols.length>cap.length) lines.push('… 외 '+(ag.sols.length-cap.length)+'개');
   var memo=lines.join('\n');
   memo=thColorize(dashDate(memo), m.kws);       // 날짜 하이픈 + 키워드 색강조
@@ -2280,7 +2280,7 @@ function themeAI(){
   var ai=document.getElementById('thAI'); if(!ai) return;
   ai.innerHTML='<div style="background:#f3e9fb;border-radius:10px;padding:12px;margin:8px 0;color:#7a3fb8">🤖 AI가 원인·대책을 정리하는 중… (10~30초)</div>';
   var src=m.res.map(function(r){
-    return '['+(r.date||'')+']'
+    return '['+(r.date||'')+(r.date?'('+dow(r.date)+')':'')+']'
       +(r.venue?(' 문제:'+thStrip(r.venue)):'')
       +(r.members?(' 원인:'+thStrip(r.members)):'')
       +(r.title?(' 대책:'+thStrip(r.title).replace(/\n/g,' / ')):'')
@@ -2288,7 +2288,7 @@ function themeAI(){
   }).join('\n');
   var kw=m.kws.join(', ')||'전체';
   var sys='당신은 골프 스윙 코치입니다. 사용자의 골프 일지 기록만을 근거로 특정 주제의 원인과 대책을 한국어로 간결하게 요약합니다. 기록에 없는 내용을 지어내지 마세요.';
-  var user='주제 키워드: '+kw+'\n\n아래는 내 골프 일지 기록들이야. 이 주제에 대해 (1) 반복되는 핵심 원인, (2) 효과가 있었던/권장되는 대책, (3) 한 줄 종합 조언 을 정리해줘. 소제목과 불릿으로 간결하게.\n그리고 맨 마지막 줄에 반드시 "한줄요약: <핵심을 한 문장으로>" 형식으로 써줘.\n\n=== 기록 ('+m.res.length+'건) ===\n'+src;
+  var user='주제 키워드: '+kw+'\n\n아래는 내 골프 일지 기록들이야. 이 주제에 대해 (1) 반복되는 핵심 원인, (2) 효과가 있었던/권장되는 대책, (3) 한 줄 종합 조언 을 정리해줘. 소제목과 불릿으로 간결하게.\n※ 날짜로 인용할 땐 최신부터(내림차순), 날짜 뒤에 (요일)까지 표기. 예: 9/19(토).\n그리고 맨 마지막 줄에 반드시 "한줄요약: <핵심을 한 문장으로>" 형식으로 써줘.\n\n=== 기록 ('+m.res.length+'건) ===\n'+src;
   fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
     headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
