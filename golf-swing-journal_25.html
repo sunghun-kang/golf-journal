@@ -169,7 +169,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.22 · 26-09-24</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.23 · 26-09-26</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -1904,9 +1904,12 @@ if('serviceWorker' in navigator){
       <h3 style="margin:0 0 6px;font-size:1.05rem">🔑 Anthropic API 키</h3>
       <p style="font-size:0.8rem;color:#666;margin:0 0 10px;line-height:1.5"><code>sk-ant-</code>… 키를 붙여넣고 저장하세요. <b>이 기기에만</b> 저장됩니다(서버로 안 감).</p>
       <input id="keyInput" type="text" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="sk-ant-... 붙여넣기" style="width:100%;box-sizing:border-box;font-size:0.9rem;padding:11px;border:2px solid #159957;border-radius:8px">
-      <div style="font-size:0.72rem;color:#999;margin-top:6px">붙여넣기: 입력칸 탭 후 Ctrl+V, 또는 길게 눌러 '붙여넣기'</div>
+      <div style="font-size:0.72rem;color:#999;margin-top:6px">붙여넣기: 입력칸 탭 후 Ctrl+V, 또는 길게 눌러 '붙여넣기' · <b>다른 기기에서 쓰려면</b> 여기서 <b>📋복사</b> 후 그 기기 🔑키에 붙여넣기</div>
       <div style="display:flex;gap:6px;justify-content:space-between;align-items:center;margin-top:12px">
-        <button onclick="delKeyModal()" style="background:none;border:1px solid #ccc;border-radius:7px;padding:7px 10px;color:#888;font-size:0.8rem">키 삭제</button>
+        <span style="display:flex;gap:6px">
+          <button onclick="delKeyModal()" style="background:none;border:1px solid #ccc;border-radius:7px;padding:7px 10px;color:#888;font-size:0.8rem">키 삭제</button>
+          <button onclick="copyKeyModal()" style="background:#2f6fb0;color:#fff;border:none;border-radius:7px;padding:7px 12px;font-size:0.8rem;font-weight:700">📋 복사</button>
+        </span>
         <span style="display:flex;gap:6px">
           <button onclick="closeKeyModal()" style="background:#eee;border:1px solid #ccc;border-radius:7px;padding:8px 14px">취소</button>
           <button onclick="saveKeyModal()" style="background:#159957;color:#fff;border:none;border-radius:7px;padding:8px 18px;font-weight:700">저장</button>
@@ -2178,6 +2181,13 @@ function openKeyModal(){ var m=document.getElementById('keyModal'); if(!m) retur
 function closeKeyModal(){ var m=document.getElementById('keyModal'); if(m) m.style.display='none'; }
 function saveKeyModal(){ var i=document.getElementById('keyInput'); var k=((i&&i.value)||'').trim(); if(!k){ alert('키를 붙여넣어 주세요.'); return; } try{ localStorage.setItem('anthropicKey',k); }catch(e){} try{ idbKeyPut(k); }catch(e){} closeKeyModal(); alert('✅ API 키 저장 완료!\n이제 🤖질문·AI요약을 쓸 수 있어요.'); }
 function delKeyModal(){ try{ localStorage.removeItem('anthropicKey'); }catch(e){} try{ idbKeyDel(); }catch(e){} var i=document.getElementById('keyInput'); if(i) i.value=''; alert('키를 지웠어요.'); }
+function copyKeyModal(){
+  var i=document.getElementById('keyInput'); var k=((i&&i.value)||'').trim();
+  if(!k){ alert('복사할 키가 없어요. (이 기기엔 키가 저장돼 있지 않음)'); return; }
+  function done(){ alert('📋 키를 복사했어요.\n다른 기기 🔑키에서 붙여넣기 하세요.'); }
+  try{ if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(k).then(done, function(){ i.focus(); i.select(); document.execCommand&&document.execCommand('copy'); done(); }); return; } }catch(e){}
+  try{ i.focus(); i.select(); document.execCommand&&document.execCommand('copy'); done(); }catch(e){ alert('자동복사 실패 — 입력칸을 길게 눌러 전체선택→복사 해주세요.'); }
+}
 function mdLite(t){
   var h=esc(t);
   h=h.replace(/^\s*#{1,6}\s*(.+)$/gm,'<b style="font-size:0.95rem">$1</b>'); // ## 소제목 → 굵게(마커 제거)
