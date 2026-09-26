@@ -169,7 +169,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.25 · 26-09-26</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.26 · 26-09-26</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -184,6 +184,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
     <div class="more-menu">
       <button class="btn-io" onclick="toggleMore()" title="더보기">⋮</button>
       <div class="more-dropdown" id="more-dropdown">
+        <button onclick="hardRefresh()">🔄 강제 최신화 (최신버전·데이터유지)</button>
         <button onclick="exportFile();toggleMore()">💾 백업파일 저장 (앱→파일)</button>
         <button onclick="importFile();toggleMore()">📂 파일에서 불러오기 (파일→앱)</button>
         <button onclick="resyncAll();toggleMore()">📥 서버에서 전체받기 (클라우드→앱)</button>
@@ -458,6 +459,19 @@ function resyncAll(){
   if(!confirm('서버(golf_posts)에서 전체를 다시 받아옵니다.\n(로컬은 합쳐지며 지워지지 않아요)\n계속?'))return;
   localStorage.removeItem('golfSyncAt2'); // 델타 초기화 → 전체 재수신
   loadFromServer();
+}
+// 🔄 강제 최신화: 서비스워커/캐시 비우고 최신버전 재로드(기록·키 등 데이터는 유지)
+function hardRefresh(){
+  try{ toggleMore(); }catch(e){}
+  if(!confirm('앱을 최신버전으로 강제 업데이트합니다.\n(기록·API키·설정 등 데이터는 그대로 유지)\n계속?')) return;
+  var jobs=[];
+  try{ if('serviceWorker' in navigator){ jobs.push(navigator.serviceWorker.getRegistrations().then(function(rs){ return Promise.all(rs.map(function(r){ return r.unregister(); })); }).catch(function(){})); } }catch(e){}
+  try{ if(window.caches && caches.keys){ jobs.push(caches.keys().then(function(ks){ return Promise.all(ks.map(function(k){ return caches.delete(k); })); }).catch(function(){})); } }catch(e){}
+  Promise.all(jobs).catch(function(){}).then(function(){
+    var base=location.href.split('#')[0].split('?')[0];
+    location.replace(base + '?v=' + Date.now());   // 캐시 완전 우회 재로드
+  });
+  setTimeout(function(){ var base=location.href.split('#')[0].split('?')[0]; location.replace(base + '?v=' + Date.now()); }, 1500); // 안전장치
 }
 // 🔍 미동기화 확인: 서버 전체 id ↔ 로컬 비교 → 서버에 없는(폰에만 있는) 기록 찾기
 function checkUnsynced(){
