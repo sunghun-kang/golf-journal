@@ -169,7 +169,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.27 · 26-09-26</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.28 · 26-09-28</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -641,28 +641,55 @@ function renderPhoto(){
   if(photoCols===1){
     nav.style.display = photoImgs.length>1 ? 'flex':'none';
     cnt.textContent=(photoIdx+1)+' / '+photoImgs.length;
-    body.style.overflow='hidden';
+    body.style.overflow='hidden'; body.style.display='flex'; body.style.flexDirection='column';
     var it=photoImgs[photoIdx]||{};
     var cap=esc((it.date||'')+'  '+String(it.title||'').split('\n')[0].slice(0,26));
-    body.innerHTML='<div id="photo-swipe" style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 4px">'
-      +'<img src="'+it.src+'" style="max-width:100%;max-height:calc(100% - 44px);border-radius:6px;object-fit:contain">'
-      +'<div style="display:flex;gap:8px;align-items:center;margin-top:7px;color:#fff;font-size:0.78rem;flex-wrap:wrap;justify-content:center">'
+    body.innerHTML='<div id="photo-zoom" style="flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:none">'
+      +'<img id="pimg" src="'+it.src+'" style="max-width:100%;max-height:100%;border-radius:6px;object-fit:contain;transform-origin:center center;transition:none;will-change:transform">'
+      +'</div>'
+      +'<div style="display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;color:#fff;font-size:0.78rem;padding:6px 4px;flex-shrink:0">'
       +'<span style="opacity:.85">'+cap+'</span>'
       +'<button class="pcbtn" style="background:#2f6fb0" onclick="downloadPhoto()">⬇ 저장</button>'
       +(it.recIdx!=null?'<button class="pcbtn" style="background:#4a9a4a" onclick="gotoRecord()">📄 기록</button>':'')
-      +'</div></div>';
-    var el=document.getElementById('photo-swipe'), x0=null;
-    el.addEventListener('touchstart', function(e){ x0=e.touches[0].clientX; }, {passive:true});
-    el.addEventListener('touchend', function(e){ if(x0===null)return; var dx=e.changedTouches[0].clientX-x0; if(Math.abs(dx)>40) photoNav(dx<0?1:-1); x0=null; }, {passive:true});
+      +'<span style="opacity:.55;font-size:.7rem">휠·두손가락·더블탭=확대</span>'
+      +'</div>';
+    setupPhotoGesture();
   } else {
     nav.style.display='none';
     cnt.textContent=photoImgs.length+'장';
-    body.style.overflow='auto';
+    body.style.overflow='auto'; body.style.display='block';
     var html='<div style="display:grid;grid-template-columns:repeat('+photoCols+',1fr);gap:4px;padding:4px">';
     photoImgs.forEach(function(it,i){ html+='<img src="'+it.src+'" loading="lazy" onclick="photoPick('+i+')" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:5px;cursor:pointer;border:'+(i===photoIdx?'2px solid #4a9a4a':'1px solid #333')+'">'; });
     html+='</div>';
     body.innerHTML=html;
   }
+}
+// 사진 확대: 두손가락 핀치 / 마우스 휠 / 더블탭 · 확대 시 드래그 이동 · 1배율일 때만 좌우스와이프 넘김
+function setupPhotoGesture(){
+  var wrap=document.getElementById('photo-zoom'), img=document.getElementById('pimg'); if(!wrap||!img) return;
+  var scale=1, tx=0, ty=0, sx=0, sy=0, swx=0, panning=false, pinchD=0, pinchS=1, lastTap=0;
+  function apply(){ img.style.transform='translate('+tx+'px,'+ty+'px) scale('+scale+')'; }
+  function reset(){ scale=1; tx=0; ty=0; apply(); }
+  function dist(t){ return Math.hypot(t[0].clientX-t[1].clientX, t[0].clientY-t[1].clientY); }
+  wrap.addEventListener('touchstart', function(e){
+    if(e.touches.length===2){ pinchD=dist(e.touches); pinchS=scale; panning=false; }
+    else if(e.touches.length===1){ sx=e.touches[0].clientX; sy=e.touches[0].clientY; swx=sx; panning=(scale>1.03); }
+  }, {passive:false});
+  wrap.addEventListener('touchmove', function(e){
+    if(e.touches.length===2 && pinchD){ scale=Math.max(1,Math.min(5, pinchS*(dist(e.touches)/pinchD))); apply(); e.preventDefault(); }
+    else if(e.touches.length===1 && scale>1.03){ tx+=e.touches[0].clientX-sx; ty+=e.touches[0].clientY-sy; sx=e.touches[0].clientX; sy=e.touches[0].clientY; apply(); e.preventDefault(); }
+  }, {passive:false});
+  wrap.addEventListener('touchend', function(e){
+    if(e.touches.length===0 && pinchD){ pinchD=0; if(scale<=1.03) reset(); }
+    if(e.changedTouches.length===1 && !panning){
+      var dx=e.changedTouches[0].clientX-swx, now=Date.now();
+      if(scale<=1.03 && Math.abs(dx)>45){ photoNav(dx<0?1:-1); return; }
+      if(now-lastTap<300){ if(scale>1.03) reset(); else { scale=2.6; apply(); } lastTap=0; return; }
+      lastTap=now;
+    }
+  }, {passive:true});
+  wrap.addEventListener('dblclick', function(){ if(scale>1.03) reset(); else { scale=2.6; apply(); } });
+  wrap.addEventListener('wheel', function(e){ e.preventDefault(); scale=Math.max(1,Math.min(5, scale*(e.deltaY<0?1.15:0.87))); if(scale<=1.03){ tx=0; ty=0; } apply(); }, {passive:false});
 }
 function downloadPhoto(){
   var it=photoImgs[photoIdx]; if(!it||!it.src) return;
