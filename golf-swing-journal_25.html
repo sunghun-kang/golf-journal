@@ -169,7 +169,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.36 · 26-10-06</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.37 · 26-10-06</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -180,7 +180,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
   <div class="top-right">
     <span class="cnt" id="cnt"></span>
     <span id="sync-status" style="font-size:0.72rem;color:#9fc;margin-right:4px;"></span>
-    <button class="btn-io" onclick="loadFromServer()" title="서버에서 불러오기">🔄</button><span id="conn-icon" title="서버 연결 상태" style="font-size:1rem;margin-left:2px">🔴</span>
+    <button class="btn-io" onclick="checkVersionThenSync()" title="신버전 확인 후 서버에서 불러오기">🔄</button><span id="conn-icon" title="서버 연결 상태" style="font-size:1rem;margin-left:2px">🔴</span>
     <div class="more-menu">
       <button class="btn-io" onclick="toggleMore()" title="더보기">⋮</button>
       <div class="more-dropdown" id="more-dropdown">
@@ -476,6 +476,30 @@ function resyncAll(){
   if(!confirm('서버(golf_posts)에서 전체를 다시 받아옵니다.\n(로컬은 합쳐지며 지워지지 않아요)\n계속?'))return;
   localStorage.removeItem('golfSyncAt2'); // 델타 초기화 → 전체 재수신
   loadFromServer();
+}
+// 🔄 "서버에서 불러오기" 누르면: 데이터보다 먼저 "앱 신버전이 있는지" 조용히 확인 →
+// 있으면 자동으로 최신버전 받아서 적용(데이터는 그대로 유지)한 뒤 재시작, 없으면 바로 데이터 동기화
+function checkVersionThenSync(){
+  var curV=(document.getElementById('appVerLabel')||{}).textContent||'';
+  var base=location.href.split('#')[0].split('?')[0];
+  showSyncStatus('버전 확인중...');
+  fetchTO(base+'?vcheck='+Date.now(), {cache:'no-store'}, 8000)
+    .then(function(r){ return r.text(); })
+    .then(function(html){
+      var m=html.match(/id="appVerLabel"[^>]*>([^<]+)</);
+      var newV=m?m[1]:'';
+      if(newV && curV && newV!==curV){
+        showSyncStatus('🆕 새버전 발견! 적용중...');
+        try{ sessionStorage.setItem('hrPending', JSON.stringify({v:curV,t:Date.now()})); }catch(e){}
+        var jobs=[];
+        try{ if('serviceWorker' in navigator){ jobs.push(navigator.serviceWorker.getRegistrations().then(function(rs){ return Promise.all(rs.map(function(r){ return r.unregister(); })); }).catch(function(){})); } }catch(e){}
+        try{ if(window.caches && caches.keys){ jobs.push(caches.keys().then(function(ks){ return Promise.all(ks.map(function(k){ return caches.delete(k); })); }).catch(function(){})); } }catch(e){}
+        Promise.all(jobs).catch(function(){}).then(function(){ location.replace(base+'?v='+Date.now()); });
+      } else {
+        loadFromServer();   // 신버전 없으면 바로 데이터 동기화
+      }
+    })
+    .catch(function(){ loadFromServer(); });   // 버전체크 실패해도 데이터 동기화는 정상 진행
 }
 // 🔄 강제 최신화: 서비스워커/캐시 비우고 최신버전 재로드(기록·키 등 데이터는 유지)
 function hardRefresh(){
