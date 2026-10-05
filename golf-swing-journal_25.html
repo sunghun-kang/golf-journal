@@ -169,7 +169,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.32 · 26-10-05</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.33 · 26-10-05</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -464,6 +464,8 @@ function resyncAll(){
 function hardRefresh(){
   try{ toggleMore(); }catch(e){}
   if(!confirm('앱을 최신버전으로 강제 업데이트합니다.\n(기록·API키·설정 등 데이터는 그대로 유지)\n계속?')) return;
+  // 재로드 후 "진짜 바뀌었는지" 비교해서 안내하기 위해, 누르기 직전 버전을 저장해둠
+  try{ var verNow=(document.getElementById('appVerLabel')||{}).textContent||''; sessionStorage.setItem('hrPending', JSON.stringify({v:verNow, t:Date.now()})); }catch(e){}
   var jobs=[];
   try{ if('serviceWorker' in navigator){ jobs.push(navigator.serviceWorker.getRegistrations().then(function(rs){ return Promise.all(rs.map(function(r){ return r.unregister(); })); }).catch(function(){})); } }catch(e){}
   try{ if(window.caches && caches.keys){ jobs.push(caches.keys().then(function(ks){ return Promise.all(ks.map(function(k){ return caches.delete(k); })); }).catch(function(){})); } }catch(e){}
@@ -473,6 +475,20 @@ function hardRefresh(){
   });
   setTimeout(function(){ var base=location.href.split('#')[0].split('?')[0]; location.replace(base + '?v=' + Date.now()); }, 1500); // 안전장치
 }
+// 강제 최신화로 재로드된 직후: 버튼 누르기 직전 버전과 비교해 성공/실패 안내
+(function(){
+  var raw; try{ raw=sessionStorage.getItem('hrPending'); }catch(e){ raw=null; }
+  if(!raw) return;
+  try{ sessionStorage.removeItem('hrPending'); }catch(e){}
+  var info; try{ info=JSON.parse(raw); }catch(e){ info=null; }
+  if(!info) return;
+  setTimeout(function(){
+    var verNew=(document.getElementById('appVerLabel')||{}).textContent||'';
+    if(!verNew) return;
+    if(info.v && verNew!==info.v){ alert('✅ 최신화 완료!\n'+info.v+' → '+verNew); }
+    else { alert('⚠️ 아직 서버에 새 버전이 반영 안 됐어요.\n(현재 '+verNew+' 그대로)\n\n보통 GitHub Pages 배포에 몇 분 걸려요. 잠시 후 다시 ⋮→🔄강제 최신화를 눌러보세요.'); }
+  }, 300);
+})();
 // 🔍 미동기화 확인: 서버 전체 id ↔ 로컬 비교 → 서버에 없는(폰에만 있는) 기록 찾기
 function checkUnsynced(){
   toggleMore();
