@@ -169,7 +169,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.34 · 26-10-05</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.35 · 26-10-06</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -301,6 +301,14 @@ var SUPABASE_KEY = 'sb_publishable_OtaDk4iYFhZJs5GBUz7btw_mOtE5MJP';
 
 
 
+// 타임아웃 있는 fetch: 요청이 응답없이 멈춰도(네트워크 불안정 등) 영원히 안 걸리고 일정 시간 후 실패 처리됨
+function fetchTO(url, opts, ms){
+  var ctrl = (typeof AbortController!=='undefined') ? new AbortController() : null;
+  var tid = ctrl ? setTimeout(function(){ ctrl.abort(); }, ms||20000) : null;
+  var o = {}; for(var k in opts) o[k]=opts[k];
+  if(ctrl) o.signal = ctrl.signal;
+  return fetch(url, o).then(function(r){ if(tid) clearTimeout(tid); return r; }, function(e){ if(tid) clearTimeout(tid); throw e; });
+}
 var _syncMax='';
 function loadFromServer() {
   showSyncStatus('불러오는중...');
@@ -310,9 +318,10 @@ function loadFromServer() {
     var since = new Date(new Date(_syncMax).getTime() - 5*60*1000).toISOString(); // 5분 버퍼
     base += '&updated_at=gt.' + encodeURIComponent(since);
   }
-  var PAGE=10, offset=0, total=0;
-  function loadPage(){
-    return fetch(base+'&limit='+PAGE+'&offset='+offset, { headers: sbH() })
+  var PAGE=20, offset=0, total=0;
+  function loadPage(retry){
+    retry = retry||0;
+    return fetchTO(base+'&limit='+PAGE+'&offset='+offset, { headers: sbH() }, 20000)
       .then(function(r){ if(!r.ok) throw new Error('http_'+r.status); return r.json(); })
       .then(function(rows){
         if(!Array.isArray(rows)) rows=[];
@@ -320,7 +329,14 @@ function loadFromServer() {
         total+=rows.length;
         showSyncStatus('불러오는중... '+total+'개');
         render();
-        if(rows.length===PAGE){ offset+=PAGE; return loadPage(); }
+        if(rows.length===PAGE){ offset+=PAGE; return loadPage(0); }
+      })
+      .catch(function(e){
+        if(retry<2){   // 느린 네트워크/이미지 많은 기록 등으로 한 번 걸려도 바로 포기하지 않고 최대 2번 재시도
+          showSyncStatus('재시도중... (받음 '+total+'개)');
+          return new Promise(function(res){ setTimeout(res, 1500); }).then(function(){ return loadPage(retry+1); });
+        }
+        throw e;
       });
   }
   loadPage()
@@ -336,7 +352,7 @@ function loadFromServer() {
   .catch(function(){
     serverLoaded = true;
     render();
-    showSyncStatus('⚠️ 오프라인 모드 (로컬: '+data.length+'개)');
+    showSyncStatus('⚠️ 오프라인 모드 (받음 '+total+'개까지 · 로컬 총 '+data.length+'개)');
   });
 }
 
@@ -449,8 +465,8 @@ function bulkPushAll(){
 function pullAllPosts(){
   _syncMax = localStorage.getItem('golfSyncAt2')||'';
   var base=SUPABASE_URL+'/rest/v1/golf_posts?select=id,data,updated_at&order=updated_at.asc';
-  var PAGE=10, offset=0;
-  function pg(){ return fetch(base+'&limit='+PAGE+'&offset='+offset,{headers:sbH()})
+  var PAGE=20, offset=0;
+  function pg(){ return fetchTO(base+'&limit='+PAGE+'&offset='+offset,{headers:sbH()},20000)
     .then(function(r){ if(!r.ok) throw new Error('http_'+r.status); return r.json(); })
     .then(function(rows){ if(!Array.isArray(rows))rows=[]; applyServerRows(rows); if(rows.length===PAGE){offset+=PAGE;return pg();} }); }
   return pg();
@@ -507,7 +523,7 @@ function checkUnsynced(){
   toggleMore();
   showSyncStatus('미동기화 확인중...');
   var srvIds={}, PAGE=1000, offset=0;
-  function pg(){ return fetch(SUPABASE_URL+'/rest/v1/golf_posts?select=id&limit='+PAGE+'&offset='+offset,{headers:sbH()})
+  function pg(){ return fetchTO(SUPABASE_URL+'/rest/v1/golf_posts?select=id&limit='+PAGE+'&offset='+offset,{headers:sbH()},20000)
     .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
     .then(function(rows){ if(!Array.isArray(rows))rows=[]; rows.forEach(function(x){ if(x&&x.id) srvIds[x.id]=1; }); if(rows.length===PAGE){ offset+=PAGE; return pg(); } }); }
   pg().then(function(){
