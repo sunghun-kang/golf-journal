@@ -169,7 +169,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.30 · 26-09-28</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.31 · 26-10-05</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -2245,15 +2245,35 @@ function themeAsk(){
   var q=(document.getElementById('thKw').value||'').trim();
   if(!q){ alert('키워드 칸에 질문을 적어주세요.\n예: 슬라이스 나는 이유 원인 분석해줘'); return; }
   var key=themeAIKey(false); if(!key) return;
-  // ── 기간(월) 파싱: "9월","2026-09","이번달","지난달","최근" (날짜는 date필드로 필터) ──
-  var _n=new Date(Date.now()+9*3600*1000), _cy=_n.getUTCFullYear(), _cm=_n.getUTCMonth()+1, _mm;
-  var dateFrom='', dateLabel='';
-  if(_mm=q.match(/(20\d{2})\s*[년.\-\/]\s*(\d{1,2})\s*월?/)){ dateFrom=_mm[1]+'-'+String(+_mm[2]).padStart(2,'0'); dateLabel=_mm[1]+'년 '+(+_mm[2])+'월'; }
-  else if(/이번\s*달|금월|이달/.test(q)){ dateFrom=_cy+'-'+String(_cm).padStart(2,'0'); dateLabel='이번달'; }
-  else if(/지난\s*달|저번\s*달|전월/.test(q)){ var _pm=_cm-1,_py=_cy; if(_pm<1){_pm=12;_py--;} dateFrom=_py+'-'+String(_pm).padStart(2,'0'); dateLabel='지난달'; }
-  else if(_mm=q.match(/(?:^|\s)(\d{1,2})\s*월/)){ dateFrom=_cy+'-'+String(+_mm[1]).padStart(2,'0'); dateLabel=_cy+'년 '+(+_mm[1])+'월'; }  // 연도없는 N월 = 올해 그 달
-  else if(/최근/.test(q)){ dateLabel='최근'; }
-  var inRange=function(r){ if(!dateFrom) return true; return String(r.date||'').indexOf(dateFrom)===0; };
+  // ── 기간 파싱: "9월","2026-09","2026-09-24","10/1","10월1일","이번달","지난달","최근" (복수 특정일 가능) ──
+  var _n=new Date(Date.now()+9*3600*1000), _cy=_n.getUTCFullYear(), _cm=_n.getUTCMonth()+1;
+  var dateFrom='', dateLabel='', dateList=[];
+  var qd=q;
+  // 1) 연-월(-일) 전체 표기: 2026-09, 2026.9.24, 2026/09/24
+  qd=qd.replace(/(20\d{2})\s*[년.\-\/]\s*(\d{1,2})\s*월?\s*(?:[.\-\/]\s*(\d{1,2})\s*일?)?/g, function(m,y,mo,da){
+    mo=String(+mo).padStart(2,'0');
+    if(da){ dateList.push(y+'-'+mo+'-'+String(+da).padStart(2,'0')); }
+    else if(!dateFrom){ dateFrom=y+'-'+mo; dateLabel=y+'년 '+(+mo)+'월'; }
+    return ' ';
+  });
+  // 2) 연도 없는 M/D, M.D, M-D (복수 가능): "10/1 10/3 10/4"
+  qd=qd.replace(/(?:^|\s)(\d{1,2})\s*[\/\.\-]\s*(\d{1,2})(?!\d)/g, function(m,mo,da){
+    if(+mo>=1&&+mo<=12&&+da>=1&&+da<=31){ dateList.push(_cy+'-'+String(+mo).padStart(2,'0')+'-'+String(+da).padStart(2,'0')); return ' '; }
+    return m;
+  });
+  // 3) "10월1일"/"10월 1일" (복수 가능)
+  qd=qd.replace(/(\d{1,2})\s*월\s*(\d{1,2})\s*일/g, function(m,mo,da){
+    dateList.push(_cy+'-'+String(+mo).padStart(2,'0')+'-'+String(+da).padStart(2,'0')); return ' ';
+  });
+  dateList=dateList.filter(function(d,i){ return dateList.indexOf(d)===i; });  // 중복 제거
+  if(!dateFrom && !dateList.length){
+    if(/이번\s*달|금월|이달/.test(qd)){ dateFrom=_cy+'-'+String(_cm).padStart(2,'0'); dateLabel='이번달'; }
+    else if(/지난\s*달|저번\s*달|전월/.test(qd)){ var _pm=_cm-1,_py=_cy; if(_pm<1){_pm=12;_py--;} dateFrom=_py+'-'+String(_pm).padStart(2,'0'); dateLabel='지난달'; }
+    else { var _mm2; if(_mm2=qd.match(/(?:^|\s)(\d{1,2})\s*월(?!\s*\d)/)){ dateFrom=_cy+'-'+String(+_mm2[1]).padStart(2,'0'); dateLabel=_cy+'년 '+(+_mm2[1])+'월'; } }  // 연도없는 N월 = 올해 그 달
+  }
+  if(dateList.length && !dateLabel){ dateLabel=dateList.slice().sort().join(', '); }
+  var hasDate=!!(dateFrom||dateList.length);
+  var inRange=function(r){ if(dateList.length) return dateList.indexOf(r.date)>=0; if(!dateFrom) return true; return String(r.date||'').indexOf(dateFrom)===0; };
   // ── 구분(타입) 인식: 필드/스크린/인생/영어/회사 → vt 필터 (분석은 동작어라 제외) ──
   var typeMap={'필드':'F','스크린':'S','인생':'L','人生':'L','영어':'E','회사':'C'};
   var wantVt={}; Object.keys(typeMap).forEach(function(w){ if(q.indexOf(w)>=0) wantVt[typeMap[w]]=1; });
@@ -2261,21 +2281,21 @@ function themeAsk(){
   var vtNames={F:'필드',S:'스크린',A:'분석',L:'人生',E:'영어',C:'회사'};
   if(vtKeys.length){ dateLabel=(dateLabel?dateLabel+' ':'')+vtKeys.map(function(k){return vtNames[k];}).join('·'); }
   // ── 키워드 토큰(날짜·군말·범용어·타입어 제외) ──
-  var stop=/^(나는|나|내|이유|원인|분석|분석해줘|분석해조|해줘|해조|왜|어떻게|무엇|뭐|좀|주라|주세요|알려줘|정리|정리해줘|요약|요약해줘|요약해조|요약해|대책|방법|하는|되는|것|거|들|해줄|볼까|어떤|경우|때|더|좀더|관련|모아|모아서|찾아|찾아서|골프|스윙|기록|일지|전체|모두|다|필드|스크린|인생|人生|영어|회사)$/;
-  var qc=q.replace(/20\d{2}\s*[년.\-\/]\s*\d{1,2}\s*월?/g,' ').replace(/\d{1,2}\s*월/g,' ').replace(/이번\s*달|지난\s*달|저번\s*달|금월|이달|전월|최근/g,' ');
+  var stop=/^(나는|나|내|이유|원인|분석|분석해줘|분석해조|해줘|해조|왜|어떻게|무엇|뭐|좀|주라|주세요|알려줘|정리|정리해줘|요약|요약해줘|요약해조|요약해|대책|방법|하는|되는|것|거|들|해줄|볼까|어떤|경우|때|더|좀더|관련|모아|모아서|찾아|찾아서|골프|스윙|기록|일지|전체|모두|다|필드|스크린|인생|人生|영어|회사|번|다녀옴|다녀온|간)$/;
+  var qc=qd.replace(/이번\s*달|지난\s*달|저번\s*달|금월|이달|전월|최근/g,' ');
   var toks=qc.replace(/[?？.,!·]/g,' ').split(/\s+/).filter(function(w){ return w.length>=2 && !stop.test(w); });
   var hay=function(r){ return (r.venue||'')+' '+(r.members||'')+' '+(r.title||'')+' '+(r.memo||''); };
   var pool=(data||[]).filter(function(r){ return r && !r.deleted && String(r.id||'').indexOf('__')!==0; });
   var kwOk=function(r){ return !toks.length || toks.some(function(t){ return hay(r).indexOf(t)>=0; }); };
   var vtOk=function(r){ return !vtKeys.length || wantVt[r.vt]===1; };
   var res=pool.filter(function(r){ return inRange(r) && vtOk(r) && kwOk(r); });
-  if(!res.length && toks.length && (dateFrom||vtKeys.length)) res=pool.filter(function(r){ return inRange(r) && vtOk(r); });  // 키워드 완화
-  if(!res.length && vtKeys.length && dateFrom) res=pool.filter(inRange);                                                     // 타입 완화(기간만)
-  if(!res.length && dateFrom) res=pool.filter(inRange);
+  if(!res.length && toks.length && (hasDate||vtKeys.length)) res=pool.filter(function(r){ return inRange(r) && vtOk(r); });  // 키워드 완화
+  if(!res.length && vtKeys.length && hasDate) res=pool.filter(inRange);                                                     // 타입 완화(기간만)
+  if(!res.length && hasDate) res=pool.filter(inRange);
   if(!res.length && toks.length) res=pool.filter(function(r){ return toks.some(function(t){ return hay(r).indexOf(t)>=0; }); });
   res.sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
   var used=res.slice(0,100);
-  if(!used.length){ alert('해당 기간·구분·단어의 기록을 못 찾았어요.\n예: "9월 필드 분석", "슬라이스 원인", "이번달 뒷땅".'); return; }
+  if(!used.length){ alert('해당 기간·구분·단어의 기록을 못 찾았어요.\n예: "9월 필드 분석", "10/1 10/3 분석", "슬라이스 원인", "이번달 뒷땅".\n\n※ 날짜를 지정했는데도 안 나오면: ①다른 기기에서 입력한 기록이면 ⋮→서버에서 전체받기로 동기화했는지, ②해당 날짜 기록이 실제 저장돼 있는지 목록/달력에서 확인해보세요.'); return; }
   var usedSummary=used.slice(0,50).map(function(r){ return (r.date?(r.date+'('+dow(r.date)+')'):'')+(vtNames[r.vt]?('('+vtNames[r.vt]+')'):''); }).join(', ');
   themeAskShow('<div style="background:#e7f6ee;border:1px solid #a9e0c4;border-radius:10px;padding:12px;margin:8px 0;color:#159957;font-weight:700">🤖 "'+esc(q)+'" 분석 중… '+(dateLabel?('['+esc(dateLabel)+'] '):'')+used.length+'건 참고 (10~30초)<div style="font-weight:400;font-size:0.7rem;color:#5a8a6f;margin-top:5px;line-height:1.5">📋 참고 기록: '+esc(usedSummary)+(used.length>50?(' …외 '+(used.length-50)+'건'):'')+'</div></div>');
   var src=used.map(function(r){
