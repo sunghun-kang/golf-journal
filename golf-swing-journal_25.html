@@ -169,7 +169,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.37 · 26-10-06</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.38 · 26-10-06</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -2316,35 +2316,57 @@ function themeAsk(){
   var q=(document.getElementById('thKw').value||'').trim();
   if(!q){ alert('키워드 칸에 질문을 적어주세요.\n예: 슬라이스 나는 이유 원인 분석해줘'); return; }
   var key=themeAIKey(false); if(!key) return;
-  // ── 기간 파싱: "9월","2026-09","2026-09-24","10/1","10월1일","이번달","지난달","최근" (복수 특정일 가능) ──
+  // ── 기간 파싱: "9월","2026-09","2026-09-24","10/1","10월1일","9/28~10/5","이번달","지난달" (복수/범위 가능) ──
   var _n=new Date(Date.now()+9*3600*1000), _cy=_n.getUTCFullYear(), _cm=_n.getUTCMonth()+1;
-  var dateFrom='', dateLabel='', dateList=[];
+  var dateFrom='', dateTo='', dateLabel='', dateList=[];
   var qd=q;
-  // 1) 연-월(-일) 전체 표기: 2026-09, 2026.9.24, 2026/09/24
-  qd=qd.replace(/(20\d{2})\s*[년.\-\/]\s*(\d{1,2})\s*월?\s*(?:[.\-\/]\s*(\d{1,2})\s*일?)?/g, function(m,y,mo,da){
-    mo=String(+mo).padStart(2,'0');
-    if(da){ dateList.push(y+'-'+mo+'-'+String(+da).padStart(2,'0')); }
-    else if(!dateFrom){ dateFrom=y+'-'+mo; dateLabel=y+'년 '+(+mo)+'월'; }
-    return ' ';
-  });
-  // 2) 연도 없는 M/D, M.D, M-D (복수 가능): "10/1 10/3 10/4"
-  qd=qd.replace(/(?:^|\s)(\d{1,2})\s*[\/\.\-]\s*(\d{1,2})(?!\d)/g, function(m,mo,da){
-    if(+mo>=1&&+mo<=12&&+da>=1&&+da<=31){ dateList.push(_cy+'-'+String(+mo).padStart(2,'0')+'-'+String(+da).padStart(2,'0')); return ' '; }
-    return m;
-  });
-  // 3) "10월1일"/"10월 1일" (복수 가능)
-  qd=qd.replace(/(\d{1,2})\s*월\s*(\d{1,2})\s*일/g, function(m,mo,da){
-    dateList.push(_cy+'-'+String(+mo).padStart(2,'0')+'-'+String(+da).padStart(2,'0')); return ' ';
-  });
-  dateList=dateList.filter(function(d,i){ return dateList.indexOf(d)===i; });  // 중복 제거
-  if(!dateFrom && !dateList.length){
-    if(/이번\s*달|금월|이달/.test(qd)){ dateFrom=_cy+'-'+String(_cm).padStart(2,'0'); dateLabel='이번달'; }
-    else if(/지난\s*달|저번\s*달|전월/.test(qd)){ var _pm=_cm-1,_py=_cy; if(_pm<1){_pm=12;_py--;} dateFrom=_py+'-'+String(_pm).padStart(2,'0'); dateLabel='지난달'; }
-    else { var _mm2; if(_mm2=qd.match(/(?:^|\s)(\d{1,2})\s*월(?!\s*\d)/)){ dateFrom=_cy+'-'+String(+_mm2[1]).padStart(2,'0'); dateLabel=_cy+'년 '+(+_mm2[1])+'월'; } }  // 연도없는 N월 = 올해 그 달
+  var pad2=function(n){ return String(+n).padStart(2,'0'); };
+  // 0) 기간 범위("~","-","부터"): "9/28~10/5", "9월28일~10월5일", "2026-09-28~2026-10-05", "9/28부터 10/5까지"
+  var rngSep='(?:\\s*[~\\-–—]\\s*|\\s*부터\\s*)';
+  var mR;
+  if(mR=qd.match(new RegExp('(20\\d{2})\\s*[.\\-\\/]\\s*(\\d{1,2})\\s*[.\\-\\/]\\s*(\\d{1,2})'+rngSep+'(20\\d{2})\\s*[.\\-\\/]\\s*(\\d{1,2})\\s*[.\\-\\/]\\s*(\\d{1,2})'))){
+    dateFrom=mR[1]+'-'+pad2(mR[2])+'-'+pad2(mR[3]); dateTo=mR[4]+'-'+pad2(mR[5])+'-'+pad2(mR[6]); qd=qd.replace(mR[0],' ');
+  } else if(mR=qd.match(new RegExp('(\\d{1,2})\\s*월\\s*(\\d{1,2})\\s*일'+rngSep+'(\\d{1,2})\\s*월\\s*(\\d{1,2})\\s*일'))){
+    dateFrom=_cy+'-'+pad2(mR[1])+'-'+pad2(mR[2]); dateTo=_cy+'-'+pad2(mR[3])+'-'+pad2(mR[4]); qd=qd.replace(mR[0],' ');
+  } else if(mR=qd.match(new RegExp('(?:^|\\s)(\\d{1,2})\\s*[\\/\\.]\\s*(\\d{1,2})'+rngSep+'(\\d{1,2})\\s*[\\/\\.]\\s*(\\d{1,2})(?:\\s*까지)?'))){
+    dateFrom=_cy+'-'+pad2(mR[1])+'-'+pad2(mR[2]); dateTo=_cy+'-'+pad2(mR[3])+'-'+pad2(mR[4]); qd=qd.replace(mR[0],' ');
   }
-  if(dateList.length && !dateLabel){ dateLabel=dateList.slice().sort().join(', '); }
-  var hasDate=!!(dateFrom||dateList.length);
-  var inRange=function(r){ if(dateList.length) return dateList.indexOf(r.date)>=0; if(!dateFrom) return true; return String(r.date||'').indexOf(dateFrom)===0; };
+  if(dateFrom && dateTo){
+    if(dateFrom>dateTo){ var _t=dateFrom; dateFrom=dateTo; dateTo=_t; }
+    dateLabel=dateFrom+' ~ '+dateTo;
+  } else {
+    dateFrom='';
+    // 1) 연-월(-일) 전체 표기: 2026-09, 2026.9.24, 2026/09/24
+    qd=qd.replace(/(20\d{2})\s*[년.\-\/]\s*(\d{1,2})\s*월?\s*(?:[.\-\/]\s*(\d{1,2})\s*일?)?/g, function(m,y,mo,da){
+      mo=pad2(mo);
+      if(da){ dateList.push(y+'-'+mo+'-'+pad2(da)); }
+      else if(!dateFrom){ dateFrom=y+'-'+mo; dateLabel=y+'년 '+(+mo)+'월'; }
+      return ' ';
+    });
+    // 2) 연도 없는 M/D, M.D, M-D (복수 가능): "10/1 10/3 10/4"
+    qd=qd.replace(/(?:^|\s)(\d{1,2})\s*[\/\.\-]\s*(\d{1,2})(?!\d)/g, function(m,mo,da){
+      if(+mo>=1&&+mo<=12&&+da>=1&&+da<=31){ dateList.push(_cy+'-'+pad2(mo)+'-'+pad2(da)); return ' '; }
+      return m;
+    });
+    // 3) "10월1일"/"10월 1일" (복수 가능)
+    qd=qd.replace(/(\d{1,2})\s*월\s*(\d{1,2})\s*일/g, function(m,mo,da){
+      dateList.push(_cy+'-'+pad2(mo)+'-'+pad2(da)); return ' ';
+    });
+    dateList=dateList.filter(function(d,i){ return dateList.indexOf(d)===i; });  // 중복 제거
+    if(!dateFrom && !dateList.length){
+      if(/이번\s*달|금월|이달/.test(qd)){ dateFrom=_cy+'-'+pad2(_cm); dateLabel='이번달'; }
+      else if(/지난\s*달|저번\s*달|전월/.test(qd)){ var _pm=_cm-1,_py=_cy; if(_pm<1){_pm=12;_py--;} dateFrom=_py+'-'+pad2(_pm); dateLabel='지난달'; }
+      else { var _mm2; if(_mm2=qd.match(/(?:^|\s)(\d{1,2})\s*월(?!\s*\d)/)){ dateFrom=_cy+'-'+pad2(_mm2[1]); dateLabel=_cy+'년 '+(+_mm2[1])+'월'; } }  // 연도없는 N월 = 올해 그 달
+    }
+    if(dateList.length && !dateLabel){ dateLabel=dateList.slice().sort().join(', '); }
+  }
+  var hasDate=!!(dateFrom||dateTo||dateList.length);
+  var inRange=function(r){
+    if(dateList.length) return dateList.indexOf(r.date)>=0;
+    if(dateTo) return (r.date||'')>=dateFrom && (r.date||'')<=dateTo;
+    if(!dateFrom) return true;
+    return String(r.date||'').indexOf(dateFrom)===0;
+  };
   // ── 구분(타입) 인식: 필드/스크린/인생/영어/회사 → vt 필터 (분석은 동작어라 제외) ──
   var typeMap={'필드':'F','스크린':'S','인생':'L','人生':'L','영어':'E','회사':'C'};
   var wantVt={}; Object.keys(typeMap).forEach(function(w){ if(q.indexOf(w)>=0) wantVt[typeMap[w]]=1; });
