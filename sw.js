@@ -1,5 +1,5 @@
-// v98 - HTML은 캐시 무시하고 항상 새로 받기(no-store) → 그냥 새로고침만 해도 최신
-const CACHE = 'gstory-v98';
+// v99 - HTML은 캐시 무시하고 항상 새로 받기(no-store) → 그냥 새로고침만 해도 최신
+const CACHE = 'gstory-v99';
 self.addEventListener('install', function(e){ self.skipWaiting(); });
 self.addEventListener('activate', function(e){
   e.waitUntil((async function(){
