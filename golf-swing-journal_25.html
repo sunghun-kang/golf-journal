@@ -95,13 +95,13 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .th-filter input[type=checkbox]{display:none}
 .th-filter label{display:inline-flex;align-items:center;gap:1px;cursor:pointer;user-select:none;padding:2px 7px;border-radius:11px;background:#e9e9e2;color:#555;opacity:0.5;transition:opacity .1s,background .1s}
 .th-filter label.on{opacity:1;background:#d7edd7;box-shadow:inset 0 0 0 1.5px #7bbf7b}
-.vt-filter label.flt-all-lbl{background:#e3e3dc;color:#333;font-weight:800;opacity:0.85}
+.vt-filter label.flt-all-lbl{background:#c7c7b8;color:#222;font-weight:800;opacity:1}
 .flt-f-lbl{color:#2d7a2d;font-weight:700}
 .flt-f-lbl input{accent-color:#2d7a2d}
-.vt-filter label.flt-f-lbl{background:#dcf0dc;opacity:0.85}
+.vt-filter label.flt-f-lbl{background:#a8dba8;opacity:1}
 .flt-s-lbl{color:#1a4d9e;font-weight:700}
 .flt-s-lbl input{accent-color:#1a4d9e}
-.vt-filter label.flt-s-lbl{background:#d9e6f7;opacity:0.85}
+.vt-filter label.flt-s-lbl{background:#a9c5ec;opacity:1}
 .flt-e-lbl{color:#8b4513;font-weight:700}
 .flt-e-lbl input{accent-color:#8b4513}
 .flt-l-lbl{color:#b0208c;font-weight:700}
@@ -117,8 +117,9 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .flt-l-lbl{color:#b0208c;font-weight:700}
 .flt-l-lbl input{accent-color:#b0208c}
 /* 필터칩 켜짐 = 분류색 아주 연하게(파스텔 배경 + 분류색 글씨) */
-.vt-filter label.flt-f-lbl.on{background:#e4f2e4;color:#2d7a2d;box-shadow:inset 0 0 0 1px #b6dbb6}
-.vt-filter label.flt-s-lbl.on{background:#e3ecf8;color:#1a4d9e;box-shadow:inset 0 0 0 1px #b7c9ea}
+.vt-filter label.flt-all-lbl.on{background:#9d9d8c;color:#fff;box-shadow:inset 0 0 0 1.5px #7a7a6a}
+.vt-filter label.flt-f-lbl.on{background:#5fb85f;color:#fff;box-shadow:inset 0 0 0 1.5px #3d8f3d}
+.vt-filter label.flt-s-lbl.on{background:#6392d6;color:#fff;box-shadow:inset 0 0 0 1.5px #3d6ab0}
 .vt-filter label.flt-n-lbl.on{background:#ddf0f0;color:#0a7d7d;box-shadow:inset 0 0 0 1px #a9dcdc}
 .vt-filter label.flt-ai-lbl.on{background:#ddf2e7;color:#159957;box-shadow:inset 0 0 0 1px #a9e0c4}
 .vt-filter label.flt-l-lbl.on{background:#f7e2f1;color:#b0208c;box-shadow:inset 0 0 0 1px #e6b6d8}
@@ -172,7 +173,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.42 · 26-10-09</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.43 · 26-10-09</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
