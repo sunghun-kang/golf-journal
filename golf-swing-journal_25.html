@@ -90,7 +90,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .tab-btn{flex:1;padding:9px 0;border:none;background:none;font-size:0.85rem;font-weight:700;color:#888;cursor:pointer;font-family:inherit;border-bottom:3px solid transparent;margin-bottom:-2px;}
 .vt-filter{display:flex;gap:2px;padding:4px 6px;background:#f5f5f0;border-bottom:1px solid #ddd;font-size:0.86rem;flex-wrap:wrap;align-items:center}
 .vt-filter input[type=checkbox]{display:none}
-.vt-filter label{display:inline-flex;align-items:center;justify-content:center;gap:1px;cursor:pointer;user-select:none;padding:2px 4px;min-width:32px;border-radius:11px;background:#e9e9e2;opacity:0.5;transition:opacity .1s,background .1s}
+.vt-filter label{display:inline-flex;align-items:center;justify-content:center;gap:1px;cursor:pointer;user-select:none;padding:2px 4px;min-width:32px;height:22px;box-sizing:border-box;line-height:1;border-radius:11px;background:#e9e9e2;opacity:0.5;transition:opacity .1s,background .1s}
 .vt-filter label.on{opacity:1;background:#d7edd7;box-shadow:inset 0 0 0 1.5px #7bbf7b}
 .th-filter input[type=checkbox]{display:none}
 .th-filter label{display:inline-flex;align-items:center;gap:1px;cursor:pointer;user-select:none;padding:2px 7px;border-radius:11px;background:#e9e9e2;color:#555;opacity:0.5;transition:opacity .1s,background .1s}
@@ -105,7 +105,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .flt-e-lbl{color:#6b3410;font-weight:800}
 .flt-e-lbl input{accent-color:#8b4513}
 .vt-filter label.flt-e-lbl{background:#dec2a5;opacity:1}
-.flt-l-lbl{color:#7a1660;font-weight:800}
+.flt-l-lbl{color:#7a1660;font-weight:800;font-size:0.78rem}
 .flt-l-lbl input{accent-color:#b0208c}
 .vt-filter label.flt-l-lbl{background:#e7bedd;opacity:1}
 .flt-star-lbl{color:#a01818;font-weight:800}
@@ -178,7 +178,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.47 · 26-10-09</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.48 · 26-10-09</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -213,7 +213,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
   <label class="flt-f-lbl"><input type="checkbox" id="flt-f" onchange="fltChange('f')"> <span style="font-size:0.86rem;letter-spacing:-4px;white-space:nowrap;display:inline-block;vertical-align:middle">⛳🏌️</span></label>
   <label class="flt-s-lbl"><input type="checkbox" id="flt-s" onchange="fltChange('s')"> <span style="font-size:0.86rem;vertical-align:middle">🏌️‍♀️</span></label>
   <label class="flt-n-lbl"><input type="checkbox" id="flt-n" checked onchange="fltChange('n')"> <span style="font-size:0.86rem;vertical-align:middle">🔍</span></label>
-  <label class="flt-ai-lbl"><input type="checkbox" id="flt-ai" checked onchange="fltChange('ai')"> <svg width="24" height="17" viewBox="0 0 30 22" style="vertical-align:middle"><g stroke="#9b7fe0" stroke-width="0.7" opacity="0.5"><line x1="4" y1="5" x2="15" y2="4"/><line x1="4" y1="5" x2="15" y2="11"/><line x1="4" y1="5" x2="15" y2="18"/><line x1="4" y1="11" x2="15" y2="4"/><line x1="4" y1="11" x2="15" y2="11"/><line x1="4" y1="11" x2="15" y2="18"/><line x1="4" y1="17" x2="15" y2="4"/><line x1="4" y1="17" x2="15" y2="11"/><line x1="4" y1="17" x2="15" y2="18"/></g><g stroke="#4bb6c6" stroke-width="0.7" opacity="0.55"><line x1="15" y1="4" x2="26" y2="8"/><line x1="15" y1="4" x2="26" y2="14"/><line x1="15" y1="11" x2="26" y2="8"/><line x1="15" y1="11" x2="26" y2="14"/><line x1="15" y1="18" x2="26" y2="8"/><line x1="15" y1="18" x2="26" y2="14"/></g><circle cx="4" cy="5" r="2.1" fill="#b04bd6"/><circle cx="4" cy="11" r="2.1" fill="#b04bd6"/><circle cx="4" cy="17" r="2.1" fill="#b04bd6"/><circle cx="15" cy="4" r="2.1" fill="#2aa9c4"/><circle cx="15" cy="11" r="2.1" fill="#2aa9c4"/><circle cx="15" cy="18" r="2.1" fill="#2aa9c4"/><circle cx="26" cy="8" r="2.1" fill="#e8722c"/><circle cx="26" cy="14" r="2.1" fill="#e8722c"/></svg></label>
+  <label class="flt-ai-lbl"><input type="checkbox" id="flt-ai" checked onchange="fltChange('ai')"> <svg width="28" height="20" viewBox="0 0 30 22" style="vertical-align:middle"><g stroke="#9b7fe0" stroke-width="0.7" opacity="0.5"><line x1="4" y1="5" x2="15" y2="4"/><line x1="4" y1="5" x2="15" y2="11"/><line x1="4" y1="5" x2="15" y2="18"/><line x1="4" y1="11" x2="15" y2="4"/><line x1="4" y1="11" x2="15" y2="11"/><line x1="4" y1="11" x2="15" y2="18"/><line x1="4" y1="17" x2="15" y2="4"/><line x1="4" y1="17" x2="15" y2="11"/><line x1="4" y1="17" x2="15" y2="18"/></g><g stroke="#4bb6c6" stroke-width="0.7" opacity="0.55"><line x1="15" y1="4" x2="26" y2="8"/><line x1="15" y1="4" x2="26" y2="14"/><line x1="15" y1="11" x2="26" y2="8"/><line x1="15" y1="11" x2="26" y2="14"/><line x1="15" y1="18" x2="26" y2="8"/><line x1="15" y1="18" x2="26" y2="14"/></g><circle cx="4" cy="5" r="2.1" fill="#b04bd6"/><circle cx="4" cy="11" r="2.1" fill="#b04bd6"/><circle cx="4" cy="17" r="2.1" fill="#b04bd6"/><circle cx="15" cy="4" r="2.1" fill="#2aa9c4"/><circle cx="15" cy="11" r="2.1" fill="#2aa9c4"/><circle cx="15" cy="18" r="2.1" fill="#2aa9c4"/><circle cx="26" cy="8" r="2.1" fill="#e8722c"/><circle cx="26" cy="14" r="2.1" fill="#e8722c"/></svg></label>
   <label class="flt-l-lbl"><input type="checkbox" id="flt-l" onchange="fltChange('l')"> 人生</label>
   <label class="flt-e-lbl"><input type="checkbox" id="flt-e" onchange="fltChange('e')"> 영어</label>
   <label class="flt-c-lbl"><input type="checkbox" id="flt-c" onchange="fltChange('c')"> 회사</label>
