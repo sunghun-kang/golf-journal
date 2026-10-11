@@ -178,7 +178,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.52 · 26-10-09</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.53 · 26-10-12</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -1328,7 +1328,7 @@ function regenAI(){
       +(r.memo?(' 메모:'+thStrip(r.memo).replace(/\n/g,' ').slice(0,300)):'');
   }).join('\n');
   var kw=flat.join(', ');
-  var sys='당신은 골프 스윙 코치입니다. 사용자의 골프 일지 기록만을 근거로 특정 주제의 원인과 대책을 한국어로 간결하게 요약합니다. 기록에 없는 내용을 지어내지 마세요.';
+  var sys='당신은 골프 스윙 코치입니다. 사용자의 골프 일지 기록만을 근거로 특정 주제의 원인과 대책을 한국어로 간결하게 요약합니다. 기록에 없는 내용을 지어내지 마세요. 아래 제공된 기록은 주제어로 걸러낸 일부일 뿐, 사용자의 전체 일지가 아닙니다. "기록이 없다/부족하다"처럼 전체 일지에 대한 단정은 하지 말고, "이번에 참고한 자료에는 ~가 포함되어 있지 않음" 식으로 이 분석의 범위 안에서만 말하세요.';
   var user='주제 키워드: '+kw+'\n\n아래는 내 골프 일지 기록들이야. 이 주제에 대해 (1) 반복되는 핵심 원인, (2) 효과가 있었던/권장되는 대책, (3) 두 줄 핵심요약 을 정리해줘. 소제목과 불릿으로 간결하게.\n※ 날짜로 인용할 땐 최신부터(내림차순), 날짜 뒤에 (요일)까지 표기. 예: 9/19(토).\n그리고 맨 마지막에 반드시 아래 형식으로 2줄 핵심요약을 써줘(각 줄 20자 내외):\n핵심요약:\n<첫째 줄 - 핵심 문제>\n<둘째 줄 - 결론/대책>\n\n=== 기록 ('+res.length+'건) ===\n'+src;
   fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-opus-5',max_tokens:3000,system:sys,output_config:{effort:'low'},messages:[{role:'user',content:user}]})})
   .then(function(r){return r.json();}).then(function(j){
@@ -2400,12 +2400,12 @@ function themeAsk(){
   var vtNames={F:'필드',S:'스크린',A:'분석',L:'人生',E:'영어',C:'회사'};
   if(vtKeys.length){ dateLabel=(dateLabel?dateLabel+' ':'')+vtKeys.map(function(k){return vtNames[k];}).join('·'); }
   // ── 키워드 토큰(날짜·군말·범용어·타입어 제외) ──
-  var stop=/^(나는|나|내|이유|원인|분석|분석해줘|분석해조|해줘|해조|왜|어떻게|무엇|뭐|좀|주라|주세요|알려줘|정리|정리해줘|요약|요약해줘|요약해조|요약해|대책|방법|하는|되는|것|거|들|해줄|볼까|어떤|경우|때|더|좀더|관련|모아|모아서|찾아|찾아서|골프|스윙|기록|일지|전체|모두|다|필드|스크린|인생|人生|영어|회사|번|다녀옴|다녀온|간)$/;
+  var stop=/^(나는|나|내|이유|원인|분석|분석해줘|분석해조|해줘|해조|왜|어떻게|무엇|뭐|좀|주라|주세요|알려줘|정리|정리해줘|요약|요약해줘|요약해조|요약해|대책|방법|하는|되는|것|거|들|해줄|볼까|어떤|경우|때|더|좀더|관련|모아|모아서|찾아|찾아서|골프|스윙|기록|일지|전체|모두|다|필드|스크린|인생|人生|영어|회사|번|다녀옴|다녀온|간|다시|합쳐서|합쳐|병합|통합)$/;
   var qc=qd.replace(/이번\s*달|지난\s*달|저번\s*달|금월|이달|전월|최근/g,' ');
   var toks=qc.replace(/[?？.,!·]/g,' ').split(/\s+/).filter(function(w){ return w.length>=2 && !stop.test(w); });
-  var hay=function(r){ return (r.venue||'')+' '+(r.members||'')+' '+(r.title||'')+' '+(r.memo||''); };
+  var hay=function(r){ return ((r.venue||'')+' '+(r.members||'')+' '+(r.title||'')+' '+(r.memo||'')).toLowerCase(); };
   var pool=(data||[]).filter(function(r){ return r && !r.deleted && String(r.id||'').indexOf('__')!==0; });
-  var kwOk=function(r){ return !toks.length || toks.some(function(t){ return hay(r).indexOf(t)>=0; }); };
+  var kwOk=function(r){ return !toks.length || toks.some(function(t){ return hay(r).indexOf(t.toLowerCase())>=0; }); };
   var vtOk=function(r){ return !vtKeys.length || wantVt[r.vt]===1; };
   var res=pool.filter(function(r){ return inRange(r) && vtOk(r) && kwOk(r); });
   if(!res.length && toks.length && (hasDate||vtKeys.length)) res=pool.filter(function(r){ return inRange(r) && vtOk(r); });  // 키워드 완화
@@ -2424,7 +2424,7 @@ function themeAsk(){
       +(r.title?(' 대책:'+thStrip(r.title).replace(/\n/g,' / ')):'')
       +(r.memo?(' 메모:'+thStrip(r.memo).replace(/\n/g,' ').slice(0,300)):'');
   }).join('\n');
-  var sys='당신은 골프 스윙 코치입니다. 사용자의 골프 일지 기록을 근거로 질문에 한국어로 간결하고 실전적으로 답합니다. 기록에 있는 내용을 우선 근거로 삼고, 기록에 없어 일반 지식으로 보완할 때는 "(일반적으로)"라고 표시하세요.';
+  var sys='당신은 골프 스윙 코치입니다. 사용자의 골프 일지 기록을 근거로 질문에 한국어로 간결하고 실전적으로 답합니다. 기록에 있는 내용을 우선 근거로 삼고, 기록에 없어 일반 지식으로 보완할 때는 "(일반적으로)"라고 표시하세요. 아래 제공된 기록은 질문어와 기간으로 걸러낸 일부일 뿐, 사용자의 전체 일지가 아닙니다. "기록이 없다/부족하다"처럼 전체 일지에 대한 단정은 하지 말고, "이번에 참고한 자료에는 ~가 포함되어 있지 않음" 식으로 이 분석의 범위 안에서만 말하세요.';
   var user='질문: '+q+(dateLabel?('\n(대상 기간: '+dateLabel+')'):'')+'\n\n아래는 내 골프 일지 기록이야'+(dateLabel?('('+dateLabel+' 기준으로 추린 것)'):'')+'. 이 기록을 근거로 위 질문에 답해줘.\n※ 질문이 정리방식을 지정하면(예: "날짜별로", 시간순, 주제별) 그 방식을 최우선으로 따라줘. 지정이 없으면 (1) 반복되는 핵심 원인 (2) 효과 있었던/권장 대책 (3) 두 줄 핵심요약 구조로. 소제목·불릿으로 간결하게.\n※ 날짜로 인용할 땐 반드시 최신 날짜부터(내림차순)로, 날짜 뒤에 (요일)까지 표기해줘. 예: 9/19(토).\n맨 마지막에 반드시 아래 형식으로 2줄 핵심요약을 써줘(각 줄 20자 내외):\n핵심요약:\n<첫째 줄 - 핵심 문제>\n<둘째 줄 - 결론/대책>\n\n=== 기록('+used.length+'건'+(dateLabel?(' · '+dateLabel):'')+') ===\n'+src;
   fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
@@ -2453,7 +2453,7 @@ function themeAI(){
       +(r.memo?(' 메모:'+thStrip(r.memo).replace(/\n/g,' ').slice(0,300)):'');
   }).join('\n');
   var kw=m.kws.join(', ')||'전체';
-  var sys='당신은 골프 스윙 코치입니다. 사용자의 골프 일지 기록만을 근거로 특정 주제의 원인과 대책을 한국어로 간결하게 요약합니다. 기록에 없는 내용을 지어내지 마세요.';
+  var sys='당신은 골프 스윙 코치입니다. 사용자의 골프 일지 기록만을 근거로 특정 주제의 원인과 대책을 한국어로 간결하게 요약합니다. 기록에 없는 내용을 지어내지 마세요. 아래 제공된 기록은 주제어로 걸러낸 일부일 뿐, 사용자의 전체 일지가 아닙니다. "기록이 없다/부족하다"처럼 전체 일지에 대한 단정은 하지 말고, "이번에 참고한 자료에는 ~가 포함되어 있지 않음" 식으로 이 분석의 범위 안에서만 말하세요.';
   var user='주제 키워드: '+kw+'\n\n아래는 내 골프 일지 기록들이야. 이 주제에 대해 (1) 반복되는 핵심 원인, (2) 효과가 있었던/권장되는 대책, (3) 두 줄 핵심요약 을 정리해줘. 소제목과 불릿으로 간결하게.\n※ 날짜로 인용할 땐 최신부터(내림차순), 날짜 뒤에 (요일)까지 표기. 예: 9/19(토).\n그리고 맨 마지막에 반드시 아래 형식으로 2줄 핵심요약을 써줘(각 줄 20자 내외):\n핵심요약:\n<첫째 줄 - 핵심 문제>\n<둘째 줄 - 결론/대책>\n\n=== 기록 ('+m.res.length+'건) ===\n'+src;
   fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
