@@ -178,7 +178,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.53 · 26-10-12</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.54 · 26-10-12</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -2356,6 +2356,10 @@ function themeAsk(){
     dateFrom=_cy+'-'+pad2(mR[1])+'-'+pad2(mR[2]); dateTo=_cy+'-'+pad2(mR[3])+'-'+pad2(mR[4]); qd=qd.replace(mR[0],' ');
   } else if(mR=qd.match(new RegExp('(?:^|\\s)(\\d{1,2})\\s*[\\/\\.]\\s*(\\d{1,2})'+rngSep+'(\\d{1,2})\\s*[\\/\\.]\\s*(\\d{1,2})(?:\\s*까지)?'))){
     dateFrom=_cy+'-'+pad2(mR[1])+'-'+pad2(mR[2]); dateTo=_cy+'-'+pad2(mR[3])+'-'+pad2(mR[4]); qd=qd.replace(mR[0],' ');
+  } else if(mR=qd.match(new RegExp('(?:^|\\s)(\\d{1,2})\\s*월'+rngSep+'(\\d{1,2})\\s*월(?!\\s*\\d)'))){
+    // "10월~8월"처럼 일(day) 없이 달만 범위로 준 경우: 두 달 중 이른 달 1일~늦은 달 말일까지로 처리(입력 순서는 무관)
+    var _mA=+mR[1], _mB=+mR[2], _mLo=Math.min(_mA,_mB), _mHi=Math.max(_mA,_mB);
+    dateFrom=_cy+'-'+pad2(_mLo)+'-01'; dateTo=_cy+'-'+pad2(_mHi)+'-31'; qd=qd.replace(mR[0],' ');
   }
   if(dateFrom && dateTo){
     if(dateFrom>dateTo){ var _t=dateFrom; dateFrom=dateTo; dateTo=_t; }
