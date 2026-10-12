@@ -178,7 +178,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.54 · 26-10-12</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.55 · 26-10-12</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -2347,6 +2347,8 @@ function themeAsk(){
   var dateFrom='', dateTo='', dateLabel='', dateList=[];
   var qd=q;
   var pad2=function(n){ return String(+n).padStart(2,'0'); };
+  // "26년"처럼 두 자리 연도는 "2026년"으로 정규화(2000년대로 가정)
+  qd=qd.replace(/(^|\s)(\d{2})(\s*년)/g, function(m,pre,yy,yeo){ return pre+'20'+yy+yeo; });
   // 0) 기간 범위("~","-","부터"): "9/28~10/5", "9월28일~10월5일", "2026-09-28~2026-10-05", "9/28부터 10/5까지"
   var rngSep='(?:\\s*[~\\-–—]\\s*|\\s*부터\\s*)';
   var mR;
@@ -2384,8 +2386,10 @@ function themeAsk(){
     });
     dateList=dateList.filter(function(d,i){ return dateList.indexOf(d)===i; });  // 중복 제거
     if(!dateFrom && !dateList.length){
+      var _yOnly;
       if(/이번\s*달|금월|이달/.test(qd)){ dateFrom=_cy+'-'+pad2(_cm); dateLabel='이번달'; }
       else if(/지난\s*달|저번\s*달|전월/.test(qd)){ var _pm=_cm-1,_py=_cy; if(_pm<1){_pm=12;_py--;} dateFrom=_py+'-'+pad2(_pm); dateLabel='지난달'; }
+      else if(_yOnly=qd.match(/(20\d{2})\s*년(?!\s*\d)/)){ dateFrom=_yOnly[1]; dateLabel=_yOnly[1]+'년'; }  // "26년"(→2026년 정규화됨)처럼 월 없이 연도만 = 그 해 전체
       else { var _mm2; if(_mm2=qd.match(/(?:^|\s)(\d{1,2})\s*월(?!\s*\d)/)){ dateFrom=_cy+'-'+pad2(_mm2[1]); dateLabel=_cy+'년 '+(+_mm2[1])+'월'; } }  // 연도없는 N월 = 올해 그 달
     }
     if(dateList.length && !dateLabel){ dateLabel=dateList.slice().sort().join(', '); }
