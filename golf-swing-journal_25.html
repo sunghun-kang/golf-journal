@@ -178,7 +178,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.55 · 26-10-12</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.56 · 26-10-15</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -2408,11 +2408,15 @@ function themeAsk(){
   var vtNames={F:'필드',S:'스크린',A:'분석',L:'人生',E:'영어',C:'회사'};
   if(vtKeys.length){ dateLabel=(dateLabel?dateLabel+' ':'')+vtKeys.map(function(k){return vtNames[k];}).join('·'); }
   // ── 키워드 토큰(날짜·군말·범용어·타입어 제외) ──
-  var stop=/^(나는|나|내|이유|원인|분석|분석해줘|분석해조|해줘|해조|왜|어떻게|무엇|뭐|좀|주라|주세요|알려줘|정리|정리해줘|요약|요약해줘|요약해조|요약해|대책|방법|하는|되는|것|거|들|해줄|볼까|어떤|경우|때|더|좀더|관련|모아|모아서|찾아|찾아서|골프|스윙|기록|일지|전체|모두|다|필드|스크린|인생|人生|영어|회사|번|다녀옴|다녀온|간|다시|합쳐서|합쳐|병합|통합)$/;
+  var stop=/^(나는|나|내|내가|이유|원인|분석|분석해줘|분석해조|해줘|해조|왜|어떻게|무엇|뭐|좀|주라|주세요|알려줘|정리|정리해줘|정리해조|요약|요약해줘|요약해조|요약해|대책|방법|하는|되는|것|거|들|해줄|볼까|어떤|경우|때|더|좀더|관련|모아|모아서|찾아|찾아서|골프|스윙|일지|전체|모두|다|필드|스크린|인생|人生|영어|회사|번|다녀옴|다녀온|간|다시|합쳐서|합쳐|병합|통합|직접|순서대로|내림차순|오름차순|내리차순|오르차순|날짜별로|날자별로)$/;
+  // "기록"/"정리"/"요약"처럼 어미만 바뀐 지시어(기록한/기록들/정리해서 등)도 걸러내기 위한 접두 체크
+  var stopPrefix=/^(기록|정리|요약|분석|찾아|모아|알려|보여|적어|써줘|해달라|부탁)/;
   var qc=qd.replace(/이번\s*달|지난\s*달|저번\s*달|금월|이달|전월|최근/g,' ');
-  var toks=qc.replace(/[?？.,!·]/g,' ').split(/\s+/).filter(function(w){ return w.length>=2 && !stop.test(w); });
+  var toks=qc.replace(/[?？.,!·]/g,' ').split(/\s+/).filter(function(w){ return w.length>=2 && !stop.test(w) && !stopPrefix.test(w); });
   var hay=function(r){ return ((r.venue||'')+' '+(r.members||'')+' '+(r.title||'')+' '+(r.memo||'')).toLowerCase(); };
-  var pool=(data||[]).filter(function(r){ return r && !r.deleted && String(r.id||'').indexOf('__')!==0; });
+  // "내가 직접/수동으로 쓴/AI 빼고"처럼 AI가 아닌 내 기록만 원하면 AI분석/AI요약/AI정리 기록은 제외
+  var wantManualOnly=/내가\s*직접|직접\s*(?:쓴|작성|입력|기록)|수동으로|AI\s*(?:빼고|제외|말고)/i.test(q);
+  var pool=(data||[]).filter(function(r){ return r && !r.deleted && String(r.id||'').indexOf('__')!==0 && (!wantManualOnly || !isAIRec(r)); });
   var kwOk=function(r){ return !toks.length || toks.some(function(t){ return hay(r).indexOf(t.toLowerCase())>=0; }); };
   var vtOk=function(r){ return !vtKeys.length || wantVt[r.vt]===1; };
   var res=pool.filter(function(r){ return inRange(r) && vtOk(r) && kwOk(r); });
