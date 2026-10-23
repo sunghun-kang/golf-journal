@@ -65,6 +65,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .btn-view{border-color:#4a7aaa!important;color:#1a4d9e!important;font-weight:600!important}
 
 .body{display:none;padding:8px 12px 11px;background:#fafaf5;border-top:1px solid #eee}
+.ptext a[style*="underline"]{color:#8cc4ff!important}  /* 사진 위 본문칸(어두운 바탕)의 일반 링크 */
 .memo{font-size:0.82rem;line-height:1.8;color:#444;white-space:pre-wrap}
 
 /* 모달 */
@@ -178,7 +179,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.61 · 26-10-24</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.62 · 26-10-24</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -806,14 +807,18 @@ function photoTopCap(it, extraBtns, hint){
   if(!it){ cap.textContent=''; cap.title=''; acts.innerHTML=''; return; }
   var line=(it.date||'')+'  '+String(it.title||'').split('\n')[0];
   cap.textContent=line; cap.title=line+(hint?'\n('+hint+')':'');
-  // 그 기록(제목·메모)에 YouTube 링크가 있으면 ▶ 버튼으로 같이 (여러 개면 ▶1 ▶2 …)
-  var yt='', rr=it.recIdx!=null?data[it.recIdx]:null;
-  if(rr){
-    var txt=(rr.title||'')+' '+(rr.memo||''), re=/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/g, mm, vids=[];
-    while((mm=re.exec(txt))){ if(vids.indexOf(mm[1])<0) vids.push(mm[1]); }
-    vids.forEach(function(v,k){ yt+='<a class="pcbtn" href="https://youtu.be/'+v+'" target="_blank" rel="noopener" style="background:#c4302b;opacity:1;text-decoration:none" title="YouTube 새 탭에서 열기">▶ '+(vids.length>1?(k+1):'YouTube')+'</a>'; });
-  }
-  acts.innerHTML=(extraBtns||'')+yt+(it.recIdx!=null?'<button class="pcbtn" style="background:#4a9a4a;opacity:1" onclick="gotoRecord()">📄 기록</button>':'');
+  acts.innerHTML=(extraBtns||'')+(it.recIdx!=null?'<button class="pcbtn" style="background:#4a9a4a;opacity:1" onclick="gotoRecord()">📄 기록</button>':'');
+}
+// 사진 위 본문칸: 그 기록의 제목 전체줄·메모(YouTube 링크 포함). 길면 칸 안에서 스크롤 (26-10-24)
+function photoRecText(it){
+  var rr=(it&&it.recIdx!=null)?data[it.recIdx]:null; if(!rr) return '';
+  var lines=String(rr.title||'').split('\n').filter(function(s){return s.trim();});
+  var h='';
+  lines.forEach(function(ln){ h+='<div>· '+hilite(ln)+'</div>'; });
+  if(rr.memo) h+='<div style="margin-top:4px;opacity:.85;white-space:pre-wrap">'+hilite(rr.memo)+'</div>';
+  // YouTube 링크는 hilite 가 썸네일+▶ 칩으로 만들어 줌(목록과 같은 모양)
+  if(!h) return '';
+  return '<div class="ptext" style="flex-shrink:0;max-height:24vh;overflow:auto;color:#eee;font-size:0.86rem;line-height:1.45;padding:4px 12px 8px;border-bottom:1px solid rgba(255,255,255,.12);margin-bottom:4px">'+h+'</div>';
 }
 function renderPhoto(){
   var body=document.getElementById('photo-body'), cnt=document.getElementById('photo-count'), nav=document.getElementById('photo-nav');
@@ -825,7 +830,7 @@ function renderPhoto(){
     body.style.overflow='hidden'; body.style.display='flex'; body.style.flexDirection='column';
     var it=photoImgs[photoIdx]||{};
     photoTopCap(it, '<button class="pcbtn" style="background:#2f6fb0;opacity:1" onclick="downloadPhoto()">⬇ 저장</button>', '휠·두손가락·더블탭=확대');
-    body.innerHTML='<div id="photo-zoom" style="flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:none">'
+    body.innerHTML=photoRecText(it)+'<div id="photo-zoom" style="flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:none">'
       +'<img id="pimg" src="'+it.src+'" style="max-width:100%;max-height:100%;border-radius:6px;object-fit:contain;transform-origin:center center;transition:none;will-change:transform">'
       +'</div>';
     setupPhotoGesture();
@@ -842,7 +847,7 @@ function renderPhoto(){
         +'<img src="'+photoImgs[k].src+'" onclick="photoPick('+k+')" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:6px;cursor:pointer"></div>';
     }
     photoTopCap(it0, '', '사진 누르면 1장 크게');
-    body.innerHTML='<div id="photo-pair" style="flex:1;min-height:0;display:grid;grid-template-columns:repeat('+cols+',1fr);grid-template-rows:repeat('+rows+',minmax(0,1fr));gap:6px;padding:4px">'+cells+'</div>';
+    body.innerHTML=photoRecText(it0)+'<div id="photo-pair" style="flex:1;min-height:0;display:grid;grid-template-columns:repeat('+cols+',1fr);grid-template-rows:repeat('+rows+',minmax(0,1fr));gap:6px;padding:4px">'+cells+'</div>';
     // 폰: 좌우 스와이프로 옆 기록
     var pr=document.getElementById('photo-pair'), _sx=0;
     pr.addEventListener('touchstart', function(e){ if(e.touches.length===1) _sx=e.touches[0].clientX; }, {passive:true});
