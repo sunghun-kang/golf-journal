@@ -178,7 +178,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.59 · 26-10-24</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.60 · 26-10-24</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -800,6 +800,14 @@ function photoNav(d){
   photoIdx=(photoIdx+d+photoImgs.length)%photoImgs.length; renderPhoto();
 }
 function photoPick(i){ photoIdx=i; photoCols=1; renderPhoto(); }
+// 윗줄 왼쪽: 날짜·제목(길면 …, 마우스 올리면 전체) + 버튼들
+function photoTopCap(it, extraBtns, hint){
+  var cap=document.getElementById('photo-cap'), acts=document.getElementById('photo-acts');
+  if(!it){ cap.textContent=''; cap.title=''; acts.innerHTML=''; return; }
+  var line=(it.date||'')+'  '+String(it.title||'').split('\n')[0];
+  cap.textContent=line; cap.title=line+(hint?'\n('+hint+')':'');
+  acts.innerHTML=(extraBtns||'')+(it.recIdx!=null?'<button class="pcbtn" style="background:#4a9a4a;opacity:1" onclick="gotoRecord()">📄 기록</button>':'');
+}
 function renderPhoto(){
   var body=document.getElementById('photo-body'), cnt=document.getElementById('photo-count'), nav=document.getElementById('photo-nav');
   ['pc1','pc2','pc4'].forEach(function(id){ var b=document.getElementById(id); if(b){ b.style.outline='none'; b.style.opacity='0.7'; } });
@@ -809,15 +817,9 @@ function renderPhoto(){
     cnt.textContent=(photoIdx+1)+' / '+photoImgs.length;
     body.style.overflow='hidden'; body.style.display='flex'; body.style.flexDirection='column';
     var it=photoImgs[photoIdx]||{};
-    var cap=esc((it.date||'')+'  '+String(it.title||'').split('\n')[0].slice(0,26));
+    photoTopCap(it, '<button class="pcbtn" style="background:#2f6fb0;opacity:1" onclick="downloadPhoto()">⬇ 저장</button>', '휠·두손가락·더블탭=확대');
     body.innerHTML='<div id="photo-zoom" style="flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:none">'
       +'<img id="pimg" src="'+it.src+'" style="max-width:100%;max-height:100%;border-radius:6px;object-fit:contain;transform-origin:center center;transition:none;will-change:transform">'
-      +'</div>'
-      +'<div style="display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;color:#fff;font-size:0.78rem;padding:6px 4px;flex-shrink:0">'
-      +'<span style="opacity:.85">'+cap+'</span>'
-      +'<button class="pcbtn" style="background:#2f6fb0" onclick="downloadPhoto()">⬇ 저장</button>'
-      +(it.recIdx!=null?'<button class="pcbtn" style="background:#4a9a4a" onclick="gotoRecord()">📄 기록</button>':'')
-      +'<span style="opacity:.55;font-size:.7rem">휠·두손가락·더블탭=확대</span>'
       +'</div>';
     setupPhotoGesture();
   } else if(photoRecMode()){
@@ -832,13 +834,8 @@ function renderPhoto(){
       cells+='<div style="min-width:0;min-height:0;display:flex;align-items:center;justify-content:center">'
         +'<img src="'+photoImgs[k].src+'" onclick="photoPick('+k+')" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:6px;cursor:pointer"></div>';
     }
-    var cap2=esc((it0.date||'')+'  '+String(it0.title||'').split('\n')[0].slice(0,26));
-    body.innerHTML='<div id="photo-pair" style="flex:1;min-height:0;display:grid;grid-template-columns:repeat('+cols+',1fr);grid-template-rows:repeat('+rows+',minmax(0,1fr));gap:6px;padding:4px">'+cells+'</div>'
-      +'<div style="display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;color:#fff;font-size:0.78rem;padding:6px 4px;flex-shrink:0">'
-      +'<span style="opacity:.85">'+cap2+'</span>'
-      +'<button class="pcbtn" style="background:#4a9a4a" onclick="gotoRecord()">📄 기록</button>'
-      +'<span style="opacity:.55;font-size:.7rem">사진 누르면 1장 크게</span>'
-      +'</div>';
+    photoTopCap(it0, '', '사진 누르면 1장 크게');
+    body.innerHTML='<div id="photo-pair" style="flex:1;min-height:0;display:grid;grid-template-columns:repeat('+cols+',1fr);grid-template-rows:repeat('+rows+',minmax(0,1fr));gap:6px;padding:4px">'+cells+'</div>';
     // 폰: 좌우 스와이프로 옆 기록
     var pr=document.getElementById('photo-pair'), _sx=0;
     pr.addEventListener('touchstart', function(e){ if(e.touches.length===1) _sx=e.touches[0].clientX; }, {passive:true});
@@ -846,6 +843,7 @@ function renderPhoto(){
   } else {
     nav.style.display='none';
     cnt.textContent=photoImgs.length+'장';
+    photoTopCap(null);
     body.style.overflow='auto'; body.style.display='block';
     var html='<div style="column-count:'+photoCols+';column-gap:4px;padding:4px">';
     photoImgs.forEach(function(it,i){ html+='<img src="'+it.src+'" loading="lazy" onclick="photoPick('+i+')" style="width:100%;height:auto;display:block;margin:0 0 4px;border-radius:5px;cursor:pointer;break-inside:avoid;border:'+(i===photoIdx?'2px solid #4a9a4a':'1px solid #333')+'">'; });
@@ -2083,9 +2081,18 @@ idbOpen(function(){
   </div>
 </div>
 <div id="photo-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.94);z-index:10001;flex-direction:column">
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;flex-shrink:0">
-    <span id="photo-count" style="color:#fff;font-size:0.9rem;font-weight:700"></span>
-    <span style="display:flex;gap:5px">
+  <!-- 윗줄 하나에 다 모음(26-10-24): 왼쪽=장수·날짜제목·저장/기록, 오른쪽=‹이전 다음›·보기·⛶·✕ → 사진이 세로를 다 씀 -->
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:6px 10px;flex-wrap:wrap;padding:6px 10px;flex-shrink:0">
+    <span style="display:flex;align-items:center;gap:8px;min-width:0;flex:1 1 260px;color:#fff">
+      <span id="photo-count" style="font-size:0.9rem;font-weight:700;white-space:nowrap"></span>
+      <span id="photo-cap" style="font-size:0.78rem;opacity:.85;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0"></span>
+      <span id="photo-acts" style="display:flex;gap:5px;flex-shrink:0"></span>
+    </span>
+    <span style="display:flex;gap:5px;align-items:center;flex-shrink:0">
+      <span id="photo-nav" style="display:none;gap:5px;margin-right:8px">
+        <button class="pcbtn" onclick="photoNav(-1)" style="opacity:1">‹ 이전</button>
+        <button class="pcbtn" onclick="photoNav(1)" style="opacity:1">다음 ›</button>
+      </span>
       <button id="pc1" class="pcbtn" onclick="photoSetCols(1)">1장</button>
       <button id="pc2" class="pcbtn" onclick="photoSetCols(2)">2장</button>
       <button id="pc4" class="pcbtn" onclick="photoSetCols(4)">4장</button>
@@ -2094,10 +2101,6 @@ idbOpen(function(){
     </span>
   </div>
   <div id="photo-body" style="flex:1;min-height:0;position:relative"></div>
-  <div id="photo-nav" style="display:none;align-items:center;justify-content:center;gap:24px;padding:12px;flex-shrink:0">
-    <button class="pcbtn" onclick="photoNav(-1)" style="font-size:1.2rem;padding:8px 22px">‹ 이전</button>
-    <button class="pcbtn" onclick="photoNav(1)" style="font-size:1.2rem;padding:8px 22px">다음 ›</button>
-  </div>
 </div>
 <script>
 if('serviceWorker' in navigator){
