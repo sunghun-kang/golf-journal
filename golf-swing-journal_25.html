@@ -184,7 +184,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.64 · 26-10-24</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.65 · 26-10-24</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -775,7 +775,7 @@ function openPhoto(recIdx, mediaIdx){
     });
   });
   photoIdx=Math.max(0, Math.min(start, photoImgs.length-1));
-  photoByRec=true;
+  photoByRec=true; photoHideText=false;
   photoCols=photoRecRange(photoIdx).n>=2 ? 2 : 1;   // 그 기록 사진이 2장 이상이면 2장 보기로 시작
   renderPhoto();
   document.getElementById('photo-modal').style.display='flex';
@@ -805,7 +805,14 @@ function photoNav(d){
   if(photoCols!==1) return;
   photoIdx=(photoIdx+d+photoImgs.length)%photoImgs.length; renderPhoto();
 }
-function photoPick(i){ photoIdx=i; photoCols=1; renderPhoto(); }
+// 본문이 길면 사진이 작아짐 → 사진 누르면 본문 접고 사진만 크게. 📝 본문 버튼(또는 사진 다시 누름)으로 다시 펼침
+var photoHideText=false, _ptTimer=null;
+function photoPick(i){ photoIdx=i; photoCols=1; photoHideText=true; renderPhoto(); }
+function photoToggleText(){ photoHideText=!photoHideText; renderPhoto(); }
+function photoImgClick(){   // 한 번 누름=본문 접기/펴기, 두 번(더블클릭 확대)이면 무시
+  clearTimeout(_ptTimer);
+  _ptTimer=setTimeout(function(){ photoToggleText(); }, 280);
+}
 // 윗줄 왼쪽: 날짜·제목(길면 …, 마우스 올리면 전체) + 버튼들
 function photoTopCap(it, extraBtns, hint){
   var cap=document.getElementById('photo-cap'), acts=document.getElementById('photo-acts');
@@ -855,9 +862,11 @@ function renderPhoto(){
     cnt.textContent=(photoIdx+1)+' / '+photoImgs.length;
     body.style.overflow='hidden'; body.style.display='flex'; body.style.flexDirection='column';
     var it=photoImgs[photoIdx]||{};
-    photoTopCap(it, '<button class="pcbtn" style="background:#2f6fb0;opacity:1" onclick="downloadPhoto()">⬇ 저장</button>', '휠·두손가락·더블탭=확대');
-    body.innerHTML=photoRecText(it)+'<div id="photo-zoom" style="flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:none">'
-      +'<img id="pimg" src="'+it.src+'" style="max-width:100%;max-height:100%;border-radius:6px;object-fit:contain;transform-origin:center center;transition:none;will-change:transform">'
+    var ptx=photoRecText(it);
+    photoTopCap(it, (ptx?'<button class="pcbtn" style="background:'+(photoHideText?'#7a5bb5':'#555')+';opacity:1" onclick="photoToggleText()" title="본문 보이기/숨기기">📝 본문'+(photoHideText?' 보기':' 접기')+'</button>':'')
+      +'<button class="pcbtn" style="background:#2f6fb0;opacity:1" onclick="downloadPhoto()">⬇ 저장</button>', '사진 한번 누름=본문 접기/펴기 · 휠·두손가락·더블탭=확대');
+    body.innerHTML=(photoHideText?'':ptx)+'<div id="photo-zoom" style="flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:none">'
+      +'<img id="pimg" src="'+it.src+'" onclick="'+(ptx?'photoImgClick()':'')+'" style="max-width:100%;max-height:100%;border-radius:6px;object-fit:contain;transform-origin:center center;transition:none;will-change:transform">'
       +'</div>';
     ytEnrich(body.querySelector('.ptext'));
     setupPhotoGesture();
@@ -911,11 +920,11 @@ function setupPhotoGesture(){
     if(e.changedTouches.length===1 && !panning){
       var dx=e.changedTouches[0].clientX-swx, now=Date.now();
       if(scale<=1.03 && Math.abs(dx)>45){ photoNav(dx<0?1:-1); return; }
-      if(now-lastTap<300){ if(scale>1.03) reset(); else { scale=2.6; apply(); } lastTap=0; return; }
+      if(now-lastTap<300){ clearTimeout(_ptTimer); if(scale>1.03) reset(); else { scale=2.6; apply(); } lastTap=0; return; }
       lastTap=now;
     }
   }, {passive:true});
-  wrap.addEventListener('dblclick', function(){ if(scale>1.03) reset(); else { scale=2.6; apply(); } });
+  wrap.addEventListener('dblclick', function(){ clearTimeout(_ptTimer); if(scale>1.03) reset(); else { scale=2.6; apply(); } });
   wrap.addEventListener('wheel', function(e){ e.preventDefault(); scale=Math.max(1,Math.min(5, scale*(e.deltaY<0?1.15:0.87))); if(scale<=1.03){ tx=0; ty=0; } apply(); }, {passive:false});
 }
 function downloadPhoto(){
