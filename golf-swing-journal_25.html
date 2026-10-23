@@ -179,7 +179,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.62 · 26-10-24</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.63 · 26-10-24</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -816,9 +816,30 @@ function photoRecText(it){
   var h='';
   lines.forEach(function(ln){ h+='<div>· '+hilite(ln)+'</div>'; });
   if(rr.memo) h+='<div style="margin-top:4px;opacity:.85;white-space:pre-wrap">'+hilite(rr.memo)+'</div>';
-  // YouTube 링크는 hilite 가 썸네일+▶ 칩으로 만들어 줌(목록과 같은 모양)
+  // YouTube 링크는 hilite 가 칩으로 만들고 → 그린 뒤 ytEnrich 가 큰 썸네일+영상제목+채널로 바꿈
   if(!h) return '';
-  return '<div class="ptext" style="flex-shrink:0;max-height:24vh;overflow:auto;color:#eee;font-size:0.86rem;line-height:1.45;padding:4px 12px 8px;border-bottom:1px solid rgba(255,255,255,.12);margin-bottom:4px">'+h+'</div>';
+  return '<div class="ptext" style="flex-shrink:0;max-height:30vh;overflow:auto;color:#eee;font-size:0.86rem;line-height:1.45;padding:4px 12px 8px;border-bottom:1px solid rgba(255,255,255,.12);margin-bottom:4px">'+h+'</div>';
+}
+// 🎬 YouTube 칩 → [큰 썸네일 | 영상 제목 · 채널] 카드. 제목은 YouTube oEmbed(CORS 허용)로 받아 기기에 캐시
+var _ytInfo=null;
+function ytInfoCache(){ if(!_ytInfo){ try{ _ytInfo=JSON.parse(localStorage.getItem('ytInfo')||'{}'); }catch(e){ _ytInfo={}; } } return _ytInfo; }
+function ytEnrich(box){
+  if(!box) return;
+  box.querySelectorAll('a[href*="youtu"]').forEach(function(a){
+    var m=a.href.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/); if(!m) return;
+    var vid=m[1];
+    a.setAttribute('style','display:flex;align-items:center;gap:10px;max-width:640px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:8px;padding:6px;margin:6px 0;text-decoration:none;color:#fff;white-space:normal');
+    a.innerHTML='<span style="position:relative;flex-shrink:0;line-height:0"><img src="https://img.youtube.com/vi/'+vid+'/mqdefault.jpg" style="width:160px;height:90px;object-fit:cover;border-radius:5px" loading="lazy">'
+      +'<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><span style="background:#c4302b;color:#fff;border-radius:8px;padding:3px 10px;font-size:.9rem;line-height:1.2">▶</span></span></span>'
+      +'<span style="min-width:0;display:flex;flex-direction:column;gap:3px"><span class="ytt" style="font-weight:700;font-size:.9rem;line-height:1.35">YouTube</span><span class="yta" style="font-size:.75rem;opacity:.7"></span></span>';
+    function fill(info){ if(!info) return; a.querySelector('.ytt').textContent=info.t||'YouTube'; a.querySelector('.yta').textContent=info.a||''; }
+    var c=ytInfoCache();
+    if(c[vid]){ fill(c[vid]); return; }
+    fetch('https://www.youtube.com/oembed?url='+encodeURIComponent('https://youtu.be/'+vid)+'&format=json')
+      .then(function(r){ return r.ok?r.json():null; })
+      .then(function(j){ if(!j) return; var info={t:String(j.title||'').replace(/^​+/,''), a:j.author_name||''}; c[vid]=info; try{ localStorage.setItem('ytInfo', JSON.stringify(c)); }catch(e){} fill(info); })
+      .catch(function(){});
+  });
 }
 function renderPhoto(){
   var body=document.getElementById('photo-body'), cnt=document.getElementById('photo-count'), nav=document.getElementById('photo-nav');
@@ -833,6 +854,7 @@ function renderPhoto(){
     body.innerHTML=photoRecText(it)+'<div id="photo-zoom" style="flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:none">'
       +'<img id="pimg" src="'+it.src+'" style="max-width:100%;max-height:100%;border-radius:6px;object-fit:contain;transform-origin:center center;transition:none;will-change:transform">'
       +'</div>';
+    ytEnrich(body.querySelector('.ptext'));
     setupPhotoGesture();
   } else if(photoRecMode()){
     var g=photoRecRange(photoIdx), it0=photoImgs[g.s]||{};
@@ -848,6 +870,7 @@ function renderPhoto(){
     }
     photoTopCap(it0, '', '사진 누르면 1장 크게');
     body.innerHTML=photoRecText(it0)+'<div id="photo-pair" style="flex:1;min-height:0;display:grid;grid-template-columns:repeat('+cols+',1fr);grid-template-rows:repeat('+rows+',minmax(0,1fr));gap:6px;padding:4px">'+cells+'</div>';
+    ytEnrich(body.querySelector('.ptext'));
     // 폰: 좌우 스와이프로 옆 기록
     var pr=document.getElementById('photo-pair'), _sx=0;
     pr.addEventListener('touchstart', function(e){ if(e.touches.length===1) _sx=e.touches[0].clientX; }, {passive:true});
@@ -2094,7 +2117,7 @@ idbOpen(function(){
     <div id="cpop-bd"></div>
   </div>
 </div>
-<div id="photo-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.94);z-index:10001;flex-direction:column">
+<div id="photo-modal" style="display:none;position:fixed;inset:0;background:#0b0b0b;z-index:10001;flex-direction:column">
   <!-- 윗줄 하나에 다 모음(26-10-24): 왼쪽=장수·날짜제목·저장/기록, 오른쪽=‹이전 다음›·보기·⛶·✕ → 사진이 세로를 다 씀 -->
   <div style="display:flex;align-items:center;justify-content:space-between;gap:6px 10px;flex-wrap:wrap;padding:6px 10px;flex-shrink:0">
     <span style="display:flex;align-items:center;gap:8px;min-width:0;flex:1 1 260px;color:#fff">
