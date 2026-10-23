@@ -178,7 +178,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.58 · 26-10-23</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.59 · 26-10-24</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -749,15 +749,28 @@ data.forEach(function(r){
   if(!r.updatedAt)r.updatedAt=r.date+"T00:00:00.000Z";
 });
 
-var photoImgs=[], photoIdx=0, photoCols=1;
+var photoImgs=[], photoIdx=0, photoCols=1, _listOrder=[];
+// 사진 하나 누르면: 지금 목록(검색·필터 그대로)에 보이는 기록들의 사진을 이어붙여서,
+// ‹이전/다음› 으로 그 기록 사진 다 보고 나면 옆 기록 사진으로 넘어간다 (26-10-24)
 function openPhoto(recIdx, mediaIdx){
   var r=data[recIdx];
   if(!r||!r.media) return;
-  var imgs=r.media.filter(function(m){return m.type==='image';});
-  if(!imgs.length) return;
-  photoImgs=imgs.map(function(m){ return {src:m.data, date:r.date||'', title:(r.title||''), recIdx:recIdx}; });
-  photoIdx=Math.max(0, Math.min(mediaIdx||0, photoImgs.length-1));
-  photoCols=1;
+  if(!r.media.some(function(m){return m.type==='image';})) return;
+  var order=_listOrder.indexOf(recIdx)>=0 ? _listOrder : [recIdx];   // 목록에 없는 기록(달력 등)이면 그 기록만
+  photoImgs=[]; var start=0;
+  order.forEach(function(ri){
+    var rr=data[ri]; if(!rr||rr.deleted||!rr.media) return;
+    var k=0;
+    rr.media.forEach(function(m){
+      if(m.type!=='image') return;
+      if(ri===recIdx && k===(mediaIdx||0)) start=photoImgs.length;
+      photoImgs.push({src:m.data, date:rr.date||'', title:(rr.title||''), recIdx:ri});
+      k++;
+    });
+  });
+  photoIdx=Math.max(0, Math.min(start, photoImgs.length-1));
+  photoByRec=true;
+  photoCols=photoRecRange(photoIdx).n>=2 ? 2 : 1;   // 그 기록 사진이 2장 이상이면 2장 보기로 시작
   renderPhoto();
   document.getElementById('photo-modal').style.display='flex';
   // 폰 뒤로가기/제스처로 탭이 닫히지 않게 가짜 히스토리 추가
@@ -765,8 +778,27 @@ function openPhoto(recIdx, mediaIdx){
     history.pushState({photoOpen:true}, '');
   }
 }
-function photoSetCols(c){ photoCols=c; renderPhoto(); }
-function photoNav(d){ if(photoCols!==1||!photoImgs.length) return; photoIdx=(photoIdx+d+photoImgs.length)%photoImgs.length; renderPhoto(); }
+// photoByRec: 기록에서 연 사진(true)이면 「2장」은 그 기록 사진만 나란히 + ‹이전/다음›=옆 기록. 전체 사진첩(false)은 예전 그리드 그대로
+var photoByRec=false;
+function photoRecRange(i){   // i번 사진이 속한 기록의 사진 구간 {s 시작, n 장수}
+  var ri=(photoImgs[i]||{}).recIdx, s=i, e=i;
+  while(s>0 && photoImgs[s-1].recIdx===ri) s--;
+  while(e<photoImgs.length-1 && photoImgs[e+1].recIdx===ri) e++;
+  return {s:s, n:e-s+1};
+}
+function photoRecMode(){ return photoByRec && photoCols===2; }
+function photoSetCols(c){ photoCols=c; if(photoRecMode()) photoIdx=photoRecRange(photoIdx).s; renderPhoto(); }
+function photoNav(d){
+  if(!photoImgs.length) return;
+  if(photoRecMode()){
+    var g=photoRecRange(photoIdx);
+    var j=d>0 ? g.s+g.n : g.s-1;
+    if(j>=photoImgs.length) j=0; if(j<0) j=photoImgs.length-1;
+    photoIdx=photoRecRange(j).s; renderPhoto(); return;
+  }
+  if(photoCols!==1) return;
+  photoIdx=(photoIdx+d+photoImgs.length)%photoImgs.length; renderPhoto();
+}
 function photoPick(i){ photoIdx=i; photoCols=1; renderPhoto(); }
 function renderPhoto(){
   var body=document.getElementById('photo-body'), cnt=document.getElementById('photo-count'), nav=document.getElementById('photo-nav');
@@ -788,6 +820,29 @@ function renderPhoto(){
       +'<span style="opacity:.55;font-size:.7rem">휠·두손가락·더블탭=확대</span>'
       +'</div>';
     setupPhotoGesture();
+  } else if(photoRecMode()){
+    var g=photoRecRange(photoIdx), it0=photoImgs[g.s]||{};
+    var recs=[]; photoImgs.forEach(function(p){ if(recs[recs.length-1]!==p.recIdx) recs.push(p.recIdx); });
+    nav.style.display = recs.length>1 ? 'flex':'none';
+    cnt.textContent=g.n+'장 · 기록 '+(recs.indexOf(it0.recIdx)+1)+' / '+recs.length;
+    body.style.overflow='hidden'; body.style.display='flex'; body.style.flexDirection='column';
+    var cols=(g.n===3 && innerWidth>innerHeight) ? 3 : Math.min(g.n,2);   // PC(가로화면) 3장은 한 줄로
+    var rows=Math.ceil(g.n/cols), cells='';
+    for(var k=g.s;k<g.s+g.n;k++){
+      cells+='<div style="min-width:0;min-height:0;display:flex;align-items:center;justify-content:center">'
+        +'<img src="'+photoImgs[k].src+'" onclick="photoPick('+k+')" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:6px;cursor:pointer"></div>';
+    }
+    var cap2=esc((it0.date||'')+'  '+String(it0.title||'').split('\n')[0].slice(0,26));
+    body.innerHTML='<div id="photo-pair" style="flex:1;min-height:0;display:grid;grid-template-columns:repeat('+cols+',1fr);grid-template-rows:repeat('+rows+',minmax(0,1fr));gap:6px;padding:4px">'+cells+'</div>'
+      +'<div style="display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;color:#fff;font-size:0.78rem;padding:6px 4px;flex-shrink:0">'
+      +'<span style="opacity:.85">'+cap2+'</span>'
+      +'<button class="pcbtn" style="background:#4a9a4a" onclick="gotoRecord()">📄 기록</button>'
+      +'<span style="opacity:.55;font-size:.7rem">사진 누르면 1장 크게</span>'
+      +'</div>';
+    // 폰: 좌우 스와이프로 옆 기록
+    var pr=document.getElementById('photo-pair'), _sx=0;
+    pr.addEventListener('touchstart', function(e){ if(e.touches.length===1) _sx=e.touches[0].clientX; }, {passive:true});
+    pr.addEventListener('touchend', function(e){ var dx=e.changedTouches[0].clientX-_sx; if(Math.abs(dx)>45) photoNav(dx<0?1:-1); }, {passive:true});
   } else {
     nav.style.display='none';
     cnt.textContent=photoImgs.length+'장';
@@ -848,14 +903,24 @@ function openGallery(){
   var items=[];
   (data||[]).forEach(function(r,ri){ if(r && !r.deleted && r.media){ r.media.forEach(function(m){ if(m && m.type==='image' && m.data) items.push({src:m.data, date:r.date||'', title:(r.title||''), recIdx:ri}); }); } });
   if(!items.length){ alert('사진이 있는 기록이 없어요.'); return; }
-  photoImgs=items; photoIdx=0; photoCols=4;
+  photoImgs=items; photoIdx=0; photoCols=4; photoByRec=false;
   renderPhoto();
   document.getElementById('photo-modal').style.display='flex';
   if(!history.state || !history.state.photoOpen){ history.pushState({photoOpen:true}, ''); }
 }
+// ⛶ 전체화면 — 웹페이지는 브라우저 창 크기를 못 바꿈(일반 탭은 resizeTo 막힘) → 대신 모니터 전체로 띄움. Esc 로 빠짐
+function photoFullscreen(){
+  try{
+    if(document.fullscreenElement){ document.exitFullscreen(); return; }
+    var el=document.getElementById('photo-modal');
+    (el.requestFullscreen||el.webkitRequestFullscreen).call(el);
+  }catch(e){}
+}
+document.addEventListener('fullscreenchange', function(){ try{ if(document.getElementById('photo-modal').style.display!=='none') renderPhoto(); }catch(e){} });
 function closePhoto(){
   var modal=document.getElementById('photo-modal');
   if(modal.style.display==='none') return;
+  try{ if(document.fullscreenElement) document.exitFullscreen(); }catch(e){}
   modal.style.display='none';
   // 가짜 히스토리 제거(현재 모달 상태였을 때만)
   if(history.state && history.state.photoOpen){
@@ -1246,6 +1311,7 @@ function render(){
     if(!show) continue;
     matched.push(i);
   }
+  _listOrder=matched.slice();   // 사진 보기에서 ‹이전/다음› 으로 이웃 기록 사진까지 넘기려고 기억
   var html='';
   // 📌 게시 — 맨 위에 최신 1개만 표시
   var topPin=-1;
@@ -2023,6 +2089,7 @@ idbOpen(function(){
       <button id="pc1" class="pcbtn" onclick="photoSetCols(1)">1장</button>
       <button id="pc2" class="pcbtn" onclick="photoSetCols(2)">2장</button>
       <button id="pc4" class="pcbtn" onclick="photoSetCols(4)">4장</button>
+      <button id="pcfs" class="pcbtn" onclick="photoFullscreen()" title="전체화면(모니터 꽉 차게)">⛶</button>
       <button class="pcbtn" onclick="closePhoto()" style="background:#c0392b">✕</button>
     </span>
   </div>
