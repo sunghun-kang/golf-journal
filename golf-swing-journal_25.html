@@ -184,7 +184,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.67 · 26-10-24</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.68 · 26-10-24</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -264,7 +264,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
       </div>
     </div>
     <div class="fr"><label>구장/문제</label><input type="text" id="mVenue" placeholder="스클, 오너스, BA / 슬라스, 뒷땅..."></div>
-    <div class="fr"><label>멤버/원인</label><input type="text" id="mMembers" placeholder="홍길동 / 손목방향, 엎어침..."></div>
+    <div class="fr"><label id="mMembersLbl">멤버/원인</label><input type="text" id="mMembers" placeholder="홍길동 / 손목방향, 엎어침..."></div>
     <div class="fr"><label>핵심키워드 / 대책,해결방안</label><textarea id="mTitle" rows="2" style="height:auto;min-height:3.4em;resize:vertical" placeholder="핵심키워드 / 대책,해결방안 (길게 써도 자동 줄바꿈)"></textarea></div>
     <div class="fr"><label>상세 메모 <span style="font-size:0.68rem;font-weight:400;color:#888">— 부분강조: <code style="background:#fee;padding:0 3px;border-radius:3px;color:#c00">ㅃ빨강ㅃ</code> · <code style="background:#eef;padding:0 3px;border-radius:3px;color:#1a4d9e">ㅍ파랑ㅍ</code> · <code style="background:#efe;padding:0 3px;border-radius:3px;color:#1a7a1a">ㄴ녹색ㄴ</code> · <code style="background:#eee;padding:0 3px;border-radius:3px">**굵게**</code></span></label><textarea id="mMemo" placeholder="ㅡ 상세 내용&#10;ㅡ 느낀점"></textarea></div>
     <div class="fr"><input type="file" id="mMedia" accept="image/*,video/*" multiple style="font-size:0.82rem;padding:6px 0">
@@ -280,6 +280,10 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
         <label style="display:inline-flex;align-items:center;gap:2px;font-size:0.78rem;color:#d42020;white-space:nowrap"><input type="checkbox" id="mImp"> ★중요</label>
         <label style="display:inline-flex;align-items:center;gap:2px;font-size:0.78rem;color:#1a4d9e;white-space:nowrap"><input type="checkbox" id="mPin"> 📌게시</label>
       </div>
+    </div>
+    <div class="fr" id="mFocusWrap" style="display:none;background:#f7f0fc;border:1px solid #d9b8f0;border-radius:8px;padding:8px">
+      <label style="color:#7a3fb8;font-weight:700">🎯 중심 키워드 <span style="font-size:0.7rem;font-weight:400;color:#888">— 분석된 것 중 이것들 위주로 🔄다시요약 (비우면 전체)</span></label>
+      <input type="text" id="mFocus" placeholder="예: 치킨윙, 손목방향, 피니쉬" onkeydown="if(event.key==='Enter'){event.preventDefault();regenAI();}">
     </div>
     <div class="mbtns">
       <button class="bc" id="mDelBtn" onclick="delModal()" style="display:none;background:#d42020;color:#fff;border-color:#d42020">삭제</button>
@@ -1437,6 +1441,7 @@ function openAdd(){
   pendingMedia=[];
   document.getElementById('mDelBtn').style.display='none';
   document.getElementById('mRegenBtn').style.display='none';
+  mMembersLabel(false);
   document.getElementById('ov').classList.add('open');
 }
 function ed(i){
@@ -1460,36 +1465,38 @@ function ed(i){
   document.getElementById('mDelBtn').style.display='';
   var _isAI = r.ai || /^\s*(?:🤖|📊)/.test(r.title||'');
   document.getElementById('mRegenBtn').style.display = _isAI ? '' : 'none';
+  mMembersLabel(_isAI);
   document.getElementById('ov').classList.add('open');
 }
+// AI기록 수정창에선 「멤버/원인」 칸이 곧 다시요약 질문칸 → 이름·안내를 그렇게 바꿔 보여줌
+function mMembersLabel(isAI){
+  var l=document.getElementById('mMembersLbl'), i=document.getElementById('mMembers'); if(!l||!i) return;
+  l.innerHTML=isAI?'<span style="color:#7a3fb8;font-weight:700">🤖 질문·키워드</span> <span style="font-size:0.7rem;font-weight:400;color:#888">— 🔄다시요약이 이 질문으로 다시 정리</span>':'멤버/원인';
+  i.placeholder=isAI?'예: 9월 필드 분석 / 슬라이스 원인 / 10월 내가 쓴 골프 날짜별로 요약':'홍길동 / 손목방향, 엎어침...';
+  i.style.borderColor=isAI?'#b48be0':'';
+  var fw=document.getElementById('mFocusWrap'); if(fw) fw.style.display=isAI?'block':'none';
+  var fi=document.getElementById('mFocus'); if(fi) fi.value='';
+}
+// 🔄 다시요약 — 「🤖 질문·키워드」 칸(=members)의 질문을 🤖질문과 똑같이 해석해서(기간·구분·단어) 다시 요약.
+// 예전엔 그 칸 전체 문장을 키워드로 찾아서 🤖질문으로 만든 기록은 0건 → 「키워드에 맞는 기록이 없어요」 (26-10-24)
 function regenAI(){
-  var kwRaw=(document.getElementById('mMembers').value||'').trim();
-  if(!kwRaw){ var t=document.getElementById('mTitle').value||''; var mm=t.match(/·\s*(.+)$/); kwRaw=mm?mm[1].trim():''; }
-  if(!kwRaw){ alert('키워드(멤버/원인 칸)가 비어있어요. 키워드를 넣고 다시 시도하세요.'); return; }
+  var q=(document.getElementById('mMembers').value||'').trim();
+  if(!q){ alert('「🤖 질문·키워드」 칸이 비어있어요.\n예: "9월 필드 분석", "슬라이스 원인", "10월 내가 쓴 골프 날짜별로 요약"'); try{ document.getElementById('mMembers').focus(); }catch(e){} return; }
   var key=themeAIKey(false); if(!key) return;
-  var groups=kwRaw.split(',').map(function(g){return g.split(/[&^]/).map(function(s){return s.trim();}).filter(Boolean);}).filter(function(g){return g.length;});
-  var flat=[]; groups.forEach(function(g){g.forEach(function(t){if(flat.indexOf(t)<0)flat.push(t);});});
-  var low=groups.map(function(g){return g.map(function(t){return t.toLowerCase();});});
+  var sel=themeAskSelect(q);
   var selfId = (editIdx>=0 && data[editIdx]) ? data[editIdx].id : null;
-  var res=data.filter(function(r){
-    if(selfId && r.id===selfId) return false;
-    if(/^\s*(?:🤖|📊)/.test(r.title||'')) return false;   // 다른 AI글도 제외
-    if(!low.length) return true;
-    var text=((r.title||'')+' '+(r.memo||'')+' '+(r.venue||'')+' '+(r.members||'')).toLowerCase();
-    return low.some(function(g){return g.every(function(t){return text.indexOf(t)>=0;});});
-  });
-  if(!res.length){ alert('그 키워드에 맞는 기록이 없어요.'); return; }
-  var btn=document.getElementById('mRegenBtn'); var old=btn.textContent; btn.textContent='요약중…'; btn.disabled=true;
-  var src=res.map(function(r){
-    return '['+(r.date||'')+(r.date?'('+dow(r.date)+')':'')+']'
-      +(r.venue?(' 문제:'+thStrip(r.venue)):'')
-      +(r.members?(' 원인:'+thStrip(r.members)):'')
-      +(r.title?(' 대책:'+thStrip(r.title).replace(/\n/g,' / ')):'')
-      +(r.memo?(' 메모:'+thStrip(r.memo).replace(/\n/g,' ').slice(0,300)):'');
-  }).join('\n');
-  var kw=flat.join(', ');
-  var sys='당신은 골프 스윙 코치입니다. 사용자의 골프 일지 기록만을 근거로 특정 주제의 원인과 대책을 한국어로 간결하게 요약합니다. 기록에 없는 내용을 지어내지 마세요. 아래 제공된 기록은 주제어로 걸러낸 일부일 뿐, 사용자의 전체 일지가 아닙니다. "기록이 없다/부족하다"처럼 전체 일지에 대한 단정은 하지 말고, "이번에 참고한 자료에는 ~가 포함되어 있지 않음" 식으로 이 분석의 범위 안에서만 말하세요.';
-  var user='주제 키워드: '+kw+'\n\n아래는 내 골프 일지 기록들이야. 이 주제에 대해 (1) 반복되는 핵심 원인, (2) 효과가 있었던/권장되는 대책, (3) 두 줄 핵심요약 을 정리해줘. 소제목과 불릿으로 간결하게.\n※ 날짜로 인용할 땐 최신부터(내림차순), 날짜 뒤에 (요일)까지 표기. 예: 9/19(토).\n그리고 맨 마지막에 반드시 아래 형식으로 2줄 핵심요약을 써줘(각 줄 20자 내외):\n핵심요약:\n<첫째 줄 - 핵심 문제>\n<둘째 줄 - 결론/대책>\n\n=== 기록 ('+res.length+'건) ===\n'+src;
+  var used=sel.used.filter(function(r){ return !(selfId && r.id===selfId); });   // 자기 자신은 빼고
+  if(!used.length){ alert(THASK_NOTFOUND); return; }
+  var btn=document.getElementById('mRegenBtn'); var old=btn.textContent; btn.textContent='요약중… ('+used.length+'건)'; btn.disabled=true;
+  var focus=((document.getElementById('mFocus')||{}).value||'').trim();
+  var focusArr=focus?focus.split(/[,，]\s*|\s+/).filter(Boolean):[];
+  var flat=focusArr.length?focusArr:q.split(/,\s*/).filter(Boolean);   // 색강조할 단어: 중심키워드 우선
+  var kw=q;
+  var pr=themeAskPrompt(q, used, sel.dateLabel), sys=pr.sys, user=pr.user;
+  if(focusArr.length){
+    // 🎯 같은 기록을 대상으로 하되, 이 단어들 중심으로 다시 정리 (관련 내용 위주, 나머지는 짧게)
+    user=user.replace('이 기록을 근거로 위 질문에 답해줘.', '이 기록을 근거로 위 질문에 답하되, 특히 「'+focusArr.join(', ')+'」 중심으로 다시 정리해줘. 이 키워드와 관련된 원인·대책·날짜를 위주로 자세히, 나머지는 짧게. 키워드 관련 내용이 참고 기록에 없으면 그렇다고 말해줘.');
+  }
   fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-opus-5',max_tokens:3000,system:sys,output_config:{effort:'low'},messages:[{role:'user',content:user}]})})
   .then(function(r){return r.json();}).then(function(j){
     btn.textContent=old; btn.disabled=false;
@@ -2504,10 +2511,8 @@ function themeAskShow(html){
   if(!box){ box=document.createElement('div'); box.id='thAskBox'; body.insertBefore(box, body.firstChild); }
   box.innerHTML=html;
 }
-function themeAsk(){
-  var q=(document.getElementById('thKw').value||'').trim();
-  if(!q){ alert('키워드 칸에 질문을 적어주세요.\n예: 슬라이스 나는 이유 원인 분석해줘'); return; }
-  var key=themeAIKey(false); if(!key) return;
+// 🤖질문 문장(q) → 참고할 기록 고르기. 🤖질문과 AI기록 「다시요약」이 같이 씀 → {used, dateLabel}
+function themeAskSelect(q){
   // ── 기간 파싱: "9월","2026-09","2026-09-24","10/1","10월1일","9/28~10/5","이번달","지난달" (복수/범위 가능) ──
   var _n=new Date(Date.now()+9*3600*1000), _cy=_n.getUTCFullYear(), _cm=_n.getUTCMonth()+1;
   var dateFrom='', dateTo='', dateLabel='', dateList=[];
@@ -2591,10 +2596,10 @@ function themeAsk(){
   if(!res.length && hasDate) res=pool.filter(inRange);
   if(!res.length && toks.length) res=pool.filter(function(r){ return toks.some(function(t){ return hay(r).indexOf(t)>=0; }); });
   res.sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
-  var used=res.slice(0,100);
-  if(!used.length){ alert('해당 기간·구분·단어의 기록을 못 찾았어요.\n예: "9월 필드 분석", "10/1 10/3 분석", "슬라이스 원인", "이번달 뒷땅".\n\n※ 날짜를 지정했는데도 안 나오면: ①다른 기기에서 입력한 기록이면 ⋮→서버에서 전체받기로 동기화했는지, ②해당 날짜 기록이 실제 저장돼 있는지 목록/달력에서 확인해보세요.'); return; }
-  var usedSummary=used.slice(0,50).map(function(r){ return (r.date?(r.date+'('+dow(r.date)+')'):'')+(vtNames[r.vt]?('('+vtNames[r.vt]+')'):''); }).join(', ');
-  themeAskShow('<div style="background:#e7f6ee;border:1px solid #a9e0c4;border-radius:10px;padding:12px;margin:8px 0;color:#159957;font-weight:700">🤖 "'+esc(q)+'" 분석 중… '+(dateLabel?('['+esc(dateLabel)+'] '):'')+used.length+'건 참고 (10~30초)<div style="font-weight:400;font-size:0.7rem;color:#5a8a6f;margin-top:5px;line-height:1.5">📋 참고 기록: '+esc(usedSummary)+(used.length>50?(' …외 '+(used.length-50)+'건'):'')+'</div></div>');
+  return {used:res.slice(0,100), dateLabel:dateLabel};
+}
+// 🤖질문 프롬프트(시스템·사용자) — 🤖질문과 「다시요약」 공용
+function themeAskPrompt(q, used, dateLabel){
   var src=used.map(function(r){
     return '['+(r.date||'')+(r.date?'('+dow(r.date)+')':'')+']'
       +(r.venue?(' 문제:'+thStrip(r.venue)):'')
@@ -2604,6 +2609,19 @@ function themeAsk(){
   }).join('\n');
   var sys='당신은 골프 스윙 코치입니다. 사용자의 골프 일지 기록을 근거로 질문에 한국어로 간결하고 실전적으로 답합니다. 기록에 있는 내용을 우선 근거로 삼고, 기록에 없어 일반 지식으로 보완할 때는 "(일반적으로)"라고 표시하세요. 아래 제공된 기록은 질문어와 기간으로 걸러낸 일부일 뿐, 사용자의 전체 일지가 아닙니다. "기록이 없다/부족하다"처럼 전체 일지에 대한 단정은 하지 말고, "이번에 참고한 자료에는 ~가 포함되어 있지 않음" 식으로 이 분석의 범위 안에서만 말하세요.';
   var user='질문: '+q+(dateLabel?('\n(대상 기간: '+dateLabel+')'):'')+'\n\n아래는 내 골프 일지 기록이야'+(dateLabel?('('+dateLabel+' 기준으로 추린 것)'):'')+'. 이 기록을 근거로 위 질문에 답해줘.\n※ 질문이 정리방식을 지정하면(예: "날짜별로", 시간순, 주제별) 그 방식을 최우선으로 따라줘. 지정이 없으면 (1) 반복되는 핵심 원인 (2) 효과 있었던/권장 대책 (3) 두 줄 핵심요약 구조로. 소제목·불릿으로 간결하게.\n※ 날짜로 인용할 땐 반드시 최신 날짜부터(내림차순)로, 날짜 뒤에 (요일)까지 표기해줘. 예: 9/19(토).\n맨 마지막에 반드시 아래 형식으로 2줄 핵심요약을 써줘(각 줄 20자 내외):\n핵심요약:\n<첫째 줄 - 핵심 문제>\n<둘째 줄 - 결론/대책>\n\n=== 기록('+used.length+'건'+(dateLabel?(' · '+dateLabel):'')+') ===\n'+src;
+  return {sys:sys, user:user};
+}
+var THASK_NOTFOUND='해당 기간·구분·단어의 기록을 못 찾았어요.\n예: "9월 필드 분석", "10/1 10/3 분석", "슬라이스 원인", "이번달 뒷땅".\n\n※ 날짜를 지정했는데도 안 나오면: ①다른 기기에서 입력한 기록이면 ⋮→서버에서 전체받기로 동기화했는지, ②해당 날짜 기록이 실제 저장돼 있는지 목록/달력에서 확인해보세요.';
+function themeAsk(){
+  var q=(document.getElementById('thKw').value||'').trim();
+  if(!q){ alert('키워드 칸에 질문을 적어주세요.\n예: 슬라이스 나는 이유 원인 분석해줘'); return; }
+  var key=themeAIKey(false); if(!key) return;
+  var sel=themeAskSelect(q), used=sel.used, dateLabel=sel.dateLabel;
+  var vtNames={F:'필드',S:'스크린',A:'분석',L:'人生',E:'영어',C:'회사'};
+  if(!used.length){ alert(THASK_NOTFOUND); return; }
+  var usedSummary=used.slice(0,50).map(function(r){ return (r.date?(r.date+'('+dow(r.date)+')'):'')+(vtNames[r.vt]?('('+vtNames[r.vt]+')'):''); }).join(', ');
+  themeAskShow('<div style="background:#e7f6ee;border:1px solid #a9e0c4;border-radius:10px;padding:12px;margin:8px 0;color:#159957;font-weight:700">🤖 "'+esc(q)+'" 분석 중… '+(dateLabel?('['+esc(dateLabel)+'] '):'')+used.length+'건 참고 (10~30초)<div style="font-weight:400;font-size:0.7rem;color:#5a8a6f;margin-top:5px;line-height:1.5">📋 참고 기록: '+esc(usedSummary)+(used.length>50?(' …외 '+(used.length-50)+'건'):'')+'</div></div>');
+  var pr=themeAskPrompt(q, used, dateLabel), sys=pr.sys, user=pr.user;
   fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
     headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
