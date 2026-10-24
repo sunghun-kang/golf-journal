@@ -184,7 +184,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.77 · 26-10-25</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.78 · 26-10-25</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -1495,11 +1495,7 @@ function regenAI(){
   var focusArr=focus?focus.split(/[,，]\s*|\s+/).filter(Boolean):[];
   var flat=focusArr.length?focusArr:q.split(/,\s*/).filter(Boolean);   // 색강조할 단어: 중심키워드 우선
   var kw=q;
-  var pr=themeAskPrompt(q, used, sel.dateLabel, sel.toks), sys=pr.sys, user=pr.user;
-  if(focusArr.length){
-    // 🎯 같은 기록을 대상으로 하되, 이 단어들 중심으로 다시 정리 (관련 내용 위주, 나머지는 짧게)
-    user=user.replace('이 기록을 근거로 위 질문에 답해줘.', '이 기록을 근거로 위 질문에 답하되, 특히 「'+focusArr.join(', ')+'」 중심으로 다시 정리해줘. 이 키워드와 관련된 원인·대책·날짜를 위주로 자세히, 나머지는 짧게. 키워드 관련 내용이 참고 기록에 없으면 그렇다고 말해줘.');
-  }
+  var pr=themeAskPrompt(q, used, sel.dateLabel, sel.toks), sys=pr.sys, user=thApplyFocus(pr.user, focusArr);
   fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-opus-5',max_tokens:3000,system:sys,output_config:{effort:'low'},messages:[{role:'user',content:user}]})})
   .then(function(r){return r.json();}).then(function(j){
     if(j.error){ btn.textContent=old; btn.disabled=false; alert('오류: '+(j.error.message||JSON.stringify(j.error))); return; }
@@ -2485,7 +2481,7 @@ function themeSaveAsEntry(){
   var now=nowKST();
   var today=(new Date(new Date().getTime()+9*3600*1000)).toISOString().slice(0,10);
   var kw=themeLastKw||'AI요약';
-  var kwArr=kw.split(/,\s*/).filter(Boolean);
+  var kwArr=themeLastFocus ? thFocusArr(themeLastFocus) : kw.split(/,\s*/).filter(Boolean);   // 🎯 중심키워드로 재분석했으면 그 단어를 색강조
   var titleTxt = '🤖 AI요약 · ' + (themeLastOneLine ? thColorize(themeLastOneLine,kwArr) : thColorize(kw,kwArr));
   var rec={ date:today, vt:'A', ai:true, venue:'', members:kw, title:titleTxt, memo:thColorize(themeLastAI,kwArr),
             important:false, pinned:false, color:'', bold:false, media:[], updatedAt:now, createdAt:now };
@@ -2768,16 +2764,26 @@ function thMissingNote(q, txt, used){
   return '\n\n⚠ 요약에 안 나온 기록 '+miss.length+'일 (참고는 했지만 AI가 빠뜨림): '+miss.map(function(d){ return thMD(d); }).join(', ');
 }
 var THASK_NOTFOUND='해당 기간·구분·단어의 기록을 못 찾았어요.\n예: "9월 필드 분석", "10/1 10/3 분석", "슬라이스 원인", "이번달 뒷땅".\n\n※ 날짜를 지정했는데도 안 나오면: ①다른 기기에서 입력한 기록이면 ⋮→서버에서 전체받기로 동기화했는지, ②해당 날짜 기록이 실제 저장돼 있는지 목록/달력에서 확인해보세요.';
-function themeAsk(){
+// 🎯 중심 키워드: 같은 기록을 대상으로 하되 이 단어들 위주로 다시 정리 — 🔄다시요약·🔄재분석 공용
+function thFocusArr(s){ s=String(s||'').trim(); return s?s.split(/[,，]\s*|\s+/).filter(Boolean):[]; }
+function thApplyFocus(user, focusArr){
+  if(!focusArr || !focusArr.length) return user;
+  return user.replace('이 기록을 근거로 위 질문에 답해줘.', '이 기록을 근거로 위 질문에 답하되, 특히 「'+focusArr.join(', ')+'」 중심으로 다시 정리해줘. 이 키워드와 관련된 원인·대책·날짜를 위주로 자세히, 나머지는 짧게. 키워드 관련 내용이 참고 기록에 없으면 그렇다고 말해줘.');
+}
+var themeLastFocus='';
+// useFocus=true(🔄재분석): 결과창의 🎯 칸 글자를 중심 키워드로 씀
+function themeAsk(useFocus){
   var q=(document.getElementById('thKw').value||'').trim();
   if(!q){ alert('키워드 칸에 질문을 적어주세요.\n예: 슬라이스 나는 이유 원인 분석해줘'); return; }
   var key=themeAIKey(false); if(!key) return;
+  var focus=useFocus===true ? ((document.getElementById('thFocus')||{}).value||'').trim() : '';
+  var focusArr=thFocusArr(focus); themeLastFocus=focus;
   var sel=themeAskSelect(q), used=sel.used, dateLabel=sel.dateLabel, focusToks=sel.toks;
   var vtNames={F:'필드',S:'스크린',A:'분석',L:'人生',E:'영어',C:'회사'};
   if(!used.length){ alert(THASK_NOTFOUND); return; }
   var usedSummary=used.slice(0,50).map(function(r){ return (r.date?(r.date+'('+dow(r.date)+')'):'')+(vtNames[r.vt]?('('+vtNames[r.vt]+')'):''); }).join(', ');
   themeAskShow('<div style="background:#e7f6ee;border:1px solid #a9e0c4;border-radius:10px;padding:12px;margin:8px 0;color:#159957;font-weight:700">🤖 "'+esc(q)+'" 분석 중… '+(dateLabel?('['+esc(dateLabel)+'] '):'')+used.length+'건 참고 (10~30초)<div style="font-weight:400;font-size:0.7rem;color:#5a8a6f;margin-top:5px;line-height:1.5">📋 참고 기록: '+esc(usedSummary)+(used.length>50?(' …외 '+(used.length-50)+'건'):'')+'</div></div>');
-  var pr=themeAskPrompt(q, used, dateLabel, focusToks), sys=pr.sys, user=pr.user;
+  var pr=themeAskPrompt(q, used, dateLabel, focusToks), sys=pr.sys, user=thApplyFocus(pr.user, focusArr);
   fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
     headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
@@ -2794,7 +2800,9 @@ function themeAsk(){
     themeLastOneLine=thExtractOneLine(txt);
     txt+=thMissingNote(q, txt, used);
     themeLastAI=txt; themeLastKw=q;
-    themeAskShow('<div style="background:#eefaf3;border:1px solid #a9e0c4;border-radius:10px;padding:12px;margin:8px 0"><div style="font-weight:700;color:#159957;margin-bottom:6px;font-size:0.92rem">🤖 '+esc(q)+' <button onclick="document.getElementById(\'thAskBox\').innerHTML=\'\'" style="float:right;font-size:0.68rem;background:none;border:1px solid #ccc;border-radius:5px;padding:1px 6px;color:#999">닫기</button></div><div style="white-space:pre-wrap;line-height:1.7;font-size:0.9rem;color:#222">'+mdLite(txt)+'</div><div style="margin-top:10px;text-align:center;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button onclick="themeAsk()" style="background:#7a3fb8;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:0.9rem;font-weight:700">🔄 재분석</button><button onclick="themeSaveAsEntry()" style="background:#1a7a1a;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:0.9rem;font-weight:700">📌 기록으로 저장</button></div></div>');
+    themeAskShow('<div style="background:#eefaf3;border:1px solid #a9e0c4;border-radius:10px;padding:12px;margin:8px 0"><div style="font-weight:700;color:#159957;margin-bottom:6px;font-size:0.92rem">🤖 '+esc(q)+(focus?(' <span style="color:#7a3fb8">· 🎯 '+esc(focus)+'</span>'):'')+' <button onclick="document.getElementById(\'thAskBox\').innerHTML=\'\'" style="float:right;font-size:0.68rem;background:none;border:1px solid #ccc;border-radius:5px;padding:1px 6px;color:#999">닫기</button></div><div style="white-space:pre-wrap;line-height:1.7;font-size:0.9rem;color:#222">'+mdLite(txt)+'</div>'
+      +'<div style="margin-top:10px;display:flex;gap:6px;align-items:center;background:#f7f0fc;border:1px solid #d9b8f0;border-radius:8px;padding:6px 8px"><span style="color:#7a3fb8;font-weight:700;font-size:0.82rem;white-space:nowrap">🎯 중심 키워드</span><input id="thFocus" type="text" value="'+esc(focus)+'" placeholder="예: 치킨윙, 손목방향 → 이것 위주로 🔄재분석 (비우면 전체)" onkeydown="if(event.key===\'Enter\'){event.preventDefault();themeAsk(true);}" style="flex:1;min-width:0;padding:5px 8px;border:1px solid #b48be0;border-radius:6px;font-size:0.85rem;font-family:inherit"></div>'
+      +'<div style="margin-top:8px;text-align:center;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button onclick="themeAsk(true)" style="background:#7a3fb8;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:0.9rem;font-weight:700">🔄 재분석</button><button onclick="themeSaveAsEntry()" style="background:#1a7a1a;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:0.9rem;font-weight:700">📌 기록으로 저장</button></div></div>');
     });
   }).catch(function(e){ themeAskShow('<div style="background:#fdecea;border-radius:10px;padding:12px;color:#c0392b;font-size:0.85rem">⚠️ 통신 실패: '+esc(String(e))+'<br>키 확인 또는 잠시 후 재시도.</div>'); });
 }
