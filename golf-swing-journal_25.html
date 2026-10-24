@@ -184,7 +184,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.65 · 26-10-24</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.66 · 26-10-24</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -817,7 +817,7 @@ function photoImgClick(){   // 한 번 누름=본문 접기/펴기, 두 번(더�
 function photoTopCap(it, extraBtns, hint){
   var cap=document.getElementById('photo-cap'), acts=document.getElementById('photo-acts');
   if(!it){ cap.textContent=''; cap.title=''; acts.innerHTML=''; return; }
-  var line=(it.date||'')+'  '+String(it.title||'').split('\n')[0];
+  var line=(it.date?shortY(it.date)+'('+dow(it.date)+')':'')+'  '+String(it.title||'').split('\n')[0];   // 목록과 같은 26-09-13(일)
   cap.textContent=line; cap.title=line+(hint?'\n('+hint+')':'');
   acts.innerHTML=(extraBtns||'')+(it.recIdx!=null?'<button class="pcbtn" style="background:#4a9a4a;opacity:1" onclick="gotoRecord()">📄 기록</button>':'');
 }
