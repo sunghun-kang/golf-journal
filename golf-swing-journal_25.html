@@ -184,7 +184,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.73 · 26-10-24</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.74 · 26-10-25</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -1263,6 +1263,8 @@ function cardHtml(r, i){
   var member1=r.members?r.members.trim():'';
   var memberHtml=member1?'<span class="venue" style="background:#e8f0e8;color:#2d6a2d;font-weight:700">'+thBlink(esc(member1))+'</span>':'';
   var memoHtml=r.memo?'<div class="memo">'+thBlink(hilite(r.memo))+'</div>':'';
+  // 🔎 검색어가 본문(메모)에 있으면 본문을 펼친 채로 그려서 깜빡이는 단어가 바로 보이게 (26-10-25)
+  var memoHit=!!(r.memo && blinkKws && blinkKws.length && blinkKws.some(function(k){ return k && String(r.memo).toLowerCase().indexOf(String(k).toLowerCase())>=0; }));
 
   // 미디어 표시
   var mediaHtml='';
@@ -1289,7 +1291,7 @@ function cardHtml(r, i){
     +'<span class="date '+dateColor+'">'+dateStr+'</span>'
     +vtHtml+venueHtml+memberHtml
     +'<span class="acts" onclick="event.stopPropagation()">'
-    +(hasBody?'<button class="btn-view" id="vb'+i+'" onclick="tog('+i+')">보기</button>':'')
+    +(hasBody?'<button class="btn-view" id="vb'+i+'" onclick="tog('+i+')">'+(memoHit?'닫기':'보기')+'</button>':'')
     +'<button onclick="ed('+i+')">수정</button>'
     +'</span></div>'
     +(function(){
@@ -1328,7 +1330,7 @@ function cardHtml(r, i){
     return '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:4px"><div class="title" style="'+s+'">'+titleHtml+'</div>'+(thumbs?'<div style="display:flex;gap:3px;flex-shrink:0">'+thumbs+'</div>':'')+'</div>';
   })()
     +'</div>'
-    +'<div class="body" id="b'+i+'">'+(memoHtml)+(mediaHtml)+'</div>'
+    +'<div class="body" id="b'+i+'"'+(memoHit?' style="display:block"':'')+'>'+(memoHtml)+(mediaHtml)+'</div>'
     +'</div>';
 }
 
