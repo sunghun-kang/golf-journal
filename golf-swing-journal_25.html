@@ -184,7 +184,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.71 · 26-10-24</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.72 · 26-10-24</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -1507,7 +1507,7 @@ function regenAI(){
     if(_m0) btn.textContent='빠진 날짜 '+_m0+'개 보충중…';
     return thFillMissing(q, txt, used, key, sys).then(function(txt){
       btn.textContent=old; btn.disabled=false;
-      txt=thVenueFix(txt);
+      txt=thDatePad(thVenueFix(txt));
       var oneline=thExtractOneLine(txt);
       txt+=thMissingNote(q, txt, used);
       document.getElementById('mMemo').value=thColorize(txt,flat);
@@ -2630,14 +2630,28 @@ function themeAskPrompt(q, used, dateLabel){
     return '['+(r.date||'')+(r.date?'('+dow(r.date)+')':'')+']'+thRecLine(r);
   }).join('\n');
   var sys='당신은 골프 스윙 코치입니다. 사용자의 골프 일지 기록을 근거로 질문에 한국어로 간결하고 실전적으로 답합니다. 기록에 있는 내용을 우선 근거로 삼고, 기록에 없어 일반 지식으로 보완할 때는 "(일반적으로)"라고 표시하세요. 아래 제공된 기록은 질문어와 기간으로 걸러낸 일부일 뿐, 사용자의 전체 일지가 아닙니다. "기록이 없다/부족하다"처럼 전체 일지에 대한 단정은 하지 말고, "이번에 참고한 자료에는 ~가 포함되어 있지 않음" 식으로 이 분석의 범위 안에서만 말하세요.';
-  var user='질문: '+q+(dateLabel?('\n(대상 기간: '+dateLabel+')'):'')+'\n\n아래는 내 골프 일지 기록이야'+(dateLabel?('('+dateLabel+' 기준으로 추린 것)'):'')+'. 이 기록을 근거로 위 질문에 답해줘.\n※ 질문이 정리방식을 지정하면(예: "날짜별로", 시간순, 주제별) 그 방식을 최우선으로 따라줘. 지정이 없으면 (1) 반복되는 핵심 원인 (2) 효과 있었던/권장 대책 (3) 두 줄 핵심요약 구조로. 소제목·불릿으로 간결하게.\n※ 날짜로 인용할 땐 반드시 최신 날짜부터(내림차순)로, 날짜 뒤에 (요일)까지 표기해줘. 예: 9/19(토).\n맨 마지막에 반드시 아래 형식으로 2줄 핵심요약을 써줘(각 줄 20자 내외):\n핵심요약:\n<첫째 줄 - 핵심 문제>\n<둘째 줄 - 결론/대책>\n\n=== 기록('+used.length+'건'+(dateLabel?(' · '+dateLabel):'')+') ===\n'+src;
+  var user='질문: '+q+(dateLabel?('\n(대상 기간: '+dateLabel+')'):'')+'\n\n아래는 내 골프 일지 기록이야'+(dateLabel?('('+dateLabel+' 기준으로 추린 것)'):'')+'. 이 기록을 근거로 위 질문에 답해줘.\n※ 질문이 정리방식을 지정하면(예: "날짜별로", 시간순, 주제별) 그 방식을 최우선으로 따라줘. 지정이 없으면 (1) 반복되는 핵심 원인 (2) 효과 있었던/권장 대책 (3) 두 줄 핵심요약 구조로. 소제목·불릿으로 간결하게.\n※ 날짜로 인용할 땐 반드시 최신 날짜부터(내림차순)로, 날짜 뒤에 (요일)까지 표기해줘. 예: 09/19(토). 월/일은 반드시 두 자리로 맞춰(3/5 → 03/05).\n맨 마지막에 반드시 아래 형식으로 2줄 핵심요약을 써줘(각 줄 20자 내외):\n핵심요약:\n<첫째 줄 - 핵심 문제>\n<둘째 줄 - 결론/대책>\n\n=== 기록('+used.length+'건'+(dateLabel?(' · '+dateLabel):'')+') ===\n'+src;
   if(isList){
     // 목록형 질문(정리·날짜별·내림차순…)이면 AI가 비슷한 날을 묶으며 날짜를 빠뜨림(26-10-24: 39건 중 9건 누락) → 날짜 전부 명시
     var ds=thUsedDates(used);
-    user=user.replace('\n맨 마지막에 반드시', '\n※ 이건 「기록 정리」 요청이야. 기록은 이미 날짜별로 한 줄씩 묶어 '+ds.length+'개 날짜로 줬어(원래 '+used.length+'건). 날짜마다 정확히 한 줄 「- **M/D(요일)** 내용」으로, '+ds.length+'개 날짜를 하나도 빠뜨리지 말고 모두 써줘. 같은 날은 반드시 한 줄로(두 줄로 나누지 말 것). 비슷한 내용이어도 묶어서 생략하지 말 것.\n   반드시 들어가야 할 날짜: '+ds.map(function(d){ return (+d.slice(5,7))+'/'+(+d.slice(8,10))+'('+dow(d)+')'; }).join(', ')+'\n맨 마지막에 반드시');
+    user=user.replace('\n맨 마지막에 반드시', '\n※ 이건 「기록 정리」 요청이야. 기록은 이미 날짜별로 한 줄씩 묶어 '+ds.length+'개 날짜로 줬어(원래 '+used.length+'건). 날짜마다 정확히 한 줄 「- **MM/DD(요일)** 내용」으로, '+ds.length+'개 날짜를 하나도 빠뜨리지 말고 모두 써줘. 같은 날은 반드시 한 줄로(두 줄로 나누지 말 것). 비슷한 내용이어도 묶어서 생략하지 말 것.\n   반드시 들어가야 할 날짜: '+ds.map(function(d){ return thMD(d); }).join(', ')+'\n맨 마지막에 반드시');
   }
   user=user.replace('\n맨 마지막에 반드시', '\n'+thVenueRule()+'\n맨 마지막에 반드시');
   return {sys:sys, user:user};
+}
+// 📅 날짜는 MM/DD(요일) 두 자리로 통일 (26-10-24 이사님 지정: 3 → 03, 줄 맞춤)
+function thMD(d){ return d.slice(5,7)+'/'+d.slice(8,10)+'('+dow(d)+')'; }
+function thDatePad(txt){
+  function p(n){ return ('0'+(+n)).slice(-2); }
+  function ok(m,d){ return +m>=1 && +m<=12 && +d>=1 && +d<=31; }
+  return String(txt||'')
+    // 「3/5(목)」「**3/5**(목)」처럼 뒤에 (요일)이 붙은 것 — 3/4 스윙 같은 분수는 안 건드림
+    .replace(/(^|[^\d\/.\-])(\d{1,2})\/(\d{1,2})(?=\s*(?:\*\*)?\s*\([일월화수목금토]\))/g, function(m,pre,a,b){ return ok(a,b)? pre+p(a)+'/'+p(b) : m; })
+    // 굵게 시작 「**3/5」
+    .replace(/(\*\*)(\d{1,2})\/(\d{1,2})(?![\d\/])/g, function(m,pre,a,b){ return ok(a,b)? pre+p(a)+'/'+p(b) : m; })
+    // 날짜끼리 이어 쓴 「10/1·10/3·10/4」(· 또는 ~) — 「3/4 스윙, 1/2 스윙」 같은 쉼표 분수는 안 건드림
+    .replace(/(^|[^\d\/.\-])(\d{1,2})\/(\d{1,2})(?=\s*[·~]\s*\d{1,2}\/\d{1,2})/g, function(m,pre,a,b){ return ok(a,b)? pre+p(a)+'/'+p(b) : m; })
+    .replace(/(?<=\d{1,2}\/\d{1,2}(?:\s*\([일월화수목금토]\))?\s*[·~]\s*)(\d{1,2})\/(\d{1,2})(?![\d\/])/g, function(m,a,b){ return ok(a,b)? p(a)+'/'+p(b) : m; });
 }
 // ⛳ 구장 이름 통일 — AI 답에서 별칭을 정식 이름으로 바꾸고 "큰따옴표"로 표시 (26-10-24 이사님 지정)
 // 주로 가는 곳: BA비스타, 썬밸리. 새 구장/별칭은 여기에만 추가하면 됨
@@ -2702,7 +2716,7 @@ function thFillMissing(q, txt, used, key, sys){
   if(!thIsListQ(q)) return Promise.resolve(txt);
   var miss=thMissingDates(txt, used); if(!miss.length) return Promise.resolve(txt);
   var sub=used.filter(function(r){ return miss.indexOf(r.date)>=0; });
-  var u2='아래 기록을 날짜마다 정확히 한 줄씩 「- **M/D(요일)** 내용」 형식으로만 써줘. 머리말·소제목·핵심요약 없이 줄만, 최신 날짜부터. 같은 날은 한 줄. 날짜 '+miss.length+'개 모두.\n\n=== 기록 ===\n'+thSrcByDate(sub);
+  var u2='아래 기록을 날짜마다 정확히 한 줄씩 「- **MM/DD(요일)** 내용」 형식으로만 써줘. 머리말·소제목·핵심요약 없이 줄만, 최신 날짜부터. 같은 날은 한 줄. 날짜 '+miss.length+'개 모두.\n\n=== 기록 ===\n'+thSrcByDate(sub);
   return thAICall(key, sys, u2, 1500).then(function(add){
     var lines=dashDate(add).split('\n').filter(function(l){ return /^\s*[-*•]/.test(l); });
     return lines.length ? thInsertByDate(txt, lines, used) : txt;
@@ -2711,7 +2725,7 @@ function thFillMissing(q, txt, used, key, sys){
 function thMissingNote(q, txt, used){
   if(!thIsListQ(q)) return '';
   var miss=thMissingDates(txt, used); if(!miss.length) return '';
-  return '\n\n⚠ 요약에 안 나온 기록 '+miss.length+'일 (참고는 했지만 AI가 빠뜨림): '+miss.map(function(d){ return (+d.slice(5,7))+'/'+(+d.slice(8,10))+'('+dow(d)+')'; }).join(', ');
+  return '\n\n⚠ 요약에 안 나온 기록 '+miss.length+'일 (참고는 했지만 AI가 빠뜨림): '+miss.map(function(d){ return thMD(d); }).join(', ');
 }
 var THASK_NOTFOUND='해당 기간·구분·단어의 기록을 못 찾았어요.\n예: "9월 필드 분석", "10/1 10/3 분석", "슬라이스 원인", "이번달 뒷땅".\n\n※ 날짜를 지정했는데도 안 나오면: ①다른 기기에서 입력한 기록이면 ⋮→서버에서 전체받기로 동기화했는지, ②해당 날짜 기록이 실제 저장돼 있는지 목록/달력에서 확인해보세요.';
 function themeAsk(){
@@ -2736,7 +2750,7 @@ function themeAsk(){
     var _m0=thIsListQ(q)?thMissingDates(txt,used).length:0;
     if(_m0) themeAskShow('<div style="background:#fff8e6;border:1px solid #f0d58a;border-radius:10px;padding:12px;margin:8px 0;color:#9a6b00;font-weight:700">🩹 AI가 빠뜨린 날짜 '+_m0+'개 보충 중… (10~20초)</div>');
     return thFillMissing(q, txt, used, key, sys).then(function(txt){
-    txt=thVenueFix(txt);
+    txt=thDatePad(thVenueFix(txt));
     themeLastOneLine=thExtractOneLine(txt);
     txt+=thMissingNote(q, txt, used);
     themeLastAI=txt; themeLastKw=q;
@@ -2759,7 +2773,7 @@ function themeAI(){
   }).join('\n');
   var kw=m.kws.join(', ')||'전체';
   var sys='당신은 골프 스윙 코치입니다. 사용자의 골프 일지 기록만을 근거로 특정 주제의 원인과 대책을 한국어로 간결하게 요약합니다. 기록에 없는 내용을 지어내지 마세요. 아래 제공된 기록은 주제어로 걸러낸 일부일 뿐, 사용자의 전체 일지가 아닙니다. "기록이 없다/부족하다"처럼 전체 일지에 대한 단정은 하지 말고, "이번에 참고한 자료에는 ~가 포함되어 있지 않음" 식으로 이 분석의 범위 안에서만 말하세요.';
-  var user='주제 키워드: '+kw+'\n\n아래는 내 골프 일지 기록들이야. 이 주제에 대해 (1) 반복되는 핵심 원인, (2) 효과가 있었던/권장되는 대책, (3) 두 줄 핵심요약 을 정리해줘. 소제목과 불릿으로 간결하게.\n※ 날짜로 인용할 땐 최신부터(내림차순), 날짜 뒤에 (요일)까지 표기. 예: 9/19(토).\n그리고 맨 마지막에 반드시 아래 형식으로 2줄 핵심요약을 써줘(각 줄 20자 내외):\n핵심요약:\n<첫째 줄 - 핵심 문제>\n<둘째 줄 - 결론/대책>\n\n=== 기록 ('+m.res.length+'건) ===\n'+src;
+  var user='주제 키워드: '+kw+'\n\n아래는 내 골프 일지 기록들이야. 이 주제에 대해 (1) 반복되는 핵심 원인, (2) 효과가 있었던/권장되는 대책, (3) 두 줄 핵심요약 을 정리해줘. 소제목과 불릿으로 간결하게.\n※ 날짜로 인용할 땐 최신부터(내림차순), 날짜 뒤에 (요일)까지 표기. 예: 09/19(토). 월/일은 반드시 두 자리로 맞춰(3/5 → 03/05).\n그리고 맨 마지막에 반드시 아래 형식으로 2줄 핵심요약을 써줘(각 줄 20자 내외):\n핵심요약:\n<첫째 줄 - 핵심 문제>\n<둘째 줄 - 결론/대책>\n\n=== 기록 ('+m.res.length+'건) ===\n'+src;
   fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
     headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
