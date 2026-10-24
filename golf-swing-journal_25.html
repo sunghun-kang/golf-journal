@@ -184,7 +184,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.69 · 26-10-24</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.70 · 26-10-24</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -1499,17 +1499,21 @@ function regenAI(){
   }
   fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-opus-5',max_tokens:3000,system:sys,output_config:{effort:'low'},messages:[{role:'user',content:user}]})})
   .then(function(r){return r.json();}).then(function(j){
-    btn.textContent=old; btn.disabled=false;
-    if(j.error){ alert('오류: '+(j.error.message||JSON.stringify(j.error))); return; }
+    if(j.error){ btn.textContent=old; btn.disabled=false; alert('오류: '+(j.error.message||JSON.stringify(j.error))); return; }
     var txt=(j.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('\n').trim();
-    if(!txt){ alert('응답이 비었어요. 다시 시도하세요.'); return; }
+    if(!txt){ btn.textContent=old; btn.disabled=false; alert('응답이 비었어요. 다시 시도하세요.'); return; }
     txt=dashDate(txt);
-    var oneline=thExtractOneLine(txt);
-    txt+=thMissingNote(q, txt, used);
-    document.getElementById('mMemo').value=thColorize(txt,flat);
-    document.getElementById('mTitle').value='🤖 AI요약 · '+(oneline?thColorize(oneline,flat):thColorize(kw,flat));
-    document.getElementById('mVt').value='A';
-    alert('✅ AI 재요약 완료! 내용 확인 후 저장을 누르세요.');
+    var _m0=thIsListQ(q)?thMissingDates(txt,used).length:0;
+    if(_m0) btn.textContent='빠진 날짜 '+_m0+'개 보충중…';
+    return thFillMissing(q, txt, used, key, sys).then(function(txt){
+      btn.textContent=old; btn.disabled=false;
+      var oneline=thExtractOneLine(txt);
+      txt+=thMissingNote(q, txt, used);
+      document.getElementById('mMemo').value=thColorize(txt,flat);
+      document.getElementById('mTitle').value='🤖 AI요약 · '+(oneline?thColorize(oneline,flat):thColorize(kw,flat));
+      document.getElementById('mVt').value='A';
+      alert('✅ AI 재요약 완료! 내용 확인 후 저장을 누르세요.');
+    });
   }).catch(function(e){ btn.textContent=old; btn.disabled=false; alert('통신 실패: '+e); });
 }
 function delModal(){if(editIdx<0)return;if(!confirm('삭제할까요?'))return;if(!confirm('정말 삭제합니다!'))return;var i=editIdx;closeOv();dl(i);}
@@ -2600,20 +2604,36 @@ function themeAskSelect(q){
   return {used:res.slice(0,100), dateLabel:dateLabel};
 }
 // 🤖질문 프롬프트(시스템·사용자) — 🤖질문과 「다시요약」 공용
+function thRecLine(r){
+  return (r.venue?(' 문제:'+thStrip(r.venue)):'')
+    +(r.members?(' 원인:'+thStrip(r.members)):'')
+    +(r.title?(' 대책:'+thStrip(r.title).replace(/\n/g,' / ')):'')
+    +(r.memo?(' 메모:'+thStrip(r.memo).replace(/\n/g,' ').slice(0,300)):'');
+}
+// 목록형이면 같은 날 기록을 한 덩어리로 합쳐서 보냄 → AI도 날짜당 한 줄 (같은 날 2건이 따로 나오거나 한쪽만 나오는 것 방지)
+function thSrcByDate(used){
+  var vtNames={F:'필드',S:'스크린',A:'분석',L:'人生',E:'영어',C:'회사'};
+  var by={}, order=[];
+  used.forEach(function(r){ var d=r.date||''; if(!by[d]){ by[d]=[]; order.push(d); } by[d].push(r); });
+  order.sort().reverse();
+  return order.map(function(d){
+    var rs=by[d];
+    var vts=[]; rs.forEach(function(r){ var n=vtNames[r.vt]; if(n && vts.indexOf(n)<0) vts.push(n); });
+    return '['+d+(d?'('+dow(d)+')':'')+']'+(vts.length?(' 구분:'+vts.join('·')):'')
+      +(rs.length>1 ? rs.map(function(r,k){ return ' ('+(k+1)+')'+thRecLine(r); }).join('') : thRecLine(rs[0]));
+  }).join('\n');
+}
 function themeAskPrompt(q, used, dateLabel){
-  var src=used.map(function(r){
-    return '['+(r.date||'')+(r.date?'('+dow(r.date)+')':'')+']'
-      +(r.venue?(' 문제:'+thStrip(r.venue)):'')
-      +(r.members?(' 원인:'+thStrip(r.members)):'')
-      +(r.title?(' 대책:'+thStrip(r.title).replace(/\n/g,' / ')):'')
-      +(r.memo?(' 메모:'+thStrip(r.memo).replace(/\n/g,' ').slice(0,300)):'');
+  var isList=thIsListQ(q);
+  var src=isList ? thSrcByDate(used) : used.map(function(r){
+    return '['+(r.date||'')+(r.date?'('+dow(r.date)+')':'')+']'+thRecLine(r);
   }).join('\n');
   var sys='당신은 골프 스윙 코치입니다. 사용자의 골프 일지 기록을 근거로 질문에 한국어로 간결하고 실전적으로 답합니다. 기록에 있는 내용을 우선 근거로 삼고, 기록에 없어 일반 지식으로 보완할 때는 "(일반적으로)"라고 표시하세요. 아래 제공된 기록은 질문어와 기간으로 걸러낸 일부일 뿐, 사용자의 전체 일지가 아닙니다. "기록이 없다/부족하다"처럼 전체 일지에 대한 단정은 하지 말고, "이번에 참고한 자료에는 ~가 포함되어 있지 않음" 식으로 이 분석의 범위 안에서만 말하세요.';
   var user='질문: '+q+(dateLabel?('\n(대상 기간: '+dateLabel+')'):'')+'\n\n아래는 내 골프 일지 기록이야'+(dateLabel?('('+dateLabel+' 기준으로 추린 것)'):'')+'. 이 기록을 근거로 위 질문에 답해줘.\n※ 질문이 정리방식을 지정하면(예: "날짜별로", 시간순, 주제별) 그 방식을 최우선으로 따라줘. 지정이 없으면 (1) 반복되는 핵심 원인 (2) 효과 있었던/권장 대책 (3) 두 줄 핵심요약 구조로. 소제목·불릿으로 간결하게.\n※ 날짜로 인용할 땐 반드시 최신 날짜부터(내림차순)로, 날짜 뒤에 (요일)까지 표기해줘. 예: 9/19(토).\n맨 마지막에 반드시 아래 형식으로 2줄 핵심요약을 써줘(각 줄 20자 내외):\n핵심요약:\n<첫째 줄 - 핵심 문제>\n<둘째 줄 - 결론/대책>\n\n=== 기록('+used.length+'건'+(dateLabel?(' · '+dateLabel):'')+') ===\n'+src;
-  if(thIsListQ(q)){
+  if(isList){
     // 목록형 질문(정리·날짜별·내림차순…)이면 AI가 비슷한 날을 묶으며 날짜를 빠뜨림(26-10-24: 39건 중 9건 누락) → 날짜 전부 명시
     var ds=thUsedDates(used);
-    user=user.replace('\n맨 마지막에 반드시', '\n※ 이건 「기록 정리」 요청이야. 아래 '+used.length+'건('+ds.length+'개 날짜)을 하나도 빠뜨리지 말고 날짜마다 한 줄씩 모두 써줘. 같은 날 여러 건은 한 줄로 합쳐도 되지만 날짜 자체는 절대 생략하지 마. 비슷한 내용이어도 묶어서 생략하지 말 것.\n   반드시 들어가야 할 날짜: '+ds.map(function(d){ return (+d.slice(5,7))+'/'+(+d.slice(8,10))+'('+dow(d)+')'; }).join(', ')+'\n맨 마지막에 반드시');
+    user=user.replace('\n맨 마지막에 반드시', '\n※ 이건 「기록 정리」 요청이야. 기록은 이미 날짜별로 한 줄씩 묶어 '+ds.length+'개 날짜로 줬어(원래 '+used.length+'건). 날짜마다 정확히 한 줄 「- **M/D(요일)** 내용」으로, '+ds.length+'개 날짜를 하나도 빠뜨리지 말고 모두 써줘. 같은 날은 반드시 한 줄로(두 줄로 나누지 말 것). 비슷한 내용이어도 묶어서 생략하지 말 것.\n   반드시 들어가야 할 날짜: '+ds.map(function(d){ return (+d.slice(5,7))+'/'+(+d.slice(8,10))+'('+dow(d)+')'; }).join(', ')+'\n맨 마지막에 반드시');
   }
   return {sys:sys, user:user};
 }
@@ -2628,6 +2648,41 @@ function thMissingDates(txt, used){
   t=t.replace(/(\d{1,2})\s*월\s*(\d{1,2})\s*일/g, function(_,m,d){ mark(m,d); return ' '; });      // 7월 12일
   t.replace(/(\d{1,2})\s*[\/\-]\s*(\d{1,2})(?!\d)/g, function(_,m,d){ mark(m,d); return _; });    // 7/12, 07/12, 07-12 (4.5 같은 소수는 날짜로 안 봄)
   return thUsedDates(used).filter(function(d){ return !seen[(+d.slice(5,7))+'/'+(+d.slice(8,10))]; });
+}
+function thAICall(key, sys, user, maxTok){
+  return fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-opus-5',max_tokens:maxTok||1500,system:sys,output_config:{effort:'low'},messages:[{role:'user',content:user}]})})
+    .then(function(r){ return r.json(); })
+    .then(function(j){ if(j.error) throw new Error(j.error.message||'error'); return (j.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('\n').trim(); });
+}
+// 줄 맨앞 날짜(- **7/12(일)** …) → 참고기록의 실제 날짜(YYYY-MM-DD)
+function thLineDate(ln, mdMap){
+  var m=String(ln).match(/^\s*[-*•]\s*(?:\*\*)?\s*(\d{1,2})\s*[\/\-]\s*(\d{1,2})(?!\d)/); if(!m) return '';
+  return mdMap[(+m[1])+'/'+(+m[2])]||'';
+}
+// 보충한 줄을 날짜 자리(최신순)에 끼워넣기. 날짜 줄이 없으면 「핵심요약:」 앞에
+function thInsertByDate(txt, lines, used){
+  var mdMap={}; used.forEach(function(r){ if(r.date) mdMap[(+r.date.slice(5,7))+'/'+(+r.date.slice(8,10))]=r.date; });
+  var L=String(txt).split('\n');
+  lines.forEach(function(ln){
+    var d=thLineDate(ln, mdMap), at=-1, lastDated=-1;
+    for(var i=0;i<L.length;i++){ var di=thLineDate(L[i], mdMap); if(!di) continue; lastDated=i; if(d && di<d){ at=i; break; } }
+    if(at<0 && lastDated>=0) at=lastDated+1;
+    if(at<0){ at=L.length; for(var k=0;k<L.length;k++){ if(/^\s*핵심요약\s*[:：]/.test(L[k])){ at=k; break; } } }
+    L.splice(at,0,ln);
+  });
+  return L.join('\n');
+}
+// 🩹 AI가 빠뜨린 날짜만 한 번 더 물어서 제자리에 끼워넣음(목록형만). 그래도 빠지면 thMissingNote 가 ⚠ 로 표시
+function thFillMissing(q, txt, used, key, sys){
+  if(!thIsListQ(q)) return Promise.resolve(txt);
+  var miss=thMissingDates(txt, used); if(!miss.length) return Promise.resolve(txt);
+  var sub=used.filter(function(r){ return miss.indexOf(r.date)>=0; });
+  var u2='아래 기록을 날짜마다 정확히 한 줄씩 「- **M/D(요일)** 내용」 형식으로만 써줘. 머리말·소제목·핵심요약 없이 줄만, 최신 날짜부터. 같은 날은 한 줄. 날짜 '+miss.length+'개 모두.\n\n=== 기록 ===\n'+thSrcByDate(sub);
+  return thAICall(key, sys, u2, 1500).then(function(add){
+    var lines=dashDate(add).split('\n').filter(function(l){ return /^\s*[-*•]/.test(l); });
+    return lines.length ? thInsertByDate(txt, lines, used) : txt;
+  }).catch(function(){ return txt; });
 }
 function thMissingNote(q, txt, used){
   if(!thIsListQ(q)) return '';
@@ -2654,10 +2709,14 @@ function themeAsk(){
     var txt=(j.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('\n').trim();
     if(!txt) txt='(응답이 비었어요. 다시 시도해 주세요.)';
     txt=dashDate(txt);
+    var _m0=thIsListQ(q)?thMissingDates(txt,used).length:0;
+    if(_m0) themeAskShow('<div style="background:#fff8e6;border:1px solid #f0d58a;border-radius:10px;padding:12px;margin:8px 0;color:#9a6b00;font-weight:700">🩹 AI가 빠뜨린 날짜 '+_m0+'개 보충 중… (10~20초)</div>');
+    return thFillMissing(q, txt, used, key, sys).then(function(txt){
     themeLastOneLine=thExtractOneLine(txt);
     txt+=thMissingNote(q, txt, used);
     themeLastAI=txt; themeLastKw=q;
     themeAskShow('<div style="background:#eefaf3;border:1px solid #a9e0c4;border-radius:10px;padding:12px;margin:8px 0"><div style="font-weight:700;color:#159957;margin-bottom:6px;font-size:0.92rem">🤖 '+esc(q)+' <button onclick="document.getElementById(\'thAskBox\').innerHTML=\'\'" style="float:right;font-size:0.68rem;background:none;border:1px solid #ccc;border-radius:5px;padding:1px 6px;color:#999">닫기</button></div><div style="white-space:pre-wrap;line-height:1.7;font-size:0.9rem;color:#222">'+mdLite(txt)+'</div><div style="margin-top:10px;text-align:center;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button onclick="themeAsk()" style="background:#7a3fb8;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:0.9rem;font-weight:700">🔄 재분석</button><button onclick="themeSaveAsEntry()" style="background:#1a7a1a;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:0.9rem;font-weight:700">📌 기록으로 저장</button></div></div>');
+    });
   }).catch(function(e){ themeAskShow('<div style="background:#fdecea;border-radius:10px;padding:12px;color:#c0392b;font-size:0.85rem">⚠️ 통신 실패: '+esc(String(e))+'<br>키 확인 또는 잠시 후 재시도.</div>'); });
 }
 function themeAI(){
