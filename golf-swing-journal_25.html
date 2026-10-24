@@ -184,7 +184,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.68 · 26-10-24</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.69 · 26-10-24</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -1505,6 +1505,7 @@ function regenAI(){
     if(!txt){ alert('응답이 비었어요. 다시 시도하세요.'); return; }
     txt=dashDate(txt);
     var oneline=thExtractOneLine(txt);
+    txt+=thMissingNote(q, txt, used);
     document.getElementById('mMemo').value=thColorize(txt,flat);
     document.getElementById('mTitle').value='🤖 AI요약 · '+(oneline?thColorize(oneline,flat):thColorize(kw,flat));
     document.getElementById('mVt').value='A';
@@ -2609,7 +2610,29 @@ function themeAskPrompt(q, used, dateLabel){
   }).join('\n');
   var sys='당신은 골프 스윙 코치입니다. 사용자의 골프 일지 기록을 근거로 질문에 한국어로 간결하고 실전적으로 답합니다. 기록에 있는 내용을 우선 근거로 삼고, 기록에 없어 일반 지식으로 보완할 때는 "(일반적으로)"라고 표시하세요. 아래 제공된 기록은 질문어와 기간으로 걸러낸 일부일 뿐, 사용자의 전체 일지가 아닙니다. "기록이 없다/부족하다"처럼 전체 일지에 대한 단정은 하지 말고, "이번에 참고한 자료에는 ~가 포함되어 있지 않음" 식으로 이 분석의 범위 안에서만 말하세요.';
   var user='질문: '+q+(dateLabel?('\n(대상 기간: '+dateLabel+')'):'')+'\n\n아래는 내 골프 일지 기록이야'+(dateLabel?('('+dateLabel+' 기준으로 추린 것)'):'')+'. 이 기록을 근거로 위 질문에 답해줘.\n※ 질문이 정리방식을 지정하면(예: "날짜별로", 시간순, 주제별) 그 방식을 최우선으로 따라줘. 지정이 없으면 (1) 반복되는 핵심 원인 (2) 효과 있었던/권장 대책 (3) 두 줄 핵심요약 구조로. 소제목·불릿으로 간결하게.\n※ 날짜로 인용할 땐 반드시 최신 날짜부터(내림차순)로, 날짜 뒤에 (요일)까지 표기해줘. 예: 9/19(토).\n맨 마지막에 반드시 아래 형식으로 2줄 핵심요약을 써줘(각 줄 20자 내외):\n핵심요약:\n<첫째 줄 - 핵심 문제>\n<둘째 줄 - 결론/대책>\n\n=== 기록('+used.length+'건'+(dateLabel?(' · '+dateLabel):'')+') ===\n'+src;
+  if(thIsListQ(q)){
+    // 목록형 질문(정리·날짜별·내림차순…)이면 AI가 비슷한 날을 묶으며 날짜를 빠뜨림(26-10-24: 39건 중 9건 누락) → 날짜 전부 명시
+    var ds=thUsedDates(used);
+    user=user.replace('\n맨 마지막에 반드시', '\n※ 이건 「기록 정리」 요청이야. 아래 '+used.length+'건('+ds.length+'개 날짜)을 하나도 빠뜨리지 말고 날짜마다 한 줄씩 모두 써줘. 같은 날 여러 건은 한 줄로 합쳐도 되지만 날짜 자체는 절대 생략하지 마. 비슷한 내용이어도 묶어서 생략하지 말 것.\n   반드시 들어가야 할 날짜: '+ds.map(function(d){ return (+d.slice(5,7))+'/'+(+d.slice(8,10))+'('+dow(d)+')'; }).join(', ')+'\n맨 마지막에 반드시');
+  }
   return {sys:sys, user:user};
+}
+// 목록형 질문? (정리/날짜별/내림차순/전부… → 날짜를 빠짐없이 써야 하는 요청)
+function thIsListQ(q){ return /정리|날[짜자]\s*별|내[림리]\s*차순|오[름르]\s*차순|시간순|순서대로|목록|전부|모두|빠짐없이|하나도|기록만/.test(q||''); }
+function thUsedDates(used){ var s={}; used.forEach(function(r){ if(r&&r.date) s[r.date]=1; }); return Object.keys(s).sort().reverse(); }
+// ✅ 빠진 날짜 자동 검사: AI 답에 안 나온 참고기록 날짜 → 끝에 ⚠ 줄로 붙임 (AI가 또 빠뜨려도 바로 보이게)
+function thMissingDates(txt, used){
+  var seen={}, t=String(txt||'');
+  function mark(m,d){ m=+m; d=+d; if(m>=1&&m<=12&&d>=1&&d<=31) seen[m+'/'+d]=1; }
+  t=t.replace(/(?:20)?\d{2}-(\d{1,2})-(\d{1,2})/g, function(_,m,d){ mark(m,d); return ' '; });   // 26-07-12, 2026-07-12
+  t=t.replace(/(\d{1,2})\s*월\s*(\d{1,2})\s*일/g, function(_,m,d){ mark(m,d); return ' '; });      // 7월 12일
+  t.replace(/(\d{1,2})\s*[\/\-]\s*(\d{1,2})(?!\d)/g, function(_,m,d){ mark(m,d); return _; });    // 7/12, 07/12, 07-12 (4.5 같은 소수는 날짜로 안 봄)
+  return thUsedDates(used).filter(function(d){ return !seen[(+d.slice(5,7))+'/'+(+d.slice(8,10))]; });
+}
+function thMissingNote(q, txt, used){
+  if(!thIsListQ(q)) return '';
+  var miss=thMissingDates(txt, used); if(!miss.length) return '';
+  return '\n\n⚠ 요약에 안 나온 기록 '+miss.length+'일 (참고는 했지만 AI가 빠뜨림): '+miss.map(function(d){ return (+d.slice(5,7))+'/'+(+d.slice(8,10))+'('+dow(d)+')'; }).join(', ');
 }
 var THASK_NOTFOUND='해당 기간·구분·단어의 기록을 못 찾았어요.\n예: "9월 필드 분석", "10/1 10/3 분석", "슬라이스 원인", "이번달 뒷땅".\n\n※ 날짜를 지정했는데도 안 나오면: ①다른 기기에서 입력한 기록이면 ⋮→서버에서 전체받기로 동기화했는지, ②해당 날짜 기록이 실제 저장돼 있는지 목록/달력에서 확인해보세요.';
 function themeAsk(){
@@ -2631,7 +2654,9 @@ function themeAsk(){
     var txt=(j.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('\n').trim();
     if(!txt) txt='(응답이 비었어요. 다시 시도해 주세요.)';
     txt=dashDate(txt);
-    themeLastAI=txt; themeLastKw=q; themeLastOneLine=thExtractOneLine(txt);
+    themeLastOneLine=thExtractOneLine(txt);
+    txt+=thMissingNote(q, txt, used);
+    themeLastAI=txt; themeLastKw=q;
     themeAskShow('<div style="background:#eefaf3;border:1px solid #a9e0c4;border-radius:10px;padding:12px;margin:8px 0"><div style="font-weight:700;color:#159957;margin-bottom:6px;font-size:0.92rem">🤖 '+esc(q)+' <button onclick="document.getElementById(\'thAskBox\').innerHTML=\'\'" style="float:right;font-size:0.68rem;background:none;border:1px solid #ccc;border-radius:5px;padding:1px 6px;color:#999">닫기</button></div><div style="white-space:pre-wrap;line-height:1.7;font-size:0.9rem;color:#222">'+mdLite(txt)+'</div><div style="margin-top:10px;text-align:center;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button onclick="themeAsk()" style="background:#7a3fb8;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:0.9rem;font-weight:700">🔄 재분석</button><button onclick="themeSaveAsEntry()" style="background:#1a7a1a;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:0.9rem;font-weight:700">📌 기록으로 저장</button></div></div>');
   }).catch(function(e){ themeAskShow('<div style="background:#fdecea;border-radius:10px;padding:12px;color:#c0392b;font-size:0.85rem">⚠️ 통신 실패: '+esc(String(e))+'<br>키 확인 또는 잠시 후 재시도.</div>'); });
 }
