@@ -184,7 +184,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.72 · 26-10-24</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.73 · 26-10-24</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -1492,7 +1492,7 @@ function regenAI(){
   var focusArr=focus?focus.split(/[,，]\s*|\s+/).filter(Boolean):[];
   var flat=focusArr.length?focusArr:q.split(/,\s*/).filter(Boolean);   // 색강조할 단어: 중심키워드 우선
   var kw=q;
-  var pr=themeAskPrompt(q, used, sel.dateLabel), sys=pr.sys, user=pr.user;
+  var pr=themeAskPrompt(q, used, sel.dateLabel, sel.toks), sys=pr.sys, user=pr.user;
   if(focusArr.length){
     // 🎯 같은 기록을 대상으로 하되, 이 단어들 중심으로 다시 정리 (관련 내용 위주, 나머지는 짧게)
     user=user.replace('이 기록을 근거로 위 질문에 답해줘.', '이 기록을 근거로 위 질문에 답하되, 특히 「'+focusArr.join(', ')+'」 중심으로 다시 정리해줘. 이 키워드와 관련된 원인·대책·날짜를 위주로 자세히, 나머지는 짧게. 키워드 관련 내용이 참고 기록에 없으면 그렇다고 말해줘.');
@@ -1503,11 +1503,11 @@ function regenAI(){
     var txt=(j.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('\n').trim();
     if(!txt){ btn.textContent=old; btn.disabled=false; alert('응답이 비었어요. 다시 시도하세요.'); return; }
     txt=dashDate(txt);
-    var _m0=thIsListQ(q)?thMissingDates(txt,used).length:0;
+    var _m0=thMustAll(q)?thMissingDates(txt,used).length:0;
     if(_m0) btn.textContent='빠진 날짜 '+_m0+'개 보충중…';
     return thFillMissing(q, txt, used, key, sys).then(function(txt){
       btn.textContent=old; btn.disabled=false;
-      txt=thDatePad(thVenueFix(txt));
+      txt=thDateIcons(thDatePad(thVenueFix(txt)), used);
       var oneline=thExtractOneLine(txt);
       txt+=thMissingNote(q, txt, used);
       document.getElementById('mMemo').value=thColorize(txt,flat);
@@ -2564,7 +2564,9 @@ function themeAskSelect(q){
     dateList=dateList.filter(function(d,i){ return dateList.indexOf(d)===i; });  // 중복 제거
     if(!dateFrom && !dateList.length){
       var _yOnly;
-      if(/이번\s*달|금월|이달/.test(qd)){ dateFrom=_cy+'-'+pad2(_cm); dateLabel='이번달'; }
+      if(/올해|금년|올\s*한\s*해/.test(qd)){ dateFrom=String(_cy); dateLabel=_cy+'년'; }                 // 올해 = 그 해 전체
+      else if(/작년|지난\s*해|전년/.test(qd)){ dateFrom=String(_cy-1); dateLabel=(_cy-1)+'년'; }
+      else if(/이번\s*달|금월|이달/.test(qd)){ dateFrom=_cy+'-'+pad2(_cm); dateLabel='이번달'; }
       else if(/지난\s*달|저번\s*달|전월/.test(qd)){ var _pm=_cm-1,_py=_cy; if(_pm<1){_pm=12;_py--;} dateFrom=_py+'-'+pad2(_pm); dateLabel='지난달'; }
       else if(_yOnly=qd.match(/(20\d{2})\s*년(?!\s*\d)/)){ dateFrom=_yOnly[1]; dateLabel=_yOnly[1]+'년'; }  // "26년"(→2026년 정규화됨)처럼 월 없이 연도만 = 그 해 전체
       else { var _mm2; if(_mm2=qd.match(/(?:^|\s)(\d{1,2})\s*월(?!\s*\d)/)){ dateFrom=_cy+'-'+pad2(_mm2[1]); dateLabel=_cy+'년 '+(+_mm2[1])+'월'; } }  // 연도없는 N월 = 올해 그 달
@@ -2588,7 +2590,7 @@ function themeAskSelect(q){
   var stop=/^(나는|나|내|내가|이유|원인|분석|분석해줘|분석해조|해줘|해조|왜|어떻게|무엇|뭐|좀|주라|주세요|알려줘|정리|정리해줘|정리해조|요약|요약해줘|요약해조|요약해|대책|방법|하는|되는|것|거|들|해줄|볼까|어떤|경우|때|더|좀더|관련|모아|모아서|찾아|찾아서|골프|스윙|일지|전체|모두|다|필드|스크린|인생|人生|영어|회사|번|다녀옴|다녀온|간|다시|합쳐서|합쳐|병합|통합|직접|순서대로|내림차순|오름차순|내리차순|오르차순|날짜별로|날자별로)$/;
   // "기록"/"정리"/"요약"처럼 어미만 바뀐 지시어(기록한/기록들/정리해서 등)도 걸러내기 위한 접두 체크
   var stopPrefix=/^(기록|정리|요약|분석|찾아|모아|알려|보여|적어|써줘|해달라|부탁)/;
-  var qc=qd.replace(/이번\s*달|지난\s*달|저번\s*달|금월|이달|전월|최근/g,' ');
+  var qc=qd.replace(/이번\s*달|지난\s*달|저번\s*달|금월|이달|전월|최근|올해|금년|작년|지난\s*해|전년/g,' ');
   var toks=qc.replace(/[?？.,!·]/g,' ').split(/\s+/).filter(function(w){ return w.length>=2 && !stop.test(w) && !stopPrefix.test(w); });
   var hay=function(r){ return ((r.venue||'')+' '+(r.members||'')+' '+(r.title||'')+' '+(r.memo||'')).toLowerCase(); };
   // "내가 직접/수동으로 쓴/AI 빼고"처럼 AI가 아닌 내 기록만 원하면 AI분석/AI요약/AI정리 기록은 제외
@@ -2596,13 +2598,15 @@ function themeAskSelect(q){
   var pool=(data||[]).filter(function(r){ return r && !r.deleted && String(r.id||'').indexOf('__')!==0 && (!wantManualOnly || !isAIRec(r)); });
   var kwOk=function(r){ return !toks.length || toks.some(function(t){ return hay(r).indexOf(t.toLowerCase())>=0; }); };
   var vtOk=function(r){ return !vtKeys.length || wantVt[r.vt]===1; };
-  var res=pool.filter(function(r){ return inRange(r) && vtOk(r) && kwOk(r); });
+  // 구분(필드·스크린…)을 지정했으면 그 구분 기록은 다 넣음 — 질문의 다른 단어(살로윙 등)는 거르지 않고 「중심 주제」로만 씀 (26-10-24)
+  var res=pool.filter(function(r){ return inRange(r) && vtOk(r) && (vtKeys.length ? true : kwOk(r)); });
   if(!res.length && toks.length && (hasDate||vtKeys.length)) res=pool.filter(function(r){ return inRange(r) && vtOk(r); });  // 키워드 완화
   if(!res.length && vtKeys.length && hasDate) res=pool.filter(inRange);                                                     // 타입 완화(기간만)
   if(!res.length && hasDate) res=pool.filter(inRange);
   if(!res.length && toks.length) res=pool.filter(function(r){ return toks.some(function(t){ return hay(r).indexOf(t)>=0; }); });
   res.sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
-  return {used:res.slice(0,100), dateLabel:dateLabel};
+  // 구분 지정이면 다 넣어야 하니 상한을 넉넉히(필드 전체 105건 > 100) — 날짜별로 합쳐 보내서 길이 부담 적음
+  return {used:res.slice(0, vtKeys.length?250:100), dateLabel:dateLabel, vt:vtKeys, toks:(vtKeys.length?toks:[])};
 }
 // 🤖질문 프롬프트(시스템·사용자) — 🤖질문과 「다시요약」 공용
 function thRecLine(r){
@@ -2624,8 +2628,8 @@ function thSrcByDate(used){
       +(rs.length>1 ? rs.map(function(r,k){ return ' ('+(k+1)+')'+thRecLine(r); }).join('') : thRecLine(rs[0]));
   }).join('\n');
 }
-function themeAskPrompt(q, used, dateLabel){
-  var isList=thIsListQ(q);
+function themeAskPrompt(q, used, dateLabel, focusToks){
+  var isList=thMustAll(q), isOnlyType=isList && !thIsListQ(q);   // 구분만 지정한 분석 질문도 날짜 전부
   var src=isList ? thSrcByDate(used) : used.map(function(r){
     return '['+(r.date||'')+(r.date?'('+dow(r.date)+')':'')+']'+thRecLine(r);
   }).join('\n');
@@ -2634,7 +2638,15 @@ function themeAskPrompt(q, used, dateLabel){
   if(isList){
     // 목록형 질문(정리·날짜별·내림차순…)이면 AI가 비슷한 날을 묶으며 날짜를 빠뜨림(26-10-24: 39건 중 9건 누락) → 날짜 전부 명시
     var ds=thUsedDates(used);
-    user=user.replace('\n맨 마지막에 반드시', '\n※ 이건 「기록 정리」 요청이야. 기록은 이미 날짜별로 한 줄씩 묶어 '+ds.length+'개 날짜로 줬어(원래 '+used.length+'건). 날짜마다 정확히 한 줄 「- **MM/DD(요일)** 내용」으로, '+ds.length+'개 날짜를 하나도 빠뜨리지 말고 모두 써줘. 같은 날은 반드시 한 줄로(두 줄로 나누지 말 것). 비슷한 내용이어도 묶어서 생략하지 말 것.\n   반드시 들어가야 할 날짜: '+ds.map(function(d){ return thMD(d); }).join(', ')+'\n맨 마지막에 반드시');
+    var allRule = isOnlyType
+      // 구분(스크린 등)만 지정한 분석 질문: 날짜별 목록(전부) 먼저 + 그다음 분석
+      ? '※ 질문이 구분('+dateLabel+')을 지정했으니 그 기록은 전부 다뤄야 해. 기록은 이미 날짜별로 한 줄씩 묶어 '+ds.length+'개 날짜로 줬어(원래 '+used.length+'건). 먼저 「## 날짜별 기록」 아래에 날짜마다 정확히 한 줄 「- **MM/DD(요일)** 내용」으로 '+ds.length+'개 날짜를 하나도 빠뜨리지 말고 모두 쓰고(같은 날은 한 줄), 그다음 「## 분석」에서 질문에 답해줘(반복되는 원인·효과 있던 대책).'
+      : '※ 이건 「기록 정리」 요청이야. 기록은 이미 날짜별로 한 줄씩 묶어 '+ds.length+'개 날짜로 줬어(원래 '+used.length+'건). 날짜마다 정확히 한 줄 「- **MM/DD(요일)** 내용」으로, '+ds.length+'개 날짜를 하나도 빠뜨리지 말고 모두 써줘. 같은 날은 반드시 한 줄로(두 줄로 나누지 말 것). 비슷한 내용이어도 묶어서 생략하지 말 것.';
+    user=user.replace('\n맨 마지막에 반드시', '\n'+allRule+'\n   반드시 들어가야 할 날짜: '+ds.map(function(d){ return thMD(d); }).join(', ')+'\n맨 마지막에 반드시');
+  }
+  if(focusToks && focusToks.length){
+    // 구분을 지정했을 땐 질문의 다른 단어로 기록을 거르지 않음 → 대신 그 단어 중심으로 분석
+    user=user.replace('\n맨 마지막에 반드시', '\n※ 질문에 나온 「'+focusToks.join(', ')+'」을(를) 중심 주제로 삼아 관련 내용을 자세히, 나머지는 짧게.\n맨 마지막에 반드시');
   }
   user=user.replace('\n맨 마지막에 반드시', '\n'+thVenueRule()+'\n맨 마지막에 반드시');
   return {sys:sys, user:user};
@@ -2652,6 +2664,20 @@ function thDatePad(txt){
     // 날짜끼리 이어 쓴 「10/1·10/3·10/4」(· 또는 ~) — 「3/4 스윙, 1/2 스윙」 같은 쉼표 분수는 안 건드림
     .replace(/(^|[^\d\/.\-])(\d{1,2})\/(\d{1,2})(?=\s*[·~]\s*\d{1,2}\/\d{1,2})/g, function(m,pre,a,b){ return ok(a,b)? pre+p(a)+'/'+p(b) : m; })
     .replace(/(?<=\d{1,2}\/\d{1,2}(?:\s*\([일월화수목금토]\))?\s*[·~]\s*)(\d{1,2})\/(\d{1,2})(?![\d\/])/g, function(m,a,b){ return ok(a,b)? p(a)+'/'+p(b) : m; });
+}
+// 🏷 날짜 뒤에 그 날 기록의 구분 아이콘 (목록과 같은 ⛳필드 🏌️‍♀️스크린 🔍분석, 人生·영어·회사는 🌱🔤🏢) (26-10-24)
+var VT_ICON={F:'⛳',S:'🏌️‍♀️',A:'🔍',L:'🌱',E:'🔤',C:'🏢'};
+function thDateIcons(txt, used){
+  var by={};
+  used.forEach(function(r){ if(!r.date) return; var k=r.date.slice(5,7)+'/'+r.date.slice(8,10), ic=VT_ICON[r.vt]; if(!ic) return; by[k]=by[k]||[]; if(by[k].indexOf(ic)<0) by[k].push(ic); });
+  var order=['⛳','🏌️‍♀️','🔍','🌱','🔤','🏢'];
+  return String(txt||'').replace(/(\d{2}\/\d{2})(\s*\([일월화수목금토]\))(\*\*)?/g, function(m,md,w,b,off,all){
+    var ics=by[md]; if(!ics) return m;
+    var rest=all.slice(off+m.length, off+m.length+12).replace(/^\s+/,'');
+    if(order.some(function(o){ return rest.indexOf(o)===0; })) return m;   // 이미 붙어 있으면 그대로
+    ics=ics.slice().sort(function(a,b){ return order.indexOf(a)-order.indexOf(b); });
+    return md+w+(b||'')+' '+ics.join('');
+  });
 }
 // ⛳ 구장 이름 통일 — AI 답에서 별칭을 정식 이름으로 바꾸고 "큰따옴표"로 표시 (26-10-24 이사님 지정)
 // 주로 가는 곳: BA비스타, 썬밸리. 새 구장/별칭은 여기에만 추가하면 됨
@@ -2675,17 +2701,21 @@ function thVenueFix(txt){
   // "BA비스타 몬티코스" → ""BA비스타" "BA비스타"코스" 처럼 겹치면 하나로
   return out.replace(/"([^"\n]{1,12})"\s*"\1"/g, '"$1"');
 }
+// 날짜 전부 다뤄야 하는 질문 = 목록형 OR 구분(필드·스크린·人生·영어·회사)을 지정한 질문 (26-10-24: 「스크린 분석」이 다 안 나옴)
+function thTypeInQ(q){ return /필드|스크린|인생|人生|영어|회사/.test(q||''); }
+function thMustAll(q){ return thIsListQ(q) || thTypeInQ(q); }
 // 목록형 질문? (정리/날짜별/내림차순/전부… → 날짜를 빠짐없이 써야 하는 요청)
 function thIsListQ(q){ return /정리|날[짜자]\s*별|내[림리]\s*차순|오[름르]\s*차순|시간순|순서대로|목록|전부|모두|빠짐없이|하나도|기록만/.test(q||''); }
 function thUsedDates(used){ var s={}; used.forEach(function(r){ if(r&&r.date) s[r.date]=1; }); return Object.keys(s).sort().reverse(); }
 // ✅ 빠진 날짜 자동 검사: AI 답에 안 나온 참고기록 날짜 → 끝에 ⚠ 줄로 붙임 (AI가 또 빠뜨려도 바로 보이게)
 function thMissingDates(txt, used){
   var seen={}, t=String(txt||'');
-  function mark(m,d){ m=+m; d=+d; if(m>=1&&m<=12&&d>=1&&d<=31) seen[m+'/'+d]=1; }
+  function mark(m,d){ m=+m; d=+d; if(m>=1&&m<=12&&d>=1&&d<=31) seen[m+'/'+d]=(seen[m+'/'+d]||0)+1; }   // 횟수로 셈(여러 해에 같은 월/일)
   t=t.replace(/(?:20)?\d{2}-(\d{1,2})-(\d{1,2})/g, function(_,m,d){ mark(m,d); return ' '; });   // 26-07-12, 2026-07-12
   t=t.replace(/(\d{1,2})\s*월\s*(\d{1,2})\s*일/g, function(_,m,d){ mark(m,d); return ' '; });      // 7월 12일
   t.replace(/(\d{1,2})\s*[\/\-]\s*(\d{1,2})(?!\d)/g, function(_,m,d){ mark(m,d); return _; });    // 7/12, 07/12, 07-12 (4.5 같은 소수는 날짜로 안 봄)
-  return thUsedDates(used).filter(function(d){ return !seen[(+d.slice(5,7))+'/'+(+d.slice(8,10))]; });
+  // 같은 월/일이 여러 해에 있으면(2025-01-11·2026-01-11) 그 횟수만큼 나와야 다 나온 것 — 모자라면 오래된 해부터 빠진 걸로
+  return thUsedDates(used).filter(function(d){ var k=(+d.slice(5,7))+'/'+(+d.slice(8,10)); if(seen[k]>0){ seen[k]--; return false; } return true; });
 }
 function thAICall(key, sys, user, maxTok){
   return fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
@@ -2713,7 +2743,7 @@ function thInsertByDate(txt, lines, used){
 }
 // 🩹 AI가 빠뜨린 날짜만 한 번 더 물어서 제자리에 끼워넣음(목록형만). 그래도 빠지면 thMissingNote 가 ⚠ 로 표시
 function thFillMissing(q, txt, used, key, sys){
-  if(!thIsListQ(q)) return Promise.resolve(txt);
+  if(!thMustAll(q)) return Promise.resolve(txt);
   var miss=thMissingDates(txt, used); if(!miss.length) return Promise.resolve(txt);
   var sub=used.filter(function(r){ return miss.indexOf(r.date)>=0; });
   var u2='아래 기록을 날짜마다 정확히 한 줄씩 「- **MM/DD(요일)** 내용」 형식으로만 써줘. 머리말·소제목·핵심요약 없이 줄만, 최신 날짜부터. 같은 날은 한 줄. 날짜 '+miss.length+'개 모두.\n\n=== 기록 ===\n'+thSrcByDate(sub);
@@ -2723,7 +2753,7 @@ function thFillMissing(q, txt, used, key, sys){
   }).catch(function(){ return txt; });
 }
 function thMissingNote(q, txt, used){
-  if(!thIsListQ(q)) return '';
+  if(!thMustAll(q)) return '';
   var miss=thMissingDates(txt, used); if(!miss.length) return '';
   return '\n\n⚠ 요약에 안 나온 기록 '+miss.length+'일 (참고는 했지만 AI가 빠뜨림): '+miss.map(function(d){ return thMD(d); }).join(', ');
 }
@@ -2732,12 +2762,12 @@ function themeAsk(){
   var q=(document.getElementById('thKw').value||'').trim();
   if(!q){ alert('키워드 칸에 질문을 적어주세요.\n예: 슬라이스 나는 이유 원인 분석해줘'); return; }
   var key=themeAIKey(false); if(!key) return;
-  var sel=themeAskSelect(q), used=sel.used, dateLabel=sel.dateLabel;
+  var sel=themeAskSelect(q), used=sel.used, dateLabel=sel.dateLabel, focusToks=sel.toks;
   var vtNames={F:'필드',S:'스크린',A:'분석',L:'人生',E:'영어',C:'회사'};
   if(!used.length){ alert(THASK_NOTFOUND); return; }
   var usedSummary=used.slice(0,50).map(function(r){ return (r.date?(r.date+'('+dow(r.date)+')'):'')+(vtNames[r.vt]?('('+vtNames[r.vt]+')'):''); }).join(', ');
   themeAskShow('<div style="background:#e7f6ee;border:1px solid #a9e0c4;border-radius:10px;padding:12px;margin:8px 0;color:#159957;font-weight:700">🤖 "'+esc(q)+'" 분석 중… '+(dateLabel?('['+esc(dateLabel)+'] '):'')+used.length+'건 참고 (10~30초)<div style="font-weight:400;font-size:0.7rem;color:#5a8a6f;margin-top:5px;line-height:1.5">📋 참고 기록: '+esc(usedSummary)+(used.length>50?(' …외 '+(used.length-50)+'건'):'')+'</div></div>');
-  var pr=themeAskPrompt(q, used, dateLabel), sys=pr.sys, user=pr.user;
+  var pr=themeAskPrompt(q, used, dateLabel, focusToks), sys=pr.sys, user=pr.user;
   fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
     headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
@@ -2747,10 +2777,10 @@ function themeAsk(){
     var txt=(j.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('\n').trim();
     if(!txt) txt='(응답이 비었어요. 다시 시도해 주세요.)';
     txt=dashDate(txt);
-    var _m0=thIsListQ(q)?thMissingDates(txt,used).length:0;
+    var _m0=thMustAll(q)?thMissingDates(txt,used).length:0;
     if(_m0) themeAskShow('<div style="background:#fff8e6;border:1px solid #f0d58a;border-radius:10px;padding:12px;margin:8px 0;color:#9a6b00;font-weight:700">🩹 AI가 빠뜨린 날짜 '+_m0+'개 보충 중… (10~20초)</div>');
     return thFillMissing(q, txt, used, key, sys).then(function(txt){
-    txt=thDatePad(thVenueFix(txt));
+    txt=thDateIcons(thDatePad(thVenueFix(txt)), used);
     themeLastOneLine=thExtractOneLine(txt);
     txt+=thMissingNote(q, txt, used);
     themeLastAI=txt; themeLastKw=q;
