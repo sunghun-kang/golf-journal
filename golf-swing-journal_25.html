@@ -184,7 +184,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.70 · 26-10-24</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.71 · 26-10-24</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -1507,6 +1507,7 @@ function regenAI(){
     if(_m0) btn.textContent='빠진 날짜 '+_m0+'개 보충중…';
     return thFillMissing(q, txt, used, key, sys).then(function(txt){
       btn.textContent=old; btn.disabled=false;
+      txt=thVenueFix(txt);
       var oneline=thExtractOneLine(txt);
       txt+=thMissingNote(q, txt, used);
       document.getElementById('mMemo').value=thColorize(txt,flat);
@@ -2635,7 +2636,30 @@ function themeAskPrompt(q, used, dateLabel){
     var ds=thUsedDates(used);
     user=user.replace('\n맨 마지막에 반드시', '\n※ 이건 「기록 정리」 요청이야. 기록은 이미 날짜별로 한 줄씩 묶어 '+ds.length+'개 날짜로 줬어(원래 '+used.length+'건). 날짜마다 정확히 한 줄 「- **M/D(요일)** 내용」으로, '+ds.length+'개 날짜를 하나도 빠뜨리지 말고 모두 써줘. 같은 날은 반드시 한 줄로(두 줄로 나누지 말 것). 비슷한 내용이어도 묶어서 생략하지 말 것.\n   반드시 들어가야 할 날짜: '+ds.map(function(d){ return (+d.slice(5,7))+'/'+(+d.slice(8,10))+'('+dow(d)+')'; }).join(', ')+'\n맨 마지막에 반드시');
   }
+  user=user.replace('\n맨 마지막에 반드시', '\n'+thVenueRule()+'\n맨 마지막에 반드시');
   return {sys:sys, user:user};
+}
+// ⛳ 구장 이름 통일 — AI 답에서 별칭을 정식 이름으로 바꾸고 "큰따옴표"로 표시 (26-10-24 이사님 지정)
+// 주로 가는 곳: BA비스타, 썬밸리. 새 구장/별칭은 여기에만 추가하면 됨
+var VENUES=[
+  {name:'BA비스타', alias:['BA비스타','BA 비스타','BA정모','정모','몬티','벨라','비스타','BA']},
+  {name:'썬밸리',   alias:['썬밸리','여주썬','썬']},
+  {name:'오너스',   alias:['오너스']}
+];
+function thVenueRule(){
+  return '※ 구장(골프장) 이름은 큰따옴표로 표시해줘. 예: "오너스". 별칭은 정식 이름으로: '
+    +VENUES.map(function(v){ var a=v.alias.filter(function(x){return x!==v.name;}); return (a.length?a.join('·')+' → ':'')+'"'+v.name+'"'; }).join(', ')
+    +'. (주로 가는 곳: "BA비스타", "썬밸리")';
+}
+function thVenueFix(txt){
+  var map={}, al=[];
+  VENUES.forEach(function(v){ v.alias.forEach(function(a){ map[a]=v.name; al.push(a); }); });
+  al.sort(function(a,b){ return b.length-a.length; });   // 긴 것 먼저(BA비스타가 BA보다 먼저)
+  // 앞이 영문/한글이면 다른 낱말의 일부(예: 스클정모) → 안 바꿈. 뒤는 조사(에서·은…)가 붙으니 영문만 막음. 썬크림·썬글라스 등은 제외
+  var re=new RegExp('"?(?<![A-Za-z가-힣])('+al.map(function(a){ return a.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }).join('|')+')(?![A-Za-z]|크림|글라스|캡|블록|팅)"?','g');
+  var out=String(txt||'').replace(re, function(_,a){ return '"'+map[a]+'"'; });
+  // "BA비스타 몬티코스" → ""BA비스타" "BA비스타"코스" 처럼 겹치면 하나로
+  return out.replace(/"([^"\n]{1,12})"\s*"\1"/g, '"$1"');
 }
 // 목록형 질문? (정리/날짜별/내림차순/전부… → 날짜를 빠짐없이 써야 하는 요청)
 function thIsListQ(q){ return /정리|날[짜자]\s*별|내[림리]\s*차순|오[름르]\s*차순|시간순|순서대로|목록|전부|모두|빠짐없이|하나도|기록만/.test(q||''); }
@@ -2712,6 +2736,7 @@ function themeAsk(){
     var _m0=thIsListQ(q)?thMissingDates(txt,used).length:0;
     if(_m0) themeAskShow('<div style="background:#fff8e6;border:1px solid #f0d58a;border-radius:10px;padding:12px;margin:8px 0;color:#9a6b00;font-weight:700">🩹 AI가 빠뜨린 날짜 '+_m0+'개 보충 중… (10~20초)</div>');
     return thFillMissing(q, txt, used, key, sys).then(function(txt){
+    txt=thVenueFix(txt);
     themeLastOneLine=thExtractOneLine(txt);
     txt+=thMissingNote(q, txt, used);
     themeLastAI=txt; themeLastKw=q;
