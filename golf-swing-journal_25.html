@@ -187,7 +187,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.79 · 26-10-26</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.80 · 26-10-27</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -272,6 +272,10 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
     <div class="fr"><label>상세 메모 <span style="font-size:0.68rem;font-weight:400;color:#888">— 부분강조: <code style="background:#fee;padding:0 3px;border-radius:3px;color:#c00">ㅃ빨강ㅃ</code> · <code style="background:#eef;padding:0 3px;border-radius:3px;color:#1a4d9e">ㅍ파랑ㅍ</code> · <code style="background:#efe;padding:0 3px;border-radius:3px;color:#1a7a1a">ㄴ녹색ㄴ</code> · <code style="background:#eee;padding:0 3px;border-radius:3px">**굵게**</code></span></label><textarea id="mMemo" placeholder="ㅡ 상세 내용&#10;ㅡ 느낀점"></textarea></div>
     <div class="fr"><input type="file" id="mMedia" accept="image/*,video/*" multiple style="font-size:0.82rem;padding:6px 0">
       <div id="mMediaPreview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px"></div>
+    </div>
+    <div class="fr" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <button type="button" onclick="openScore()" style="background:#2d7a2d;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:0.88rem;font-weight:700;cursor:pointer">⛳ 스코어</button>
+      <span id="mScoreSum" style="font-size:0.82rem;color:#2d7a2d;font-weight:700"></span>
     </div>
     <div class="fr" style="margin-top:6px">
       <div style="display:flex;flex-direction:row;align-items:center;gap:12px">
@@ -1285,14 +1289,18 @@ function cardHtml(r, i){
     mediaHtml+='</div>';
   }
 
-  var hasBody=r.memo||mediaHtml;
+  var scoreHtml=(r.score&&scoreHasData(r.score))?scoreViewHtml(r.score):'';   // ⛳ 스코어 표
+  var scoreBadge='';
+  if(scoreHtml){ var _sc=scoreCalc(r.score), _two=_sc.f.done&&_sc.b.done; var _st=_two?_sc.strokes:(_sc.f.done?_sc.f.strokes:_sc.b.strokes), _rl=_two?_sc.rel:(_sc.f.done?_sc.f.rel:_sc.b.rel);
+    scoreBadge=_sc.done?'<span class="venue" title="'+esc(scoreSummary(r.score))+'" style="background:#e6f4e6;color:#1b5e20;font-weight:800">⛳ '+_st+'('+scRelTxt(_rl)+')</span>':''; }
+  var hasBody=r.memo||mediaHtml||scoreHtml;
   return '<div class="'+cardCls+'" id="c'+i+'">'
     +'<div class="row" onclick="tog('+i+')">'
     +'<div class="row-top">'
     +(r.pinned?'<span title="게시" style="font-weight:700">📌</span>':'')
     +(r.important?'<span style="color:#d42020;font-weight:700">★</span>':'')
     +'<span class="date '+dateColor+'">'+dateStr+'</span>'
-    +vtHtml+venueHtml+memberHtml
+    +vtHtml+scoreBadge+venueHtml+memberHtml
     +'<span class="acts" onclick="event.stopPropagation()">'
     +(hasBody?'<button class="btn-view" id="vb'+i+'" onclick="tog('+i+')">'+(memoHit?'닫기':'보기')+'</button>':'')
     +'<button onclick="ed('+i+')">수정</button>'
@@ -1333,7 +1341,7 @@ function cardHtml(r, i){
     return '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:4px"><div class="title" style="'+s+'">'+titleHtml+'</div>'+(thumbs?'<div style="display:flex;gap:3px;flex-shrink:0">'+thumbs+'</div>':'')+'</div>';
   })()
     +'</div>'
-    +'<div class="body" id="b'+i+'"'+(memoHit?' style="display:block"':'')+'>'+(memoHtml)+(mediaHtml)+'</div>'
+    +'<div class="body" id="b'+i+'"'+(memoHit?' style="display:block"':'')+'>'+(memoHtml)+(scoreHtml)+(mediaHtml)+'</div>'
     +'</div>';
 }
 
@@ -1445,6 +1453,7 @@ function openAdd(){
   document.getElementById('mMedia').value='';
   document.getElementById('mMediaPreview').innerHTML='';
   pendingMedia=[];
+  pendingScore=null; scoreSumLabel();
   document.getElementById('mDelBtn').style.display='none';
   document.getElementById('mRegenBtn').style.display='none';
   mMembersLabel(false);
@@ -1468,6 +1477,7 @@ function ed(i){
   document.getElementById('mMedia').value='';
   pendingMedia=r.media?r.media.slice():[];
   renderMediaPreview();
+  pendingScore=r.score?JSON.parse(JSON.stringify(r.score)):null; scoreSumLabel();
   document.getElementById('mDelBtn').style.display='';
   var _isAI = r.ai || /^\s*(?:🤖|📊)/.test(r.title||'');
   document.getElementById('mRegenBtn').style.display = _isAI ? '' : 'none';
@@ -1683,6 +1693,7 @@ function saveMod(){
     media:pendingMedia.slice(),
     updatedAt: now
   };
+  if(pendingScore && (scoreHasData(pendingScore) || pendingScore.venue || pendingScore.front.course || pendingScore.back.course)) rec.score=pendingScore;   // ⛳ 스코어
   if(editIdx>=0){
     var existing = data[editIdx];
     rec.id = existing.id || (date+'_'+(title||'').substring(0,10).replace(/\s/g,'_')+'_'+Math.random().toString(36).substr(2,4));
@@ -1695,6 +1706,148 @@ function saveMod(){
   }
   data.sort(function(a,b){ var dc=b.date.localeCompare(a.date); if(dc!==0)return dc; return (b.createdAt||b.updatedAt||'').localeCompare(a.createdAt||a.updatedAt||''); });
   pushRecord(rec); closeOv(); render();
+}
+// ===== ⛳ 스코어 (26-10-27) =====
+// rec.score = { venue, front:{course, holes:[9]}, back:{course, holes:[9]} }
+// hole = { par, rel(파 대비 숫자 또는 ''), s:{D:{c:클럽,d:방향,m:거리}, W,U,I,A,P}, note:클럽종류 }
+var SC_SHOTS=['D','W','U','I','A','P'];
+var SC_CLUB_PH={D:'D',W:'3W',U:'4U',I:'7i',A:'52°',P:'퍼트'};
+var SC_NAME={D:'Driver',W:'Wood',U:'Utility',I:'Iron',A:'Approach',P:'Putt'};   // 머리줄 작은 글씨 (이사님 지정)
+function scHead(){ return '<tr><th>홀</th><th>파</th><th>기록</th>'+SC_SHOTS.map(function(s){ return '<th>'+s+'<div style="font-size:0.62rem;font-weight:400;color:#5a7a5a">'+SC_NAME[s]+'</div></th>'; }).join('')+'<th>클럽종류</th></tr>'; }
+var pendingScore=null, _scoreBak=null;
+function scoreEmpty(){
+  function half(){ var h=[]; for(var i=0;i<9;i++) h.push({par:4, rel:'', s:{}, note:''}); return {course:'', holes:h}; }
+  return {venue:'', front:half(), back:half()};
+}
+function scRel(v){ v=String(v==null?'':v).trim().replace(/^\+/,''); if(v==='') return ''; var n=Number(v); return isFinite(n)?n:''; }
+function scRelTxt(n){ return n===''||n==null ? '' : (n>0?'+'+n:String(n)); }
+function scRelCls(n){ return n>0?'sc-plus':(n<0?'sc-minus':''); }
+function scoreHalfCalc(h){
+  // 타수는 「기록」 넣은 홀만 (파+기록) — 안 넣은 홀의 파까지 더하면 3홀만 쳐도 75타처럼 나옴
+  var par=0, rel=0, done=0, stk=0;
+  (h.holes||[]).forEach(function(x){ var p=+x.par||0; par+=p; if(x.rel!==''&&x.rel!=null){ rel+=+x.rel; done++; stk+=p+(+x.rel); } });
+  return {par:par, rel:rel, done:done, strokes:stk};
+}
+function scoreCalc(sc){
+  var f=scoreHalfCalc(sc.front), b=scoreHalfCalc(sc.back);
+  return {f:f, b:b, par:f.par+b.par, rel:f.rel+b.rel, done:f.done+b.done, strokes:f.strokes+b.strokes};
+}
+function scoreHasData(sc){
+  if(!sc) return false;
+  return ['front','back'].some(function(k){ return (sc[k].holes||[]).some(function(x){
+    if(x.rel!==''&&x.rel!=null) return true; if(x.note) return true;
+    return SC_SHOTS.some(function(s){ var v=(x.s||{})[s]; return v&&(v.c||v.d||v.m); });
+  }); });
+}
+// 「BA비스타 몬티·벨라 82(+10)」 — 9홀만 쳤으면 그 9홀만
+function scoreSummary(sc){
+  if(!scoreHasData(sc)) return '';
+  var c=scoreCalc(sc), parts=[];
+  var crs=[sc.front.course, sc.back.course].filter(Boolean).join('·');
+  var halves=(c.f.done?1:0)+(c.b.done?1:0);
+  var strokes = halves===2 ? c.strokes : (c.f.done ? c.f.strokes : c.b.strokes);
+  var rel = halves===2 ? c.rel : (c.f.done ? c.f.rel : c.b.rel);
+  return [sc.venue, crs].filter(Boolean).join(' ')+(c.done?(' '+strokes+'('+scRelTxt(rel)+')'+(halves<2?' 9홀':'')):'');
+}
+function scoreRowHtml(half, i, x){
+  var key=half+'-'+i, h=(half==='front'?i+1:i+10);
+  var t='<tr><td><b>'+h+'</b></td>'
+    +'<td class="sc-par"><input inputmode="numeric" data-h="'+key+'" data-k="par" value="'+esc(String(x.par==null?'':x.par))+'"></td>'
+    +'<td class="sc-rel"><input inputmode="text" data-h="'+key+'" data-k="rel" class="'+scRelCls(x.rel)+'" value="'+esc(scRelTxt(x.rel))+'" placeholder="0"></td>';
+  SC_SHOTS.forEach(function(s){
+    var v=(x.s||{})[s]||{};
+    t+='<td class="sc-'+s+'"><div class="sc-shot">'
+      +'<input class="sc-club" data-h="'+key+'" data-k="'+s+'.c" value="'+esc(v.c||'')+'" placeholder="'+SC_CLUB_PH[s]+'">'
+      +'<div class="sc-l2"><input class="sc-dir" list="scDirList" data-h="'+key+'" data-k="'+s+'.d" value="'+esc(v.d||'')+'" placeholder="방향">'
+      +'<input class="sc-dist" inputmode="numeric" data-h="'+key+'" data-k="'+s+'.m" value="'+esc(v.m||'')+'" placeholder="'+(s==='P'?'m':'거리')+'"></div></div></td>';
+  });
+  return t+'<td class="sc-note"><input data-h="'+key+'" data-k="note" value="'+esc(x.note||'')+'" placeholder="클럽종류"></td></tr>';
+}
+function scoreRender(){
+  var sc=pendingScore, h=scHead();
+  [['front','전반'],['back','후반']].forEach(function(p){
+    h+='<tr class="sc-course"><td colspan="10">'+p[1]+(sc[p[0]].course?(' · '+esc(sc[p[0]].course)):'')+'</td></tr>';
+    sc[p[0]].holes.forEach(function(x,i){ h+=scoreRowHtml(p[0], i, x); });
+    h+='<tr class="sc-sub"><td>'+p[1]+'</td><td id="scPar-'+p[0]+'"></td><td id="scRel-'+p[0]+'"></td><td colspan="7" id="scStk-'+p[0]+'" style="text-align:left"></td></tr>';
+  });
+  h+='<tr class="sc-sub"><td>합계</td><td id="scPar-all"></td><td id="scRel-all"></td><td colspan="7" id="scStk-all" style="text-align:left"></td></tr>';
+  document.getElementById('scTbl').innerHTML=h;
+  document.getElementById('scVenue').value=sc.venue||'';
+  document.getElementById('scFront').value=sc.front.course||'';
+  document.getElementById('scBack').value=sc.back.course||'';
+  scoreTotalsUpdate();
+}
+function scoreCollect(){
+  var sc=pendingScore;
+  sc.venue=document.getElementById('scVenue').value.trim();
+  sc.front.course=document.getElementById('scFront').value.trim();
+  sc.back.course=document.getElementById('scBack').value.trim();
+  document.querySelectorAll('#scTbl input[data-h]').forEach(function(el){
+    var hk=el.getAttribute('data-h').split('-'), x=sc[hk[0]].holes[+hk[1]], k=el.getAttribute('data-k'), v=el.value.trim();
+    if(k==='par'){ x.par=v===''?'':(+v||''); }
+    else if(k==='rel'){ x.rel=scRel(v); }
+    else if(k==='note'){ x.note=v; }
+    else { var sk=k.split('.'); x.s=x.s||{}; x.s[sk[0]]=x.s[sk[0]]||{}; x.s[sk[0]][sk[1]]=v; if(!x.s[sk[0]].c&&!x.s[sk[0]].d&&!x.s[sk[0]].m) delete x.s[sk[0]]; }
+  });
+}
+function scoreTotalsUpdate(){
+  scoreCollect();
+  var c=scoreCalc(pendingScore);
+  function put(id, pr, rl, done, stk){
+    document.getElementById('scPar-'+id).textContent=pr||'';
+    var re=document.getElementById('scRel-'+id); re.textContent=done?scRelTxt(rl):''; re.className=scRelCls(rl);
+    document.getElementById('scStk-'+id).textContent=done?(stk+'타 ('+done+'홀 입력)'):'';
+  }
+  put('front', c.f.par, c.f.rel, c.f.done, c.f.strokes);
+  put('back', c.b.par, c.b.rel, c.b.done, c.b.strokes);
+  put('all', c.par, c.rel, c.done, c.strokes);
+  document.getElementById('scTot').textContent=c.done?('합계 '+c.strokes+' ('+scRelTxt(c.rel)+')'):'';
+  document.querySelectorAll('#scTbl td.sc-rel input').forEach(function(el){ el.className=scRelCls(scRel(el.value)); });
+}
+function openScore(){
+  if(!pendingScore) pendingScore=scoreEmpty();
+  _scoreBak=JSON.stringify(pendingScore);
+  scoreRender();
+  document.getElementById('score-ov').style.display='flex';
+}
+function closeScore(save){
+  if(save){ scoreCollect(); if(!scoreHasData(pendingScore) && !pendingScore.venue && !pendingScore.front.course && !pendingScore.back.course) pendingScore=null; }
+  else { pendingScore=_scoreBak?JSON.parse(_scoreBak):null; if(pendingScore && !scoreHasData(pendingScore)) pendingScore=null; }
+  document.getElementById('score-ov').style.display='none';
+  scoreSumLabel();
+}
+function scoreClear(){ if(!confirm('스코어를 모두 지울까요?')) return; pendingScore=scoreEmpty(); scoreRender(); }
+function scoreSumLabel(){ var el=document.getElementById('mScoreSum'); if(el) el.textContent=pendingScore?scoreSummary(pendingScore):''; }
+document.addEventListener('input', function(e){ if(e.target && e.target.closest && e.target.closest('#scTbl, #score-ov .sc-top')) scoreTotalsUpdate(); });
+// 목록 카드 안 읽기 전용 표 (입력된 홀만)
+function scoreViewHtml(sc){
+  if(!scoreHasData(sc)) return '';
+  var c=scoreCalc(sc), h='<div class="sc-view"><table class="sc-tbl">'+scHead();
+  [['front','전반'],['back','후반']].forEach(function(p){
+    var half=sc[p[0]], rows=half.holes.map(function(x,i){ return {x:x, n:(p[0]==='front'?i+1:i+10)}; }).filter(function(o){
+      var x=o.x; return (x.rel!==''&&x.rel!=null)||x.note||SC_SHOTS.some(function(s){ var v=(x.s||{})[s]; return v&&(v.c||v.d||v.m); }); });
+    if(!rows.length) return;
+    h+='<tr class="sc-course"><td colspan="10">'+p[1]+(half.course?(' · '+esc(half.course)):'')+'</td></tr>';
+    rows.forEach(function(o){
+      var x=o.x; h+='<tr><td><b>'+o.n+'</b></td><td>'+esc(String(x.par||''))+'</td><td class="sc-relv '+scRelCls(x.rel)+'">'+esc(scRelTxt(x.rel))+'</td>';
+      SC_SHOTS.forEach(function(s){ var v=(x.s||{})[s]||{}; h+='<td>'+(v.c?'<div class="sc-c">'+esc(v.c)+'</div>':'')+((v.d||v.m)?'<div class="sc-d">'+esc([v.d,v.m?(v.m+(/m$/.test(v.m)?'':'m')):''].filter(Boolean).join(' '))+'</div>':'')+'</td>'; });
+      h+='<td style="text-align:left">'+esc(x.note||'')+'</td></tr>';
+    });
+    var hc=c[p[0]==='front'?'f':'b']; if(hc.done) h+='<tr class="sc-sub"><td>'+p[1]+'</td><td>'+hc.par+'</td><td class="'+scRelCls(hc.rel)+'">'+scRelTxt(hc.rel)+'</td><td colspan="7" style="text-align:left">'+hc.strokes+'타</td></tr>';
+  });
+  if(c.f.done && c.b.done) h+='<tr class="sc-sub"><td>합계</td><td>'+c.par+'</td><td class="'+scRelCls(c.rel)+'">'+scRelTxt(c.rel)+'</td><td colspan="7" style="text-align:left">'+c.strokes+'타</td></tr>';
+  return h+'</table></div>';
+}
+// 🤖질문에 보낼 한 줄: 「BA비스타 몬티·벨라 82(+10) | 1H P4 +1 D:우 200m I:7i 중앙 160m …」
+function scoreForAI(sc){
+  if(!scoreHasData(sc)) return '';
+  var out=[scoreSummary(sc)];
+  ['front','back'].forEach(function(k,hi){ (sc[k].holes||[]).forEach(function(x,i){
+    var parts=[];
+    SC_SHOTS.forEach(function(s){ var v=(x.s||{})[s]; if(v&&(v.c||v.d||v.m)) parts.push(s+':'+[v.c,v.d,v.m?(v.m+'m'):''].filter(Boolean).join(' ')); });
+    if((x.rel!==''&&x.rel!=null)||parts.length||x.note) out.push((hi*9+i+1)+'H P'+(x.par||'?')+' '+scRelTxt(x.rel)+(parts.length?' '+parts.join(' '):'')+(x.note?' ('+x.note+')':''));
+  }); });
+  return out.join(' | ');
 }
 function dl(i){var id=data[i]&&data[i].id;data.splice(i,1);save();if(id)deleteRecord(id);render();}
 function dlConfirm(i){if(!confirm('삭제할까요?'))return;if(!confirm('정말 삭제합니다!'))return;dl(i);}
@@ -2152,6 +2305,61 @@ idbOpen(function(){
     </div>
     <div id="cpop-bd"></div>
   </div>
+</div>
+<!-- ⛳ 스코어 입력창 (26-10-27): 18홀 = 전반·후반 코스, 홀 / 파 / 기록(파 대비) / D W U I A P(윗줄 클럽, 아랫줄 방향·거리) / 클럽종류 -->
+<style>
+#score-ov{display:none;position:fixed;inset:0;background:#f4f4ef;z-index:10002;flex-direction:column}
+#score-ov .sc-top{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;padding:8px 10px;background:#1b3a1b;color:#fff;flex-shrink:0}
+#score-ov .sc-top input{padding:4px 7px;border-radius:6px;border:1px solid #9c9;font-size:0.85rem;font-family:inherit;width:120px}
+#score-ov .sc-top b{font-size:1rem}
+#score-ov .sc-tot{margin-left:auto;font-weight:700;font-size:0.95rem;color:#ffe680}
+#score-ov .sc-wrap{flex:1;min-height:0;overflow:auto;padding:6px}
+.sc-tbl{border-collapse:collapse;font-size:0.78rem;background:#fff;min-width:980px;width:100%}
+.sc-tbl th,.sc-tbl td{border:1px solid #cfd8cf;padding:2px 3px;text-align:center;vertical-align:middle}
+.sc-tbl th{background:#e3efe3;color:#1b3a1b;position:sticky;top:0;z-index:2}
+.sc-tbl tr.sc-sub td{background:#f3f7e8;font-weight:700}
+.sc-tbl tr.sc-course td{background:#1b3a1b;color:#fff;font-weight:700;text-align:left;padding:4px 8px}
+.sc-tbl input{width:100%;border:1px solid transparent;background:transparent;font-size:0.78rem;font-family:inherit;padding:2px 3px;text-align:center;box-sizing:border-box}
+.sc-tbl input:focus{border-color:#2d7a2d;background:#fffbe6;outline:none}
+/* 폰에서 옆으로 밀어도 홀·파·기록은 왼쪽에 고정 */
+#scTbl tr:not(.sc-course) > :nth-child(1){position:sticky;left:0;width:30px;min-width:30px;background:#fff;z-index:1}
+#scTbl tr:not(.sc-course) > :nth-child(2){position:sticky;left:30px;width:42px;min-width:42px;background:#fff;z-index:1}
+#scTbl tr:not(.sc-course) > :nth-child(3){position:sticky;left:72px;width:48px;min-width:48px;background:#fff;z-index:1;box-shadow:2px 0 0 #cfd8cf}
+#scTbl tr:not(.sc-course) > th:nth-child(-n+3){background:#e3efe3;z-index:3}
+#scTbl tr.sc-sub:not(.sc-course) > td:nth-child(-n+3){background:#f3f7e8}
+.sc-tbl input::placeholder{color:#c8cfc8;font-weight:400}
+.sc-tbl .sc-shot{display:flex;flex-direction:column;gap:1px;min-width:88px}
+.sc-tbl .sc-shot .sc-l2{display:flex;gap:1px}
+.sc-tbl .sc-shot input.sc-club{font-weight:700;color:#1b3a1b;border-bottom:1px dashed #dde}
+.sc-tbl .sc-shot input.sc-dir{flex:1.2;color:#1a4d9e}
+.sc-tbl .sc-shot input.sc-dist{flex:1;color:#555}
+.sc-tbl td.sc-D .sc-shot{min-width:130px}
+.sc-tbl td.sc-par input{width:34px}
+.sc-tbl td.sc-rel input{width:40px;font-weight:700}
+.sc-tbl td.sc-note input{min-width:120px;text-align:left}
+.sc-tbl .sc-relv{font-weight:700}
+.sc-plus{color:#c0392b}.sc-minus{color:#1a4d9e}
+/* 목록 카드 안 읽기 전용 표 */
+.sc-view{overflow-x:auto;margin-top:8px}
+.sc-view .sc-tbl{min-width:760px;font-size:0.74rem}
+.sc-view .sc-tbl td{padding:2px 4px}
+.sc-view .sc-c{font-weight:700;color:#1b3a1b}
+.sc-view .sc-d{color:#1a4d9e;font-size:0.7rem}
+</style>
+<div id="score-ov">
+  <div class="sc-top">
+    <b>⛳ 스코어</b>
+    <span>구장 <input id="scVenue" placeholder="BA비스타" list="scVenueList"></span>
+    <span>전반 <input id="scFront" placeholder="몬티"></span>
+    <span>후반 <input id="scBack" placeholder="벨라"></span>
+    <span class="sc-tot" id="scTot"></span>
+    <button class="pcbtn" style="opacity:1;background:#8a8a8a" onclick="scoreClear()">지우기</button>
+    <button class="pcbtn" style="opacity:1;background:#c0392b" onclick="closeScore(false)">취소</button>
+    <button class="pcbtn" style="opacity:1;background:#2d7a2d;font-size:0.9rem;padding:6px 16px" onclick="closeScore(true)">완료</button>
+  </div>
+  <div class="sc-wrap"><table class="sc-tbl" id="scTbl"></table></div>
+  <datalist id="scVenueList"><option value="BA비스타"><option value="썬밸리"><option value="오너스"></datalist>
+  <datalist id="scDirList"><option value="중앙"><option value="좌"><option value="우"><option value="좌중"><option value="우중"><option value="OB"><option value="해저드"><option value="벙커"><option value="러프"><option value="온"><option value="숏"><option value="롱"></datalist>
 </div>
 <div id="photo-modal" style="display:none;position:fixed;inset:0;background:#0b0b0b;z-index:10001;flex-direction:column">
   <!-- 윗줄 하나에 다 모음(26-10-24): 왼쪽=장수·날짜제목·저장/기록, 오른쪽=‹이전 다음›·보기·⛶·✕ → 사진이 세로를 다 씀 -->
@@ -2619,7 +2827,8 @@ function themeAskSelect(q){
 }
 // 🤖질문 프롬프트(시스템·사용자) — 🤖질문과 「다시요약」 공용
 function thRecLine(r){
-  return (r.venue?(' 문제:'+thStrip(r.venue)):'')
+  return (r.score&&scoreHasData(r.score)?(' 스코어:'+scoreForAI(r.score)):'')
+    +(r.venue?(' 문제:'+thStrip(r.venue)):'')
     +(r.members?(' 원인:'+thStrip(r.members)):'')
     +(r.title?(' 대책:'+thStrip(r.title).replace(/\n/g,' / ')):'')
     +(r.memo?(' 메모:'+thStrip(r.memo).replace(/\n/g,' ').slice(0,300)):'');
