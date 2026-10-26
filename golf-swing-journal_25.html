@@ -187,7 +187,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.81 · 26-10-27</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.82 · 26-10-27</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -1834,8 +1834,137 @@ var SC_IMPORT_PROMPT='이 이미지는 골프 스코어카드(스마트스코어
   +'{"venue":"골프장 이름","date":"YYYY-MM-DD","player":"이름","front":{"course":"전반 코스 이름(표 왼쪽 위 칸)","par":[9개],"score":[9개],"total":전반 합계 타수},"back":{"course":"후반 코스 이름","par":[9개],"score":[9개],"total":후반 합계 타수},"grand":전체 타수}\n'
   +'- score 는 표에 적힌 그대로의 숫자(파 대비: 0=파, 1=보기, -1=버디, 2=더블…). 숫자 옆 아이콘(나비·새 등)은 무시하고 숫자만.\n'
   +'- 전반=위쪽 표, 후반=아래쪽 표. 9홀만 있으면 back 은 null.\n- 안 보이는 칸은 null.';
+// ── 🔢 키 없이 읽기: Tesseract.js(무료 OCR, 기기 안에서) (26-10-27)
+// 통째로 읽으면 한 자리 숫자가 붙어버려(「-1 1」→「-11」) 못 씀 → 스마트스코어 표 모양으로 칸을 찾아 「한 칸씩」 읽는다.
+//  ① 표 위치: 왼쪽 표를 세로로 훑어 [진파랑 머리줄 → 연파랑 PAR 줄 → 흰 줄(맨 위=내 줄)] 띠를 찾음 (전반·후반 2쌍)
+//  ② 칸 위치: 머리줄의 흰 글씨 1~9 덩어리 = 홀 칸 가운데, 「TOTAL」 덩어리 왼쪽 반=합계, 오른쪽 반=전체(후반만)
+//  ③ 칸마다 4배 키워 흑백(PAR 줄=흰 글씨, 내 줄=검은 글씨) → 한 줄 모드(PSM7) → 안 되면 한 글자(10)·단어(8)·(13)로 재시도
+//  ④ 고치기: PAR 빈칸은 PAR 합계로 나눠 채움, 내 줄은 「재시도로 읽은 칸」이 1개면 카드 합계로 역산. 그래도 불확실하면 노랑 표시
+var _tessP=null, _tessW=null;
+function scLoadTess(){
+  if(window.Tesseract) return Promise.resolve();
+  if(!_tessP) _tessP=new Promise(function(ok,ng){ var s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js'; s.onload=ok; s.onerror=function(){ _tessP=null; ng(new Error('OCR 프로그램을 못 받았어요(인터넷 확인)')); }; document.head.appendChild(s); });
+  return _tessP;
+}
+function scTessWorker(){ if(!_tessW) _tessW=Tesseract.createWorker('eng'); return _tessW; }
+function scImgCanvas(dataUrl){ return new Promise(function(ok,ng){ var im=new Image(); im.onload=function(){ var c=document.createElement('canvas'); c.width=im.width; c.height=im.height; c.getContext('2d').drawImage(im,0,0); ok(c); }; im.onerror=function(){ ng(new Error('이미지를 열 수 없어요')); }; im.src=dataUrl; }); }
+// ① 띠 찾기
+function scFindBands(c){
+  var g=c.getContext('2d'), x=Math.round(c.width*0.235), col=g.getImageData(x,0,1,c.height).data, bands=[], prev=null;
+  for(var y=0;y<c.height;y++){ var r=col[y*4],gg=col[y*4+1],b=col[y*4+2];
+    var cls=(b>140&&r<70&&gg<140&&b-r>80)?'dark':(b>170&&r>35&&r<150&&gg<190&&b-r>60)?'mid':(r>225&&gg>225&&b>225)?'white':'other';
+    if(!prev||prev.cls!==cls){ prev={cls:cls,y0:y,y1:y}; bands.push(prev); } else prev.y1=y; }
+  bands=bands.filter(function(b){ return b.y1-b.y0>=6; });
+  var out=[];
+  for(var i=0;i<bands.length-2 && out.length<2;i++){
+    var hd=bands[i], par=bands[i+1], me=bands[i+2];
+    if(hd.cls==='dark' && hd.y1-hd.y0>=15 && par.cls==='mid' && me.cls==='white') out.push({head:hd, par:par, me:me});
+  }
+  return out;
+}
+// ② 칸 찾기 (머리줄 흰 글씨 덩어리)
+function scFindCols(c, hd){
+  var g=c.getContext('2d'), w=Math.round(c.width*0.6), h=hd.y1-hd.y0-2, d=g.getImageData(0,hd.y0+1,w,h).data, cnt=new Array(w).fill(0);
+  for(var y=0;y<h;y++) for(var x=0;x<w;x++){ var i=(y*w+x)*4; if(d[i]>200&&d[i+1]>200&&d[i+2]>200) cnt[x]++; }
+  var runs=[], cur=null, gap=Math.max(6, Math.round(c.width*0.006));
+  for(var x2=0;x2<w;x2++){ if(cnt[x2]>0){ if(cur&&x2-cur.x1<=gap) cur.x1=x2; else { cur={x0:x2,x1:x2}; runs.push(cur); } } }
+  var narrow=Math.round(c.width*0.016), holes=[], tot=null;
+  for(var k=0;k<runs.length;k++){ var r=runs[k], rw=r.x1-r.x0+1;
+    if(holes.length<9 && rw<=narrow && r.x0>c.width*0.06){ holes.push((r.x0+r.x1)/2); continue; }
+    if(holes.length===9 && rw>narrow){ tot=r; break; } }
+  if(holes.length<9) return null;
+  var sp=(holes[8]-holes[0])/8;
+  return {holes:holes, sp:sp, tot:tot};
+}
+// ③ 칸 하나 → 키우고 흑백
+function scCellCanvas(c, x0, x1, y0, y1, light){
+  var w=Math.max(4,Math.round(x1-x0)), h=Math.max(4,Math.round(y1-y0)), k=4, pad=24, o=document.createElement('canvas');
+  o.width=w*k+pad*2; o.height=h*k+pad*2; var og=o.getContext('2d'); og.fillStyle='#fff'; og.fillRect(0,0,o.width,o.height);
+  og.drawImage(c, Math.round(x0), Math.round(y0), w, h, pad, pad, w*k, h*k);
+  var d=og.getImageData(0,0,o.width,o.height), p=d.data, W=o.width, H=o.height;
+  for(var i=0;i<p.length;i+=4){ var px=(i/4)%W, py=Math.floor(i/4/W), r=p[i], gg=p[i+1], b=p[i+2], lum=0.299*r+0.587*gg+0.114*b;
+    var inPad=px<pad||px>=W-pad||py<pad||py>=H-pad;
+    var ink=!inPad && (light ? (r>200&&gg>200&&b>200) : (lum<140 && Math.abs(r-b)<90));
+    p[i]=p[i+1]=p[i+2]=ink?0:255; }
+  og.putImageData(d,0,0); return o;
+}
+function scReadCell(worker, cv){
+  var modes=['7','10','8','13'], i=0;
+  function next(){ if(i>=modes.length) return Promise.resolve({v:null, sure:false});
+    var psm=modes[i++];
+    return worker.setParameters({tessedit_char_whitelist:'-0123456789', tessedit_pageseg_mode:psm}).then(function(){ return worker.recognize(cv); })
+      .then(function(r){ var t=(r.data.text||'').trim().replace(/[−–]/g,'-'); if(/^-?\d{1,3}$/.test(t)) return {v:parseInt(t,10), sure:psm==='7'}; return next(); }); }
+  return next();
+}
+function scReadRow(worker, c, cols, band, light, wantGrand, onCell){
+  var y0=band.y0+3, y1=band.y1-3, cells=[], res={v:[], sure:[], total:null, grand:null};
+  cols.holes.forEach(function(x){ cells.push([x-cols.sp/2+2, x+cols.sp/2-2]); });
+  var tt=cols.tot, tx0=tt?tt.x0-cols.sp*0.5:cols.holes[8]+cols.sp*0.6, tmid=tt?(tt.x0+tt.x1)/2:tx0+cols.sp*1.2, tx1=tt?tt.x1+cols.sp*0.4:tmid+cols.sp*1.2;
+  var p=Promise.resolve();
+  cells.forEach(function(cx){ p=p.then(function(){ return scReadCell(worker, scCellCanvas(c, cx[0], cx[1], y0, y1, light)); }).then(function(r){ res.v.push(r.v); res.sure.push(r.sure); onCell(); }); });
+  p=p.then(function(){ return scReadCell(worker, scCellCanvas(c, tx0, tmid, y0, y1, light)); }).then(function(r){ res.total=r.v; onCell(); });
+  if(wantGrand) p=p.then(function(){ return scReadCell(worker, scCellCanvas(c, tmid, tx1, y0, y1, light)); }).then(function(r){ res.grand=r.v; onCell(); });
+  return p.then(function(){ return res; });
+}
+// ④ 합계로 고치기
+function scFixPar(par){
+  var miss=[]; par.v.forEach(function(v,i){ if(v==null||v<3||v>6){ miss.push(i); par.v[i]=null; } });
+  if(!miss.length) return [];
+  var known=par.v.reduce(function(s,v){ return s+(v||0); },0);
+  if(par.total!=null){ var left=par.total-known, each=left/miss.length; if(Number.isInteger(each)&&each>=3&&each<=6){ miss.forEach(function(i){ par.v[i]=each; }); return []; } }
+  miss.forEach(function(i){ par.v[i]=4; });   // 모르면 4로 두고 확인 표시
+  return miss;
+}
+function scFixMe(me, par){
+  var bad=[]; me.v.forEach(function(v,i){ if(v==null||v<-3||v>9){ me.v[i]=null; } if(me.v[i]==null||!me.sure[i]) bad.push(i); });
+  if(me.total==null) return bad.filter(function(i){ return me.v[i]==null; }).map(function(i){ me.v[i]=0; return i; }).concat(bad);
+  var sumPar=par.v.reduce(function(s,v){ return s+(v||0); },0), target=me.total-sumPar;
+  var cur=me.v.reduce(function(s,v){ return s+(v==null?0:v); },0);
+  var nulls=me.v.map(function(v,i){ return v==null?i:-1; }).filter(function(i){ return i>=0; });
+  if(nulls.length===1){ me.v[nulls[0]]=target-cur; return []; }                     // 빈칸 1개 → 합계로 역산
+  if(!nulls.length && cur===target) return [];                                         // 합계 맞음 → 확인 끝
+  var unsure=me.v.map(function(v,i){ return !me.sure[i]?i:-1; }).filter(function(i){ return i>=0; });
+  if(!nulls.length && unsure.length===1){ var j=unsure[0]; me.v[j]=target-(cur-me.v[j]); return []; }   // 재시도로 읽은 칸 1개 → 역산
+  nulls.forEach(function(i){ me.v[i]=0; });
+  return bad;
+}
+function scoreImportOCR(dataUrl){
+  var tot=document.getElementById('scTot'), oldTot=tot.textContent, worker, c, bands, done=0, all=0;
+  tot.textContent='🔢 숫자 읽기 준비… (처음엔 20~40초)';
+  scLoadTess().then(function(){ return scImgCanvas(dataUrl); }).then(function(cv){
+    c=cv; bands=scFindBands(c);
+    if(!bands.length) throw new Error('스마트스코어 표(파란 머리줄)를 못 찾았어요');
+    return scTessWorker();
+  }).then(function(w){
+    worker=w; var halves=[], p=Promise.resolve();
+    all=bands.length*21+1;
+    function tick(){ done++; tot.textContent='🔢 숫자 읽는 중… '+Math.round(done/all*100)+'%'; }
+    bands.forEach(function(b, bi){
+      p=p.then(function(){
+        var cols=scFindCols(c, b.head); if(!cols) throw new Error('홀 칸(1~9)을 못 찾았어요');
+        var h={};
+        return scReadRow(worker, c, cols, b.par, true, false, tick).then(function(r){ h.par=r; return scReadRow(worker, c, cols, b.me, false, bi===1, tick); })
+          .then(function(r){ h.me=r; halves.push(h); });
+      });
+    });
+    return p.then(function(){ return halves; });
+  }).then(function(halves){
+    tot.textContent=oldTot;
+    var imp={_ocr:true, _unsure:[]}, keys=['front','back'];
+    halves.forEach(function(h, k){
+      var pm=scFixPar(h.par), mm=scFixMe(h.me, h.par);
+      pm.forEach(function(i){ imp._unsure.push(keys[k]+'-'+i+'-par'); });
+      mm.forEach(function(i){ imp._unsure.push(keys[k]+'-'+i+'-rel'); });
+      imp[keys[k]]={par:h.par.v, score:h.me.v, total:h.me.total};
+      if(k===1 && h.me.grand!=null) imp.grand=h.me.grand;
+    });
+    scoreApplyImport(imp);
+  }).catch(function(e){ tot.textContent=oldTot; alert('🔢 숫자 읽기 실패: '+e.message+'\n표에 직접 입력하거나, 🔑 API 키를 넣으면 AI로 읽어요.'); });
+}
 function scoreImportDataUrl(dataUrl){
-  var key=themeAIKey(false); if(!key) return;
+  // 🔑 키 없으면 무료 OCR 로 (나중에 키 넣으면 자동으로 AI 로)
+  var key=''; try{ key=localStorage.getItem('anthropicKey')||''; }catch(e){}
+  if(!key){ scoreImportOCR(dataUrl); return; }
   var btns=document.querySelectorAll('#score-ov .sc-top button'); var tot=document.getElementById('scTot'); var oldTot=tot.textContent;
   tot.textContent='📥 스코어카드 읽는 중… (10~20초)';
   scShrink(dataUrl, function(small){
@@ -1857,7 +1986,7 @@ function scoreImportDataUrl(dataUrl){
 function scoreApplyImport(o){
   if(!pendingScore) pendingScore=scoreEmpty();
   scoreCollect();
-  var sc=pendingScore, warn=[], filled=0;
+  var sc=pendingScore, warn=[], filled=0, checked=0;
   if(o.venue) sc.venue=String(o.venue).trim();
   [['front','전반'],['back','후반']].forEach(function(p){
     var h=o[p[0]]; if(!h) return;
@@ -1868,16 +1997,20 @@ function scoreApplyImport(o){
       if(par[i]!=null && isFinite(+par[i])) x.par=+par[i];
       if(s[i]!=null && isFinite(+s[i])){ x.rel=+s[i]; filled++; sum+=(+x.par||0)+(+s[i]); cnt++; }
     }
-    if(h.total!=null && cnt===9 && +h.total!==sum) warn.push(p[1]+' 합계: 카드 '+h.total+'타 ↔ 계산 '+sum+'타');
+    if(h.total!=null && cnt===9){ checked++; if(+h.total!==sum) warn.push(p[1]+' 합계: 카드 '+h.total+'타 ↔ 계산 '+sum+'타'); }
   });
   scoreRender();
+  // OCR 로 확실히 못 읽은 칸 = 노랑 (확인해서 고칠 곳)
+  (o._unsure||[]).forEach(function(u){ var a=u.split('-'); var el=document.querySelector('#scTbl input[data-h="'+a[0]+'-'+a[1]+'"][data-k="'+a[2]+'"]'); if(el) el.classList.add('sc-unsure'); });
   var c=scoreCalc(sc);
   if(o.grand!=null && c.f.done===9 && c.b.done===9 && +o.grand!==c.strokes) warn.push('전체: 카드 '+o.grand+'타 ↔ 계산 '+c.strokes+'타');
   // 기록 날짜가 카드 날짜와 다르면 맞출지 물음
   var d=String(o.date||'').replace(/[.\/]/g,'-').slice(0,10), md=document.getElementById('mDate');
   if(/^\d{4}-\d{2}-\d{2}$/.test(d) && md && md.value!==d && confirm('스코어카드 날짜 '+d+' 로 기록 날짜도 바꿀까요?\n(지금: '+md.value+')')) md.value=d;
-  alert('📥 '+filled+'홀 읽음 — '+scoreSummary(sc)
-    +(warn.length?('\n\n⚠ 숫자 확인 필요:\n- '+warn.join('\n- ')+'\n표에서 고쳐 주세요.'):'\n카드 합계와 일치')
+  alert((o._ocr?'🔢 (OCR) ':'📥 ')+filled+'홀 읽음 — '+scoreSummary(sc)
+    +(warn.length?('\n\n⚠ 숫자 확인 필요:\n- '+warn.join('\n- ')+'\n표에서 고쳐 주세요.'):(checked?'\n카드 합계와 일치':'\n(카드 합계를 못 읽어 대조 못 함 — 표에서 한 번 확인해 주세요)'))
+    +((o._unsure&&o._unsure.length)?('\n\n🟨 노랑 칸 '+o._unsure.length+'개는 흐릿하게 읽혀 확인이 필요해요.'):'')
+    +(o._ocr?'\n\n구장·코스 이름은 위 칸에 직접 적어 주세요.':'')
     +'\n\nD~P 상세는 표에서 적고 「완료」를 누르세요.');
 }
 function scoreSumLabel(){ var el=document.getElementById('mScoreSum'); if(el) el.textContent=pendingScore?scoreSummary(pendingScore):''; }
@@ -2393,6 +2526,7 @@ idbOpen(function(){
 #scTbl tr:not(.sc-course) > th:nth-child(-n+3){background:#e3efe3;z-index:3}
 #scTbl tr.sc-sub:not(.sc-course) > td:nth-child(-n+3){background:#f3f7e8}
 .sc-tbl input::placeholder{color:#c8cfc8;font-weight:400}
+.sc-tbl input.sc-unsure{background:#fff3a6 !important;border-color:#e0b400}
 .sc-tbl .sc-shot{display:flex;flex-direction:column;gap:1px;min-width:88px}
 .sc-tbl .sc-shot .sc-l2{display:flex;gap:1px}
 .sc-tbl .sc-shot input.sc-club{font-weight:700;color:#1b3a1b;border-bottom:1px dashed #dde}
