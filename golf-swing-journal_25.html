@@ -187,7 +187,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.80 · 26-10-27</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.81 · 26-10-27</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -1751,7 +1751,7 @@ function scoreSummary(sc){
 }
 function scoreRowHtml(half, i, x){
   var key=half+'-'+i, h=(half==='front'?i+1:i+10);
-  var t='<tr><td><b>'+h+'</b></td>'
+  var t='<tr'+(x.rel!==''&&x.rel!=null&&+x.rel>=2?' class="sc-bad"':'')+'><td><b>'+h+'</b></td>'
     +'<td class="sc-par"><input inputmode="numeric" data-h="'+key+'" data-k="par" value="'+esc(String(x.par==null?'':x.par))+'"></td>'
     +'<td class="sc-rel"><input inputmode="text" data-h="'+key+'" data-k="rel" class="'+scRelCls(x.rel)+'" value="'+esc(scRelTxt(x.rel))+'" placeholder="0"></td>';
   SC_SHOTS.forEach(function(s){
@@ -1802,7 +1802,7 @@ function scoreTotalsUpdate(){
   put('back', c.b.par, c.b.rel, c.b.done, c.b.strokes);
   put('all', c.par, c.rel, c.done, c.strokes);
   document.getElementById('scTot').textContent=c.done?('합계 '+c.strokes+' ('+scRelTxt(c.rel)+')'):'';
-  document.querySelectorAll('#scTbl td.sc-rel input').forEach(function(el){ el.className=scRelCls(scRel(el.value)); });
+  document.querySelectorAll('#scTbl td.sc-rel input').forEach(function(el){ var v=scRel(el.value); el.className=scRelCls(v); var tr=el.closest('tr'); if(tr) tr.classList.toggle('sc-bad', v!==''&&v>=2); });
 }
 function openScore(){
   if(!pendingScore) pendingScore=scoreEmpty();
@@ -1817,6 +1817,69 @@ function closeScore(save){
   scoreSumLabel();
 }
 function scoreClear(){ if(!confirm('스코어를 모두 지울까요?')) return; pendingScore=scoreEmpty(); scoreRender(); }
+// 📥 스마트스코어 읽어오기 (26-10-27): 스코어카드 캡처 → Claude(이미지 읽기) → 파·기록만 채움(D~P 상세는 이사님이 적음)
+function scoreImportFile(inp){
+  var f=inp.files&&inp.files[0]; inp.value=''; if(!f) return;
+  var rd=new FileReader(); rd.onload=function(){ scoreImportDataUrl(rd.result); }; rd.readAsDataURL(f);
+}
+// 큰 캡처는 긴 변 1600px JPEG 로 줄여서 보냄(전송·비용 절약, 숫자는 충분히 읽힘)
+function scShrink(dataUrl, cb){
+  var im=new Image();
+  im.onload=function(){ var s=Math.min(1, 1600/Math.max(im.width, im.height)); var c=document.createElement('canvas'); c.width=Math.round(im.width*s); c.height=Math.round(im.height*s);
+    var g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); g.drawImage(im,0,0,c.width,c.height); cb(c.toDataURL('image/jpeg',0.9)); };
+  im.onerror=function(){ cb(dataUrl); };
+  im.src=dataUrl;
+}
+var SC_IMPORT_PROMPT='이 이미지는 골프 스코어카드(스마트스코어 등)야. 카드 맨 위에 크게 적힌 본인 이름(예: 강성훈)의 행만 읽어서 아래 JSON 하나만 출력해(설명·코드블록 없이).\n'
+  +'{"venue":"골프장 이름","date":"YYYY-MM-DD","player":"이름","front":{"course":"전반 코스 이름(표 왼쪽 위 칸)","par":[9개],"score":[9개],"total":전반 합계 타수},"back":{"course":"후반 코스 이름","par":[9개],"score":[9개],"total":후반 합계 타수},"grand":전체 타수}\n'
+  +'- score 는 표에 적힌 그대로의 숫자(파 대비: 0=파, 1=보기, -1=버디, 2=더블…). 숫자 옆 아이콘(나비·새 등)은 무시하고 숫자만.\n'
+  +'- 전반=위쪽 표, 후반=아래쪽 표. 9홀만 있으면 back 은 null.\n- 안 보이는 칸은 null.';
+function scoreImportDataUrl(dataUrl){
+  var key=themeAIKey(false); if(!key) return;
+  var btns=document.querySelectorAll('#score-ov .sc-top button'); var tot=document.getElementById('scTot'); var oldTot=tot.textContent;
+  tot.textContent='📥 스코어카드 읽는 중… (10~20초)';
+  scShrink(dataUrl, function(small){
+    var m=small.match(/^data:(image\/[a-z]+);base64,(.*)$/); if(!m){ tot.textContent=oldTot; alert('이미지를 읽을 수 없어요.'); return; }
+    fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-opus-5',max_tokens:1500,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:m[1],data:m[2]}},{type:'text',text:SC_IMPORT_PROMPT}]}]})})
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      if(j.error) throw new Error(j.error.message||'error');
+      var txt=(j.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('\n');
+      var js=txt.slice(txt.indexOf('{'), txt.lastIndexOf('}')+1);
+      tot.textContent=oldTot;
+      scoreApplyImport(JSON.parse(js));
+    })
+    .catch(function(e){ tot.textContent=oldTot; alert('스코어카드를 못 읽었어요: '+e.message+'\n(🔑 API 키·인터넷 확인, 또는 캡처를 더 크게)'); });
+  });
+}
+// 읽은 결과를 표에 채움: 파·기록만 덮어쓰고 D~P·클럽종류 상세는 그대로 둠. 카드 합계와 대조해 다르면 알림
+function scoreApplyImport(o){
+  if(!pendingScore) pendingScore=scoreEmpty();
+  scoreCollect();
+  var sc=pendingScore, warn=[], filled=0;
+  if(o.venue) sc.venue=String(o.venue).trim();
+  [['front','전반'],['back','후반']].forEach(function(p){
+    var h=o[p[0]]; if(!h) return;
+    if(h.course) sc[p[0]].course=String(h.course).trim();
+    var par=h.par||[], s=h.score||[], sum=0, cnt=0;
+    for(var i=0;i<9;i++){
+      var x=sc[p[0]].holes[i];
+      if(par[i]!=null && isFinite(+par[i])) x.par=+par[i];
+      if(s[i]!=null && isFinite(+s[i])){ x.rel=+s[i]; filled++; sum+=(+x.par||0)+(+s[i]); cnt++; }
+    }
+    if(h.total!=null && cnt===9 && +h.total!==sum) warn.push(p[1]+' 합계: 카드 '+h.total+'타 ↔ 계산 '+sum+'타');
+  });
+  scoreRender();
+  var c=scoreCalc(sc);
+  if(o.grand!=null && c.f.done===9 && c.b.done===9 && +o.grand!==c.strokes) warn.push('전체: 카드 '+o.grand+'타 ↔ 계산 '+c.strokes+'타');
+  // 기록 날짜가 카드 날짜와 다르면 맞출지 물음
+  var d=String(o.date||'').replace(/[.\/]/g,'-').slice(0,10), md=document.getElementById('mDate');
+  if(/^\d{4}-\d{2}-\d{2}$/.test(d) && md && md.value!==d && confirm('스코어카드 날짜 '+d+' 로 기록 날짜도 바꿀까요?\n(지금: '+md.value+')')) md.value=d;
+  alert('📥 '+filled+'홀 읽음 — '+scoreSummary(sc)
+    +(warn.length?('\n\n⚠ 숫자 확인 필요:\n- '+warn.join('\n- ')+'\n표에서 고쳐 주세요.'):'\n카드 합계와 일치')
+    +'\n\nD~P 상세는 표에서 적고 「완료」를 누르세요.');
+}
 function scoreSumLabel(){ var el=document.getElementById('mScoreSum'); if(el) el.textContent=pendingScore?scoreSummary(pendingScore):''; }
 document.addEventListener('input', function(e){ if(e.target && e.target.closest && e.target.closest('#scTbl, #score-ov .sc-top')) scoreTotalsUpdate(); });
 // 목록 카드 안 읽기 전용 표 (입력된 홀만)
@@ -1829,7 +1892,7 @@ function scoreViewHtml(sc){
     if(!rows.length) return;
     h+='<tr class="sc-course"><td colspan="10">'+p[1]+(half.course?(' · '+esc(half.course)):'')+'</td></tr>';
     rows.forEach(function(o){
-      var x=o.x; h+='<tr><td><b>'+o.n+'</b></td><td>'+esc(String(x.par||''))+'</td><td class="sc-relv '+scRelCls(x.rel)+'">'+esc(scRelTxt(x.rel))+'</td>';
+      var x=o.x; h+='<tr'+(x.rel!==''&&x.rel!=null&&+x.rel>=2?' class="sc-bad"':'')+'><td><b>'+o.n+'</b></td><td>'+esc(String(x.par||''))+'</td><td class="sc-relv '+scRelCls(x.rel)+'">'+esc(scRelTxt(x.rel))+'</td>';
       SC_SHOTS.forEach(function(s){ var v=(x.s||{})[s]||{}; h+='<td>'+(v.c?'<div class="sc-c">'+esc(v.c)+'</div>':'')+((v.d||v.m)?'<div class="sc-d">'+esc([v.d,v.m?(v.m+(/m$/.test(v.m)?'':'m')):''].filter(Boolean).join(' '))+'</div>':'')+'</td>'; });
       h+='<td style="text-align:left">'+esc(x.note||'')+'</td></tr>';
     });
@@ -2318,6 +2381,8 @@ idbOpen(function(){
 .sc-tbl th,.sc-tbl td{border:1px solid #cfd8cf;padding:2px 3px;text-align:center;vertical-align:middle}
 .sc-tbl th{background:#e3efe3;color:#1b3a1b;position:sticky;top:0;z-index:2}
 .sc-tbl tr.sc-sub td{background:#f3f7e8;font-weight:700}
+/* 더블보기 이상(+2↑) 홀 = 분홍 → 어디서 잃었는지(D? 퍼팅?) 상세 적을 곳 (이사님: 「파5 더블, 드라이버 탓인지 퍼팅 탓인지 몰라서」) */
+.sc-tbl tr.sc-bad td, #scTbl tr.sc-bad > td:nth-child(-n+3){background:#fde8ec}
 .sc-tbl tr.sc-course td{background:#1b3a1b;color:#fff;font-weight:700;text-align:left;padding:4px 8px}
 .sc-tbl input{width:100%;border:1px solid transparent;background:transparent;font-size:0.78rem;font-family:inherit;padding:2px 3px;text-align:center;box-sizing:border-box}
 .sc-tbl input:focus{border-color:#2d7a2d;background:#fffbe6;outline:none}
@@ -2353,6 +2418,8 @@ idbOpen(function(){
     <span>전반 <input id="scFront" placeholder="몬티"></span>
     <span>후반 <input id="scBack" placeholder="벨라"></span>
     <span class="sc-tot" id="scTot"></span>
+    <button class="pcbtn" style="opacity:1;background:#1a73c8" onclick="document.getElementById('scImg').click()" title="스마트스코어 스코어카드 캡처(이미지)를 골라서 파·기록 채우기">📥 스마트스코어</button>
+    <input type="file" id="scImg" accept="image/*" style="display:none" onchange="scoreImportFile(this)">
     <button class="pcbtn" style="opacity:1;background:#8a8a8a" onclick="scoreClear()">지우기</button>
     <button class="pcbtn" style="opacity:1;background:#c0392b" onclick="closeScore(false)">취소</button>
     <button class="pcbtn" style="opacity:1;background:#2d7a2d;font-size:0.9rem;padding:6px 16px" onclick="closeScore(true)">완료</button>
