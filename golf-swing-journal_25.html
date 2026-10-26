@@ -77,6 +77,9 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;align-items:flex-start;justify-content:center;padding-top:40px;overflow-y:auto}
 .ov.open{display:flex}
 .modal{background:#fff;border-radius:12px;padding:8px 12px;width:98%;max-width:600px;margin-bottom:40px}
+/* 수정 팝업 폭: 폰=98% 그대로 / 패드 760 / PC 980 — 예전엔 모두 600 이라 PC에서 좁았음 (26-10-26) */
+@media (min-width:768px){ .modal{max-width:760px;padding:10px 16px} }
+@media (min-width:1200px){ .modal{max-width:980px;padding:12px 20px} #mMemo{height:440px} }
 .modal h2{font-size:0.98rem;font-weight:700;color:#1b3a1b;margin-bottom:8px}
 .fr{margin-bottom:3px}
 .fr label{display:block;font-size:0.76rem;color:#666;font-weight:600;margin-bottom:1px}
@@ -184,7 +187,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.78 · 26-10-25</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.79 · 26-10-26</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -2849,11 +2852,6 @@ function saveTheme(){
     +m.res.map(themeItemHtml).join('')
     +'</body></html>';
   themeExportMode=false;
-  var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));
-  a.download='golf-theme-'+(m.kws.join('_')||'all')+'-'+(m.from||'')+'.html'; a.click();
-}
-</script>
-</body></html>';
   var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));
   a.download='golf-theme-'+(m.kws.join('_')||'all')+'-'+(m.from||'')+'.html'; a.click();
 }
