@@ -187,7 +187,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.96 · 26-10-27</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.98 · 26-10-27</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -1294,7 +1294,10 @@ function cardHtml(r, i){
   var scoreHtml=(r.score&&scoreHasData(r.score))?scoreViewHtml(r.score, i):'';   // ⛳ 스코어 표
   var scoreBadge='';
   if(scoreHtml){ var _sc=scoreCalc(r.score), _two=_sc.f.done&&_sc.b.done; var _st=_two?_sc.strokes:(_sc.f.done?_sc.f.strokes:_sc.b.strokes), _rl=_two?_sc.rel:(_sc.f.done?_sc.f.rel:_sc.b.rel);
-    scoreBadge=_sc.done?'<span class="venue" title="'+esc(scoreSummary(r.score))+'" style="background:#e6f4e6;color:#1b5e20;font-weight:800">⛳ '+_st+'('+scRelTxt(_rl)+')</span>':''; }
+    // 「구장'스코어」 한 칩 (26-10-27 이사님: 썬밸리'86(+14)) — 기록의 구장 칩이 같은 이름이면 따로 안 띄움
+    var _vn=(r.score.venue||'').trim();
+    scoreBadge=_sc.done?'<span class="venue" title="'+esc(scoreSummary(r.score))+'" style="font-weight:700">'+(_vn?esc(_vn)+"'":'⛳ ')+_st+'('+scRelTxt(_rl)+')</span>':'';
+    if(_sc.done && _vn && (r.venue||'').trim()===_vn) venueHtml=''; }
   var hasBody=r.memo||mediaHtml||scoreHtml;
   return '<div class="'+cardCls+'" id="c'+i+'">'
     +'<div class="row" onclick="tog('+i+')">'
@@ -1744,7 +1747,7 @@ function scHeadEdit(){
   return '<tr class="sc-h1"><th rowspan="2">홀</th><th rowspan="2">파</th><th rowspan="2">기록</th>'+SC_GROUP.map(function(g){ var k=g[2][0]; return '<th colspan="'+SC_SUB[k].length+'" class="sc-g">'+g[0]+' <span style="font-size:0.62rem;font-weight:400;color:#5a7a5a">'+g[1]+'</span></th>'; }).join('')+'<th rowspan="2" style="text-align:left">메모</th></tr>'
     +'<tr class="sc-h2">'+SC_SHOTS.map(function(k){ return SC_SUB[k].map(function(f,j){ return '<th class="sc-sh'+(j===0?' sc-gs':'')+'">'+SC_SUBNAME[f]+'</th>'; }).join(''); }).join('')+'</tr>';
 }
-// 기록에 따라 줄 색 (26-10-27 이사님): 버디 이하=sc-good(연파랑), 파=sc-par0(연초록), 보기=흰색, 더블 이상=sc-bad(분홍)
+// 기록에 따라 줄 색 (26-10-27 이사님): 버디 이하=sc-good(연파랑), 파=sc-par0(연노랑), 보기=흰색, 더블 이상=sc-bad(분홍)
 function scRowCls(rel){ if(rel===''||rel==null) return ''; rel=+rel; return rel>=2?'sc-bad':(rel<0?'sc-good':(rel===0?'sc-par0':'')); }
 var pendingScore=null, _scoreBak=null;
 function scoreEmpty(){
@@ -2628,7 +2631,7 @@ idbOpen(function(){
 /* 더블보기 이상(+2↑) 홀 = 분홍 → 어디서 잃었는지(D? 퍼팅?) 상세 적을 곳 (이사님: 「파5 더블, 드라이버 탓인지 퍼팅 탓인지 몰라서」) */
 .sc-tbl tr.sc-bad td, #scTbl tr.sc-bad > td:nth-child(-n+3){background:#fde8ec}
 .sc-tbl tr.sc-good td, #scTbl tr.sc-good > td:nth-child(-n+3){background:#e3f0ff}
-.sc-tbl tr.sc-par0 td, #scTbl tr.sc-par0 > td:nth-child(-n+3){background:#eaf6e4}
+.sc-tbl tr.sc-par0 td, #scTbl tr.sc-par0 > td:nth-child(-n+3){background:#fff7d1}   /* 파 = 연노랑 (표가 초록 계열이라 초록이면 구분 안 됨 — 26-10-27 이사님) */
 .sc-tbl tr.sc-course td{background:#1b3a1b;color:#fff;font-weight:700;text-align:left;padding:4px 8px}
 .sc-tbl input{width:100%;border:1px solid transparent;background:transparent;font-size:0.78rem;font-family:inherit;padding:2px 3px;text-align:center;box-sizing:border-box}
 .sc-tbl input:focus{border-color:#2d7a2d;background:#fffbe6;outline:none}
