@@ -187,7 +187,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.88 · 26-10-27</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.90 · 26-10-27</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -1853,7 +1853,12 @@ function scoreClear(){ if(!confirm('스코어를 모두 지울까요?')) return;
 // 📥 스마트스코어 읽어오기 (26-10-27): 스코어카드 캡처 → Claude(이미지 읽기) → 파·기록만 채움(D~P 상세는 이사님이 적음)
 // 버튼 둘: 📥 스마트스코어 = 무료 OCR(키 안 씀) / 🤖 AI편집 = API 키로 AI가 읽음(코스 이름·날짜까지) (26-10-27 이사님 지정)
 var _scImportMode='ocr';
-function scoreImportPick(mode){ _scImportMode=mode; if(mode==='ai' && !themeAIKey(false)) return; document.getElementById('scImg').click(); }
+// 26-10-27 이사님: 📥 읽기 버튼은 뺌 → 🤖 AI편집 하나. 이 기기에 키가 없으면 무료 OCR로 읽을지 물어봄(OCR은 자동 저장 안 함)
+function scoreImportPick(mode){
+  var key=''; try{ key=localStorage.getItem('anthropicKey')||''; }catch(e){}
+  if(mode==='ai' && !key){ if(confirm('이 기기에 🔑 API 키가 없어요.\n무료 OCR로 읽을까요? (확인 = OCR로 읽기 / 취소 = 키 넣기)')) mode='ocr'; else { openKeyModal(); return; } }
+  _scImportMode=mode; document.getElementById('scImg').click();
+}
 function scoreImportFile(inp){
   var f=inp.files&&inp.files[0]; inp.value=''; if(!f) return;
   var rd=new FileReader(); rd.onload=function(){ scoreImportDataUrl(rd.result, _scImportMode); }; rd.readAsDataURL(f);
@@ -2032,13 +2037,27 @@ function scoreImportDataUrl(dataUrl, mode){
       var txt=(j.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('\n');
       var js=txt.slice(txt.indexOf('{'), txt.lastIndexOf('}')+1);
       tot.textContent=oldTot;
-      scoreApplyImport(JSON.parse(js));
+      scoreApplyImport(JSON.parse(js), true);   // 🤖 AI편집 = 읽고 카드 합계 맞으면 바로 저장
     })
     .catch(function(e){ tot.textContent=oldTot; alert('스코어카드를 못 읽었어요: '+e.message+'\n(🔑 API 키·인터넷 확인, 또는 캡처를 더 크게)'); });
   });
 }
+// 🤖 AI편집 자동 저장 (26-10-27 이사님: 「스코어 읽어서 저장하게」): 스코어창 닫고, 기록의 빈 칸만 채워서 바로 저장
+//   날짜=카드 날짜, 구분=필드, 구장=카드 구장, 제목=「⛳ 썬밸리 밸리·썬 86(+14)」 — 이미 적어 둔 칸은 안 건드림
+function scoreAutoSave(cardDate){
+  closeScore(true);
+  var md=document.getElementById('mDate'), vt=document.getElementById('mVt'), ven=document.getElementById('mVenue'), ti=document.getElementById('mTitle');
+  if(/^\d{4}-\d{2}-\d{2}$/.test(cardDate||'')) md.value=cardDate;
+  if(!vt.value){ vt.value='F'; mVtChanged(); }
+  if(!ven.value.trim() && pendingScore && pendingScore.venue) ven.value=pendingScore.venue;
+  if(!ti.value.trim()) ti.value='⛳ '+scoreSummary(pendingScore);
+  var summ=scoreSummary(pendingScore);
+  saveMod();
+  alert('✅ 🤖 AI편집 — 스코어 읽어서 저장했어요\n'+summ+'\n\nD~P 상세는 그 기록 「수정 → ⛳ 스코어」에서 적으면 돼요.');
+}
 // 읽은 결과를 표에 채움: 파·기록만 덮어쓰고 D~P·클럽종류 상세는 그대로 둠. 카드 합계와 대조해 다르면 알림
-function scoreApplyImport(o){
+// auto=true(🤖 AI편집): 카드 합계와 맞으면 확인창 없이 바로 저장, 안 맞으면 표를 열어 둔 채 ⚠ 알림(저장 안 함)
+function scoreApplyImport(o, auto){
   if(!pendingScore) pendingScore=scoreEmpty();
   scoreCollect();
   var sc=pendingScore, warn=[], filled=0, checked=0;
@@ -2059,8 +2078,10 @@ function scoreApplyImport(o){
   (o._unsure||[]).forEach(function(u){ var a=u.split('-'); var el=document.querySelector('#scTbl input[data-h="'+a[0]+'-'+a[1]+'"][data-k="'+a[2]+'"]'); if(el) el.classList.add('sc-unsure'); });
   var c=scoreCalc(sc);
   if(o.grand!=null && c.f.done===9 && c.b.done===9 && +o.grand!==c.strokes) warn.push('전체: 카드 '+o.grand+'타 ↔ 계산 '+c.strokes+'타');
-  // 기록 날짜가 카드 날짜와 다르면 맞출지 물음
   var d=String(o.date||'').replace(/[.\/]/g,'-').slice(0,10), md=document.getElementById('mDate');
+  if(auto && !warn.length && checked>0 && filled>0){ scoreAutoSave(d); return; }
+  if(auto) warn.unshift('🤖 카드 합계와 안 맞거나 합계를 못 읽어서 자동 저장 안 했어요');
+  // 기록 날짜가 카드 날짜와 다르면 맞출지 물음
   if(/^\d{4}-\d{2}-\d{2}$/.test(d) && md && md.value!==d && confirm('스코어카드 날짜 '+d+' 로 기록 날짜도 바꿀까요?\n(지금: '+md.value+')')) md.value=d;
   alert((o._ocr?'🔢 (OCR) ':'📥 ')+filled+'홀 읽음 — '+scoreSummary(sc)
     +(warn.length?('\n\n⚠ 숫자 확인 필요:\n- '+warn.join('\n- ')+'\n표에서 고쳐 주세요.'):(checked?'\n카드 합계와 일치':'\n(카드 합계를 못 읽어 대조 못 함 — 표에서 한 번 확인해 주세요)'))
@@ -2561,6 +2582,10 @@ idbOpen(function(){
 <style>
 #score-ov{display:none;position:fixed;inset:0;background:#f4f4ef;z-index:10002;flex-direction:column}
 #score-ov .sc-top{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;padding:8px 10px;background:#1b3a1b;color:#fff;flex-shrink:0}
+/* 26-10-27 폰: 1줄 = 구장·전반·후반(좁게), 2줄 = 합계·버튼 */
+#score-ov .sc-r1{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;white-space:nowrap;min-width:0}
+#score-ov .sc-r2{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-left:auto}
+@media (max-width:899px){ #score-ov .sc-top{flex-direction:column;align-items:stretch;gap:6px;padding:6px 8px} #score-ov .sc-r2{margin-left:0} #score-ov .sc-r1{gap:5px;font-size:0.8rem} #score-ov .sc-top .sc-r1 input{width:62px;padding:3px 5px;font-size:0.8rem} #score-ov .sc-ttl{display:none} #score-ov .sc-r2 .pcbtn{padding:5px 8px;font-size:0.78rem} #score-ov .sc-tot{margin-left:0;width:100%} }
 #score-ov .sc-top input{padding:4px 7px;border-radius:6px;border:1px solid #9c9;font-size:0.85rem;font-family:inherit;width:120px}
 #score-ov .sc-top b{font-size:1rem}
 #score-ov .sc-tot{margin-left:auto;font-weight:700;font-size:0.95rem;color:#ffe680}
@@ -2620,18 +2645,21 @@ idbOpen(function(){
 </style>
 <div id="score-ov">
   <div class="sc-top">
-    <b>⛳ 스코어</b>
+   <div class="sc-r1">
+    <b>⛳<span class="sc-ttl"> 스코어</span></b>
     <span>구장 <input id="scVenue" placeholder="BA비스타" list="scVenueList"></span>
     <span>전반 <input id="scFront" placeholder="몬티"></span>
     <span>후반 <input id="scBack" placeholder="벨라"></span>
+   </div>
+   <div class="sc-r2">
     <span class="sc-tot" id="scTot"></span>
     <button id="scImgBtn" class="pcbtn" style="opacity:1;background:#1a73c8" onclick="scoreShowImg(pendingScore&&pendingScore.img)" title="읽어온 스마트스코어 원본 사진 보기">🖼 스마트스코어</button>
-    <button class="pcbtn" style="opacity:1;background:#2d7a2d" onclick="scoreImportPick('ocr')" title="스마트스코어 캡처를 골라 파·기록 채우기 (무료 OCR, 키 안 씀)">📥 읽기</button>
-    <button class="pcbtn" style="opacity:1;background:#7a3fb8" onclick="scoreImportPick('ai')" title="API 키로 AI가 캡처를 읽음 — 코스 이름·날짜까지, 더 정확">🤖 AI편집</button>
+    <button class="pcbtn" style="opacity:1;background:#7a3fb8" onclick="scoreImportPick('ai')" title="API 키로 AI가 캡처를 읽고, 카드 합계와 맞으면 바로 저장(코스 이름·날짜까지)">🤖 AI편집</button>
     <input type="file" id="scImg" accept="image/*" style="display:none" onchange="scoreImportFile(this)">
     <button class="pcbtn" style="opacity:1;background:#8a8a8a" onclick="scoreClear()">지우기</button>
     <button class="pcbtn" style="opacity:1;background:#c0392b" onclick="closeScore(false)">취소</button>
     <button class="pcbtn" style="opacity:1;background:#2d7a2d;font-size:0.9rem;padding:6px 16px" onclick="closeScore(true)">완료</button>
+   </div>
   </div>
   <div class="sc-wrap"><table class="sc-tbl" id="scTbl"></table></div>
   <datalist id="scVenueList"><option value="BA비스타"><option value="썬밸리"><option value="오너스"></datalist>
