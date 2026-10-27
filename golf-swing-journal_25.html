@@ -187,7 +187,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.85 · 26-10-27</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.86 · 26-10-27</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -1716,23 +1716,32 @@ var SC_CLUB_PH={D:'D',W:'4W',U:'5U',I:'7',A:'52',P:'퍼트'};
 var SC_HASH={I:1,A:1};   // 윗줄을 「#」+번호로 입력하는 칸
 var SC_LIST={I:'scIList',A:'scAList'};
 var SC_GROUP=[['D','Driver',['D']],['W','Wood',['W']],['U','Utility',['U']],['I','Iron',['I']],['A','Approach',['A']],['P','Putt',['P']]];
-var SC_COLS=3+SC_SHOTS.length+1;   // 홀·파·기록 + 샷 칸 + 메모
+// 26-10-27 이사님 표: 한 줄에 세부칸 — D·W·U = 방향|거리, I·A·P = #|방향|거리 (P 의 # = 퍼트 수)
+var SC_SUB={D:['d','m'],W:['d','m'],U:['d','m'],I:['c','d','m'],A:['c','d','m'],P:['c','d','m']};
+var SC_SUBNAME={c:'#',d:'방향',m:'거리'};
+var SC_NSUB=SC_SHOTS.reduce(function(n,k){ return n+SC_SUB[k].length; },0);
+var SC_COLS=3+SC_NSUB+1;   // 홀·파·기록 + 세부칸 + 메모
 function scLabel(k){ return k.replace(/\d$/,''); }
 function scClubTxt(k,c){ if(!c) return ''; c=String(c).replace(/^#/,''); if(SC_HASH[k]) c=c.replace(/\s*(i|I|°|도)$/,''); return SC_HASH[k]?'#'+c:c; }
 // V01.02.84 에서 잠깐 I1~I3·A1~A3 3칸이었음 → 첫 칸은 I·A 로, 2·3번째 칸 값은 메모 뒤에 붙여 보존 (몇 번 불러도 같음)
 function scMigrate(sc){
-  if(!sc||sc._v3) return sc;
+  if(!sc||sc._v4) return sc;
   ['front','back'].forEach(function(k){ ((sc[k]||{}).holes||[]).forEach(function(x){ var o=x.s||{}, extra=[];
     ['I','A'].forEach(function(g){
       if(o[g+'1']){ if(!o[g]) o[g]=o[g+'1']; delete o[g+'1']; }
       [g+'2',g+'3'].forEach(function(kk){ var v=o[kk]; if(v&&(v.c||v.d||v.m)) extra.push(g+':'+[scClubTxt(g,v.c),v.d,v.m?v.m+'m':''].filter(Boolean).join(' ')); delete o[kk]; });
     });
+    ['D','W','U'].forEach(function(g){ var v=o[g]; if(v&&v.c&&!/^(D|W|U|4W|5U)$/i.test(String(v.c).trim())) extra.push(g+':'+v.c); if(v) delete v.c; });
     if(extra.length) x.note=(x.note?x.note+' / ':'')+extra.join(', ');
   }); });
-  try{ Object.defineProperty(sc,'_v3',{value:true,enumerable:false}); }catch(e){}
+  try{ Object.defineProperty(sc,'_v4',{value:true,enumerable:false}); }catch(e){}
   return sc;
 }
 function scHead(){ return '<tr><th>홀</th><th>파</th><th>기록</th>'+SC_GROUP.map(function(g){ return '<th'+(g[2].length>1?' colspan="'+g[2].length+'"':'')+'>'+g[0]+'<div style="font-size:0.62rem;font-weight:400;color:#5a7a5a">'+g[1]+'</div></th>'; }).join('')+'<th style="text-align:left">메모</th></tr>'; }
+function scHeadEdit(){
+  return '<tr class="sc-h1"><th rowspan="2">홀</th><th rowspan="2">파</th><th rowspan="2">기록</th>'+SC_GROUP.map(function(g){ var k=g[2][0]; return '<th colspan="'+SC_SUB[k].length+'" class="sc-g">'+g[0]+' <span style="font-size:0.62rem;font-weight:400;color:#5a7a5a">'+g[1]+'</span></th>'; }).join('')+'<th rowspan="2" style="text-align:left">메모</th></tr>'
+    +'<tr class="sc-h2">'+SC_SHOTS.map(function(k){ return SC_SUB[k].map(function(f,j){ return '<th class="sc-sh'+(j===0?' sc-gs':'')+'">'+SC_SUBNAME[f]+'</th>'; }).join(''); }).join('')+'</tr>';
+}
 var pendingScore=null, _scoreBak=null;
 function scoreEmpty(){
   function half(){ var h=[]; for(var i=0;i<9;i++) h.push({par:4, rel:'', s:{}, note:''}); return {course:'', holes:h}; }
@@ -1776,18 +1785,19 @@ function scoreRowHtml(half, i, x){
     +'<td class="sc-rel"><input inputmode="text" data-h="'+key+'" data-k="rel" class="'+scRelCls(x.rel)+'" value="'+esc(scRelTxt(x.rel))+'" placeholder="0"></td>';
   SC_SHOTS.forEach(function(s){
     var v=(x.s||{})[s]||{};
-    t+='<td class="sc-'+scLabel(s)+'"><div class="sc-shot">'
-      +(SC_HASH[s]
-        ? '<div class="sc-l1"><span class="sc-hash">#</span><input class="sc-club" inputmode="numeric" list="'+SC_LIST[s]+'" data-h="'+key+'" data-k="'+s+'.c" value="'+esc(scClubTxt(s,v.c).replace(/^#/,''))+'" placeholder="'+SC_CLUB_PH[s]+'"></div>'
-        : '<input class="sc-club" data-h="'+key+'" data-k="'+s+'.c" value="'+esc(v.c||'')+'" placeholder="'+SC_CLUB_PH[s]+'">')
-      +'<div class="sc-l2"><input class="sc-dir" list="scDirList" data-h="'+key+'" data-k="'+s+'.d" value="'+esc(v.d||'')+'" placeholder="좌우">'
-      +'<input class="sc-dist" inputmode="numeric" data-h="'+key+'" data-k="'+s+'.m" value="'+esc(v.m||'')+'" placeholder="m"></div></div></td>';
+    SC_SUB[s].forEach(function(f,j){
+      var cls='sc-c-'+f+(j===0?' sc-gs':''), val=v[f]||'', inp;
+      if(f==='c') inp='<input class="sc-club" inputmode="numeric" list="'+(SC_LIST[s]||'')+'" data-h="'+key+'" data-k="'+s+'.c" value="'+esc(scClubTxt(s,val).replace(/^#/,''))+'" placeholder="'+(s==='P'?'2':SC_CLUB_PH[s])+'">';
+      else if(f==='d') inp='<input class="sc-dir" list="scDirList" data-h="'+key+'" data-k="'+s+'.d" value="'+esc(val)+'">';
+      else inp='<input class="sc-dist" inputmode="numeric" data-h="'+key+'" data-k="'+s+'.m" value="'+esc(val)+'">';
+      t+='<td class="'+cls+'">'+inp+'</td>';
+    });
   });
   return t+'<td class="sc-note"><input data-h="'+key+'" data-k="note" value="'+esc(x.note||'')+'" placeholder="메모"></td></tr>';
 }
 function scoreRender(){
   scMigrate(pendingScore);
-  var sc=pendingScore, h=scHead();
+  var sc=pendingScore, h=scHeadEdit();
   [['front','전반'],['back','후반']].forEach(function(p){
     h+='<tr class="sc-course"><td colspan="'+SC_COLS+'">'+p[1]+(sc[p[0]].course?(' · '+esc(sc[p[0]].course)):'')+'</td></tr>';
     sc[p[0]].holes.forEach(function(x,i){ h+=scoreRowHtml(p[0], i, x); });
@@ -2545,12 +2555,22 @@ idbOpen(function(){
 .sc-tbl input{width:100%;border:1px solid transparent;background:transparent;font-size:0.78rem;font-family:inherit;padding:2px 3px;text-align:center;box-sizing:border-box}
 .sc-tbl input:focus{border-color:#2d7a2d;background:#fffbe6;outline:none}
 /* 폰에서 옆으로 밀어도 홀·파·기록은 왼쪽에 고정 */
-#scTbl tr:not(.sc-course) > :nth-child(1){position:sticky;left:0;width:30px;min-width:30px;background:#fff;z-index:1}
-#scTbl tr:not(.sc-course) > :nth-child(2){position:sticky;left:30px;width:42px;min-width:42px;background:#fff;z-index:1}
-#scTbl tr:not(.sc-course) > :nth-child(3){position:sticky;left:72px;width:48px;min-width:48px;background:#fff;z-index:1;box-shadow:2px 0 0 #cfd8cf}
-#scTbl tr:not(.sc-course) > th:nth-child(-n+3){background:#e3efe3;z-index:3}
+#scTbl tr:not(.sc-course):not(.sc-h2) > :nth-child(1){position:sticky;left:0;width:30px;min-width:30px;background:#fff;z-index:1}
+#scTbl tr:not(.sc-course):not(.sc-h2) > :nth-child(2){position:sticky;left:30px;width:42px;min-width:42px;background:#fff;z-index:1}
+#scTbl tr:not(.sc-course):not(.sc-h2) > :nth-child(3){position:sticky;left:72px;width:48px;min-width:48px;background:#fff;z-index:1;box-shadow:2px 0 0 #cfd8cf}
+#scTbl tr:not(.sc-course):not(.sc-h2) > th:nth-child(-n+3){background:#e3efe3;z-index:3}
 #scTbl tr.sc-sub:not(.sc-course) > td:nth-child(-n+3){background:#f3f7e8}
 .sc-tbl input::placeholder{color:#c8cfc8;font-weight:400}
+#scTbl td.sc-c-c{width:30px;min-width:30px}
+#scTbl td.sc-c-d{width:34px;min-width:34px}
+#scTbl td.sc-c-m{width:38px;min-width:38px}
+#scTbl td.sc-c-c input,#scTbl td.sc-c-d input,#scTbl td.sc-c-m input{font-size:0.74rem;padding:1px}
+#scTbl td.sc-c-c input{font-weight:700;color:#1b3a1b}
+#scTbl td.sc-c-d input{color:#1a4d9e}
+#scTbl .sc-gs{border-left:2px solid #9fb59f}
+#scTbl th.sc-g{border-left:2px solid #9fb59f;padding:1px 2px}
+#scTbl tr.sc-h1 th{height:20px}
+#scTbl tr.sc-h2 th{top:22px;font-size:0.66rem;font-weight:400;color:#4a6a4a;padding:1px}
 .sc-tbl input.sc-unsure{background:#fff3a6 !important;border-color:#e0b400}
 .sc-tbl .sc-shot{display:flex;flex-direction:column;gap:1px;width:50px}   /* 26-10-27 칸 폭 절반(88→46) — 몇 글자만 적으니까 */
 .sc-tbl .sc-shot input{font-size:0.72rem;padding:1px 1px}
@@ -2565,7 +2585,7 @@ idbOpen(function(){
 .sc-tbl input.sc-club::-webkit-calendar-picker-indicator{display:none !important}
 .sc-tbl td.sc-par input{width:34px}
 .sc-tbl td.sc-rel input{width:40px;font-weight:700}
-.sc-tbl td.sc-note,.sc-tbl tr > th:last-child{width:100%;min-width:140px}
+.sc-tbl td.sc-note,.sc-tbl tr:not(.sc-h2) > th:last-child{width:100%;min-width:140px}
 .sc-tbl td.sc-D,.sc-tbl td.sc-W,.sc-tbl td.sc-U,.sc-tbl td.sc-I,.sc-tbl td.sc-A,.sc-tbl td.sc-P{width:1%}   /* 맨 오른쪽 = 메모, 남는 폭 다 씀 */
 .sc-tbl td.sc-note input{text-align:left}
 .sc-tbl input.sc-dir::-webkit-calendar-picker-indicator{display:none !important}   /* 좁은 칸에서 화살표가 글자 자리 먹음 — 목록은 입력하면 그대로 뜸 */
