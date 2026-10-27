@@ -187,7 +187,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.98 · 26-10-27</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.99 · 26-10-27</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -1857,6 +1857,17 @@ function closeScore(save){
   document.getElementById('score-ov').style.display='none';
   scoreSumLabel();
 }
+// 「저장」(26-10-27 이사님: 완료→저장): 스코어창 닫고 기록까지 저장. 기록 빈 칸은 AI편집과 같게 채움(날짜는 그대로)
+function scoreSaveAll(){
+  closeScore(true);
+  var vt=document.getElementById('mVt'), ven=document.getElementById('mVenue'), ti=document.getElementById('mTitle');
+  if(pendingScore){
+    if(!vt.value){ vt.value='F'; mVtChanged(); }
+    if(!ven.value.trim() && pendingScore.venue) ven.value=pendingScore.venue;
+    if(!ti.value.trim()) ti.value='⛳ '+scoreSummary(pendingScore);
+  }
+  saveMod();
+}
 function scoreClear(){ if(!confirm('스코어를 모두 지울까요?')) return; pendingScore=scoreEmpty(); scoreRender(); }
 // 📥 스마트스코어 읽어오기 (26-10-27): 스코어카드 캡처 → Claude(이미지 읽기) → 파·기록만 채움(D~P 상세는 이사님이 적음)
 // 버튼 둘: 📥 스마트스코어 = 무료 OCR(키 안 씀) / 🤖 AI편집 = API 키로 AI가 읽음(코스 이름·날짜까지) (26-10-27 이사님 지정)
@@ -2127,7 +2138,7 @@ function scoreViewHtml(sc, ri){
   if(!scoreHasData(sc)) return '';
   // 표가 길어서 위·아래에 「✕ 닫기」(그 기록 접고 제목줄로) — 26-10-27 이사님
   var closeBtn=(ri!=null)?'<button class="pcbtn" style="opacity:1;background:#8a8a8a" onclick="event.stopPropagation();scoreViewClose('+ri+')">✕ 닫기</button>':'';
-  var c=scoreCalc(sc), h='<div class="sc-view">'+(closeBtn?'<div style="display:flex;justify-content:flex-end;margin-bottom:4px">'+closeBtn+'</div>':'')+'<table class="sc-tbl">'+scHead();
+  var c=scoreCalc(sc), h='<div class="sc-view">'+(closeBtn?'<div style="display:flex;justify-content:flex-end;margin-bottom:4px">'+closeBtn+'</div>':'')+'<table class="sc-tbl">'+scHeadEdit();   // 26-10-27: 입력표와 같은 한 줄 세부칸(# | 방향 | 거리)
   [['front','전반'],['back','후반']].forEach(function(p){
     var half=sc[p[0]], rows=half.holes.map(function(x,i){ return {x:x, n:(p[0]==='front'?i+1:i+10)}; }).filter(function(o){
       var x=o.x; return (x.rel!==''&&x.rel!=null)||x.note||SC_SHOTS.some(function(s){ var v=(x.s||{})[s]; return v&&(v.c||v.d||v.m); }); });
@@ -2135,7 +2146,12 @@ function scoreViewHtml(sc, ri){
     h+='<tr class="sc-course"><td colspan="'+SC_COLS+'">'+p[1]+(half.course?(' · '+esc(half.course)):'')+'</td></tr>';
     rows.forEach(function(o){
       var x=o.x, rc=scRowCls(x.rel); h+='<tr'+(rc?' class="'+rc+'"':'')+'><td><b>'+o.n+'</b></td><td>'+esc(String(x.par||''))+'</td><td class="sc-relv '+scRelCls(x.rel)+'">'+(x.rel!==''&&x.rel!=null&&+x.rel<0?'<span class="sc-heart">'+esc(scRelTxt(x.rel))+'</span>':esc(scRelTxt(x.rel)))+'</td>';
-      SC_SHOTS.forEach(function(s){ var v=(x.s||{})[s]||{}; h+='<td>'+(v.c?'<div class="sc-c">'+esc(scClubTxt(s,v.c))+'</div>':'')+((v.d||v.m)?'<div class="sc-d">'+esc([v.d,v.m?(v.m+(/m$/.test(v.m)?'':'m')):''].filter(Boolean).join(' '))+'</div>':'')+'</td>'; });
+      SC_SHOTS.forEach(function(s){ var v=(x.s||{})[s]||{};
+        SC_SUB[s].forEach(function(f,j){
+          var t=f==='c'?scClubTxt(s,v.c):(f==='m'?(v.m?String(v.m).replace(/\s*m$/,''):''):(v.d||''));
+          h+='<td class="sc-c-'+f+(j===0?' sc-gs':'')+'">'+esc(t)+'</td>';
+        });
+      });
       h+='<td style="text-align:left">'+esc(x.note||'')+'</td></tr>';
     });
     var hc=c[p[0]==='front'?'f':'b']; if(hc.done) h+='<tr class="sc-sub"><td>'+p[1]+'</td><td>'+hc.par+'</td><td class="'+scRelCls(hc.rel)+'">'+scRelTxt(hc.rel)+'</td><td colspan="'+(SC_COLS-3)+'" style="text-align:left">'+hc.strokes+'</td></tr>';
@@ -2683,6 +2699,13 @@ idbOpen(function(){
 .sc-view .sc-tbl{font-size:0.74rem}
 .sc-view .sc-tbl td{padding:2px 4px}
 .sc-view .sc-c{font-weight:700;color:#1b3a1b}
+.sc-view td.sc-c-c{min-width:26px;font-weight:700;color:#1b3a1b}
+.sc-view td.sc-c-d{min-width:30px;color:#1a4d9e}
+.sc-view td.sc-c-m{min-width:32px;color:#555}
+.sc-view td.sc-c-c,.sc-view td.sc-c-d,.sc-view td.sc-c-m{white-space:nowrap;padding:2px 3px}
+.sc-view .sc-gs,.sc-view th.sc-g{border-left:2px solid #9fb59f}
+.sc-view tr.sc-h2 th{font-size:0.62rem;font-weight:400;color:#4a6a4a;padding:1px}
+.sc-view th{position:static}
 .sc-view .sc-d{color:#1a4d9e;font-size:0.7rem}
 </style>
 <div id="score-ov">
@@ -2700,7 +2723,7 @@ idbOpen(function(){
     <input type="file" id="scImg" accept="image/*" style="display:none" onchange="scoreImportFile(this)">
     <button class="pcbtn" style="opacity:1;background:#8a8a8a" onclick="scoreClear()">지우기</button>
     <button class="pcbtn" style="opacity:1;background:#c0392b" onclick="closeScore(false)">취소</button>
-    <button class="pcbtn" style="opacity:1;background:#2d7a2d;font-size:0.9rem;padding:6px 16px" onclick="closeScore(true)">완료</button>
+    <button class="pcbtn" style="opacity:1;background:#2d7a2d;font-size:0.9rem;padding:6px 16px" onclick="scoreSaveAll()" title="스코어 닫고 기록까지 저장">저장</button>
    </div>
   </div>
   <div class="sc-wrap"><table class="sc-tbl" id="scTbl"></table></div>
