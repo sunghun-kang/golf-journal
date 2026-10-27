@@ -187,7 +187,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.01 · 26-10-27</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.04 · 26-10-27</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -1786,7 +1786,7 @@ function scoreSummary(sc){
   return [sc.venue, crs].filter(Boolean).join(' ')+(c.done?(' '+strokes+'('+scRelTxt(rel)+')'+(halves<2?' 9홀':'')):'');
 }
 function scoreRowHtml(half, i, x){
-  var key=half+'-'+i, h=(half==='front'?i+1:i+10);
+  var key=half+'-'+i, h=i+1;   // 후반도 1번부터 (26-10-27 이사님)
   var rc=scRowCls(x.rel);
   var t='<tr'+(rc?' class="'+rc+'"':'')+'><td><b>'+h+'</b></td>'
     +'<td class="sc-par"><input inputmode="numeric" data-h="'+key+'" data-k="par" value="'+esc(String(x.par==null?'':x.par))+'"></td>'
@@ -2140,7 +2140,7 @@ function scoreViewHtml(sc, ri){
   var closeBtn=(ri!=null)?'<button class="pcbtn" style="opacity:1;background:#8a8a8a" onclick="event.stopPropagation();scoreViewClose('+ri+')">✕ 닫기</button>':'';
   var c=scoreCalc(sc), h='<div class="sc-view">'+(closeBtn?'<div style="display:flex;justify-content:flex-end;margin-bottom:4px">'+closeBtn+'</div>':'')+'<table class="sc-tbl">'+scHeadEdit();   // 26-10-27: 입력표와 같은 한 줄 세부칸(# | 방향 | 거리)
   [['front','전반'],['back','후반']].forEach(function(p){
-    var half=sc[p[0]], rows=half.holes.map(function(x,i){ return {x:x, n:(p[0]==='front'?i+1:i+10)}; }).filter(function(o){
+    var half=sc[p[0]], rows=half.holes.map(function(x,i){ return {x:x, n:i+1}; }).filter(function(o){
       var x=o.x; return (x.rel!==''&&x.rel!=null)||x.note||SC_SHOTS.some(function(s){ var v=(x.s||{})[s]; return v&&(v.c||v.d||v.m); }); });
     if(!rows.length) return;
     h+='<tr class="sc-course"><td colspan="'+SC_COLS+'">'+p[1]+(half.course?(' · '+esc(half.course)):'')+'</td></tr>';
@@ -2166,7 +2166,7 @@ function scoreForAI(sc){
   ['front','back'].forEach(function(k,hi){ (sc[k].holes||[]).forEach(function(x,i){
     var parts=[];
     SC_SHOTS.forEach(function(s){ var v=(x.s||{})[s]; if(v&&(v.c||v.d||v.m)) parts.push(scLabel(s)+':'+[scClubTxt(s,v.c),v.d,v.m?(v.m+'m'):''].filter(Boolean).join(' ')); });
-    if((x.rel!==''&&x.rel!=null)||parts.length||x.note) out.push((hi*9+i+1)+'H P'+(x.par||'?')+' '+scRelTxt(x.rel)+(parts.length?' '+parts.join(' '):'')+(x.note?' ('+x.note+')':''));
+    if((x.rel!==''&&x.rel!=null)||parts.length||x.note) out.push((hi?'후반':'전반')+(i+1)+'H P'+(x.par||'?')+' '+scRelTxt(x.rel)+(parts.length?' '+parts.join(' '):'')+(x.note?' ('+x.note+')':''));
   }); });
   return out.join(' | ');
 }
@@ -2645,13 +2645,16 @@ idbOpen(function(){
 .sc-tbl tr.sc-sub td{background:#f3f7e8;font-weight:700}
 .sc-tbl tr.sc-sub td:first-child{white-space:nowrap;min-width:40px}
 /* 더블보기 이상(+2↑) 홀 = 분홍 → 어디서 잃었는지(D? 퍼팅?) 상세 적을 곳 (이사님: 「파5 더블, 드라이버 탓인지 퍼팅 탓인지 몰라서」) */
-/* 줄 색은 숫자 칸(홀·파·기록)까지만 (26-10-27 이사님): 파=연한 블루, 버디↓=진한 블루, 더블↑=분홍 */
+/* 줄 색 = 그 줄 전체 (26-10-27 이사님): 파=연한 블루, 버디↓=진한 블루(글자 흰색), 더블↑=분홍 */
 /* 입력표는 왼쪽 고정칸 규칙(흰 바탕)보다 우선해야 해서 #score-ov + :not() 까지 붙임 */
-.sc-tbl tr.sc-bad > td:nth-child(-n+3), #score-ov #scTbl tr.sc-bad:not(.sc-course):not(.sc-h2) > td:nth-child(-n+3){background:#fde8ec}
-.sc-tbl tr.sc-par0 > td:nth-child(-n+3), #score-ov #scTbl tr.sc-par0:not(.sc-course):not(.sc-h2) > td:nth-child(-n+3){background:#dcebfb}
-.sc-tbl tr.sc-good > td:nth-child(-n+3), #score-ov #scTbl tr.sc-good:not(.sc-course):not(.sc-h2) > td:nth-child(-n+3){background:#3f86d6;color:#fff}
-#score-ov #scTbl tr.sc-good:not(.sc-course):not(.sc-h2) > td:nth-child(-n+2) input{color:#fff}
-.sc-tbl tr.sc-course td{background:#1b3a1b;color:#fff;font-weight:700;text-align:left;padding:4px 8px}
+.sc-tbl tr.sc-bad > td, #score-ov #scTbl tr.sc-bad:not(.sc-course):not(.sc-h2) > td{background:#fde8ec}
+.sc-tbl tr.sc-par0 > td, #score-ov #scTbl tr.sc-par0:not(.sc-course):not(.sc-h2) > td{background:#dcebfb}
+.sc-tbl tr.sc-good > td, #score-ov #scTbl tr.sc-good:not(.sc-course):not(.sc-h2) > td{background:#3f86d6;color:#fff}
+.sc-view tr.sc-good td.sc-c-c, .sc-view tr.sc-good td.sc-c-d, .sc-view tr.sc-good td.sc-c-m{color:#fff}
+#score-ov #scTbl tr.sc-good:not(.sc-course):not(.sc-h2) input{color:#fff !important}
+#score-ov #scTbl tr.sc-good:not(.sc-course):not(.sc-h2) input::placeholder{color:#a9c9ef}
+#score-ov #scTbl tr.sc-good:not(.sc-course):not(.sc-h2) td.sc-rel input{color:#c2185b !important}   /* 하트 위 -1 은 진분홍 그대로 */
+.sc-tbl tr.sc-course td{background:#e6f1e2;color:#1b3a1b;font-weight:700;text-align:left;padding:4px 8px;border-top:2px solid #9fb59f}   /* 26-10-27 이사님: 「전반·후반 줄 너무 진해」 → 연한 초록 + 진초록 글자 */
 .sc-tbl input{width:100%;border:1px solid transparent;background:transparent;font-size:0.78rem;font-family:inherit;padding:2px 3px;text-align:center;box-sizing:border-box}
 .sc-tbl input:focus{border-color:#2d7a2d;background:#fffbe6;outline:none}
 /* 폰에서 옆으로 밀어도 홀·파·기록은 왼쪽에 고정 */
