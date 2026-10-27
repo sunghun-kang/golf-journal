@@ -187,7 +187,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.04 · 26-10-27</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.05 · 26-10-27</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -1297,7 +1297,9 @@ function cardHtml(r, i){
     // 「구장'스코어」 한 칩 (26-10-27 이사님: 썬밸리'86(+14)) — 기록의 구장 칩이 같은 이름이면 따로 안 띄움
     var _vn=(r.score.venue||'').trim();
     scoreBadge=_sc.done?'<span class="venue" title="'+esc(scoreSummary(r.score))+'" style="font-weight:700">'+(_vn?esc(_vn)+"'":'⛳ ')+_st+'('+scRelTxt(_rl)+')</span>':'';
-    if(_sc.done && _vn && (r.venue||'').trim()===_vn) venueHtml=''; }
+    if(_sc.done && _vn && (r.venue||'').trim()===_vn) venueHtml='';
+    // 「스코어카드」 칩 (26-10-27 이사님: 스코어 들어있는 기록은 목록에서 바로 보이게)
+    scoreBadge='<span class="sc-card-chip" title="스코어카드 있음 — 눌러서 보기">스코어카드</span>'+scoreBadge; }
   var hasBody=r.memo||mediaHtml||scoreHtml;
   return '<div class="'+cardCls+'" id="c'+i+'">'
     +'<div class="row" onclick="tog('+i+')">'
@@ -2655,6 +2657,7 @@ idbOpen(function(){
 #score-ov #scTbl tr.sc-good:not(.sc-course):not(.sc-h2) input::placeholder{color:#a9c9ef}
 #score-ov #scTbl tr.sc-good:not(.sc-course):not(.sc-h2) td.sc-rel input{color:#c2185b !important}   /* 하트 위 -1 은 진분홍 그대로 */
 .sc-tbl tr.sc-course td{background:#e6f1e2;color:#1b3a1b;font-weight:700;text-align:left;padding:4px 8px;border-top:2px solid #9fb59f}   /* 26-10-27 이사님: 「전반·후반 줄 너무 진해」 → 연한 초록 + 진초록 글자 */
+.sc-card-chip{display:inline-block;font-size:0.72rem;font-weight:700;color:#1a4d9e;background:#e3efff;border:1px solid #9cbfe8;border-radius:10px;padding:0 7px;line-height:1.5;white-space:nowrap;flex-shrink:0}
 .sc-tbl input{width:100%;border:1px solid transparent;background:transparent;font-size:0.78rem;font-family:inherit;padding:2px 3px;text-align:center;box-sizing:border-box}
 .sc-tbl input:focus{border-color:#2d7a2d;background:#fffbe6;outline:none}
 /* 폰에서 옆으로 밀어도 홀·파·기록은 왼쪽에 고정 */
