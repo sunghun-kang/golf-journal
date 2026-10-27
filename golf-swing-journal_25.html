@@ -187,7 +187,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.90 · 26-10-27</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.91 · 26-10-27</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -2051,9 +2051,26 @@ function scoreAutoSave(cardDate){
   if(!vt.value){ vt.value='F'; mVtChanged(); }
   if(!ven.value.trim() && pendingScore && pendingScore.venue) ven.value=pendingScore.venue;
   if(!ti.value.trim()) ti.value='⛳ '+scoreSummary(pendingScore);
-  var summ=scoreSummary(pendingScore);
+  var summ=scoreSummary(pendingScore), sc=pendingScore, savedDate=md.value;
   saveMod();
-  alert('✅ 🤖 AI편집 — 스코어 읽어서 저장했어요\n'+summ+'\n\nD~P 상세는 그 기록 「수정 → ⛳ 스코어」에서 적으면 돼요.');
+  // 저장된 기록으로 바로 이동·깜빡 (26-10-27: 날짜가 카드 날짜로 바뀌어 목록 아래쪽에 들어가 「사라진 것」처럼 보였음)
+  var i=data.findIndex(function(r){ return r && r.score===sc; }), hidden=false;
+  if(i>=0 && _listOrder.indexOf(i)<0){
+    var vtChip={F:'flt-f',S:'flt-s'}[data[i].vt], q=document.getElementById('q');
+    if(q && q.value){ q.value=''; render(); }
+    if(_listOrder.indexOf(i)<0 && vtChip){ var cb=document.getElementById(vtChip); if(cb && !cb.checked){ cb.checked=true; fltChange(vtChip.replace('flt-','')); } }
+    hidden=_listOrder.indexOf(i)<0;
+  }
+  setTimeout(function(){
+    var el=document.getElementById('c'+i); if(!el) return;
+    var bd=document.getElementById('b'+i); if(bd && bd.style.display!=='block') tog(i);
+    var _tb=document.querySelector('.top'), _vf=document.querySelector('.vt-filter'), _th=(_tb?_tb.getBoundingClientRect().height:0)+(_vf?_vf.getBoundingClientRect().height:0);
+    window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-_th-8, behavior:'auto'});
+    var ob=el.style.background; el.style.transition='background .3s'; el.style.background='#fff7cc'; setTimeout(function(){ el.style.background=ob||''; },2000);
+  }, 200);
+  alert('✅ 🤖 AI편집 — 스코어 읽어서 저장했어요\n'+summ+'\n\n📅 날짜: '+shortY(savedDate)+'('+dow(savedDate)+') — 스코어카드 날짜로 저장돼서 목록의 그 날짜 자리에 있어요(지금 그 기록으로 이동).'
+    +(hidden?'\n⚠ 지금 필터·검색 때문에 목록에 안 보여요 — 「전체」를 눌러 주세요.':'')
+    +'\n\nD~P 상세는 그 기록 「수정 → ⛳ 스코어」에서 적으면 돼요.');
 }
 // 읽은 결과를 표에 채움: 파·기록만 덮어쓰고 D~P·클럽종류 상세는 그대로 둠. 카드 합계와 대조해 다르면 알림
 // auto=true(🤖 AI편집): 카드 합계와 맞으면 확인창 없이 바로 저장, 안 맞으면 표를 열어 둔 채 ⚠ 알림(저장 안 함)
