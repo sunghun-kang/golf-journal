@@ -187,7 +187,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.91 · 26-10-27</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.92 · 26-10-27</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -2020,6 +2020,12 @@ function scoreShowImg(src){
   o.onclick=function(){ o.remove(); };
   document.body.appendChild(o);
 }
+function scoreViewClose(i){
+  var b=document.getElementById('b'+i); if(b && b.style.display==='block') tog(i);
+  var el=document.getElementById('c'+i); if(!el) return;
+  var _tb=document.querySelector('.top'), _vf=document.querySelector('.vt-filter'), _th=(_tb?_tb.getBoundingClientRect().height:0)+(_vf?_vf.getBoundingClientRect().height:0);
+  if(el.getBoundingClientRect().top<_th) window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-_th-8, behavior:'auto'});
+}
 function scoreShowImgRec(i){ var r=data[i]; scoreShowImg(r&&r.score&&r.score.img); }
 function scoreImportDataUrl(dataUrl, mode){
   scKeepImg(dataUrl);
@@ -2111,7 +2117,9 @@ document.addEventListener('input', function(e){ if(e.target && e.target.closest 
 // 목록 카드 안 읽기 전용 표 (입력된 홀만)
 function scoreViewHtml(sc, ri){
   if(!scoreHasData(sc)) return '';
-  var c=scoreCalc(sc), h='<div class="sc-view"><table class="sc-tbl">'+scHead();
+  // 표가 길어서 위·아래에 「✕ 닫기」(그 기록 접고 제목줄로) — 26-10-27 이사님
+  var closeBtn=(ri!=null)?'<button class="pcbtn" style="opacity:1;background:#8a8a8a" onclick="event.stopPropagation();scoreViewClose('+ri+')">✕ 닫기</button>':'';
+  var c=scoreCalc(sc), h='<div class="sc-view">'+(closeBtn?'<div style="display:flex;justify-content:flex-end;margin-bottom:4px">'+closeBtn+'</div>':'')+'<table class="sc-tbl">'+scHead();
   [['front','전반'],['back','후반']].forEach(function(p){
     var half=sc[p[0]], rows=half.holes.map(function(x,i){ return {x:x, n:(p[0]==='front'?i+1:i+10)}; }).filter(function(o){
       var x=o.x; return (x.rel!==''&&x.rel!=null)||x.note||SC_SHOTS.some(function(s){ var v=(x.s||{})[s]; return v&&(v.c||v.d||v.m); }); });
@@ -2125,7 +2133,7 @@ function scoreViewHtml(sc, ri){
     var hc=c[p[0]==='front'?'f':'b']; if(hc.done) h+='<tr class="sc-sub"><td>'+p[1]+'</td><td>'+hc.par+'</td><td class="'+scRelCls(hc.rel)+'">'+scRelTxt(hc.rel)+'</td><td colspan="'+(SC_COLS-3)+'" style="text-align:left">'+hc.strokes+'타</td></tr>';
   });
   if(c.f.done && c.b.done) h+='<tr class="sc-sub"><td>합계</td><td>'+c.par+'</td><td class="'+scRelCls(c.rel)+'">'+scRelTxt(c.rel)+'</td><td colspan="'+(SC_COLS-3)+'" style="text-align:left">'+c.strokes+'타</td></tr>';
-  return h+'</table>'+((sc.img&&ri!=null)?'<button class="pcbtn" style="opacity:1;background:#1a73c8;margin-top:5px" onclick="event.stopPropagation();scoreShowImgRec('+ri+')">🖼 스마트스코어 카드 보기</button>':'')+'</div>';
+  return h+'</table><div style="display:flex;gap:6px;justify-content:space-between;margin-top:5px">'+((sc.img&&ri!=null)?'<button class="pcbtn" style="opacity:1;background:#1a73c8" onclick="event.stopPropagation();scoreShowImgRec('+ri+')">🖼 스마트스코어 카드 보기</button>':'<span></span>')+closeBtn+'</div></div>';
 }
 // 🤖질문에 보낼 한 줄: 「BA비스타 몬티·벨라 82(+10) | 1H P4 +1 D:우 200m I:7i 중앙 160m …」
 function scoreForAI(sc){
@@ -2602,7 +2610,7 @@ idbOpen(function(){
 /* 26-10-27 폰: 1줄 = 구장·전반·후반(좁게), 2줄 = 합계·버튼 */
 #score-ov .sc-r1{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;white-space:nowrap;min-width:0}
 #score-ov .sc-r2{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-left:auto}
-@media (max-width:899px){ #score-ov .sc-top{flex-direction:column;align-items:stretch;gap:6px;padding:6px 8px} #score-ov .sc-r2{margin-left:0} #score-ov .sc-r1{gap:5px;font-size:0.8rem} #score-ov .sc-top .sc-r1 input{width:62px;padding:3px 5px;font-size:0.8rem} #score-ov .sc-ttl{display:none} #score-ov .sc-r2 .pcbtn{padding:5px 8px;font-size:0.78rem} #score-ov .sc-tot{margin-left:0;width:100%} }
+@media (max-width:899px){ #score-ov .sc-top{flex-direction:column;align-items:stretch;gap:6px;padding:6px 8px} #score-ov .sc-r2{margin-left:0} #score-ov .sc-r1{gap:5px;font-size:0.8rem} #score-ov .sc-top .sc-r1 input{width:62px;padding:3px 5px;font-size:0.8rem} #score-ov .sc-top .sc-r1 #scVenue{width:96px} #score-ov .sc-ttl{display:none} #score-ov .sc-r2 .pcbtn{padding:5px 8px;font-size:0.78rem} #score-ov .sc-tot{margin-left:0;width:100%} }
 #score-ov .sc-top input{padding:4px 7px;border-radius:6px;border:1px solid #9c9;font-size:0.85rem;font-family:inherit;width:120px}
 #score-ov .sc-top b{font-size:1rem}
 #score-ov .sc-tot{margin-left:auto;font-weight:700;font-size:0.95rem;color:#ffe680}
