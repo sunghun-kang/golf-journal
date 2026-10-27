@@ -187,7 +187,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.09 · 26-10-27</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.10 · 26-10-27</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -2741,7 +2741,8 @@ idbOpen(function(){
 #scTbl tr.sc-good td.sc-rel input{position:relative;z-index:1;background:transparent;color:#c2185b}
 .sc-heart{position:relative;display:inline-block;min-width:28px;text-align:center;color:#c2185b;font-weight:700;isolation:isolate}
 .sc-heart::before{content:"♥";position:absolute;left:50%;top:50%;transform:translate(-50%,-52%);font-size:1.9rem;line-height:1;color:#ffd3df;z-index:-1}
-.sc-tbl td.sc-note,.sc-tbl td.sc-fix,.sc-tbl td.sc-note-v,.sc-tbl td.sc-fix-v,.sc-tbl th.sc-nh,.sc-tbl th.sc-fh{width:50%;min-width:140px}   /* 메모·개선방향 반씩 (26-10-27) */
+.sc-tbl td.sc-note,.sc-tbl td.sc-note-v,.sc-tbl th.sc-nh{width:75%;min-width:200px}   /* 메모 3 : 개선방향 1 (26-10-27 이사님: 개선방향 반으로, 그만큼 메모 늘림) */
+.sc-tbl td.sc-fix,.sc-tbl td.sc-fix-v,.sc-tbl th.sc-fh{width:25%;min-width:90px}
 .sc-tbl td.sc-note-v,.sc-tbl td.sc-fix-v{text-align:left}
 .sc-tbl td.sc-fix-v{color:#8a4b00}
 .sc-tbl th.sc-fh{color:#8a4b00}
