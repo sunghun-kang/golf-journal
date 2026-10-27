@@ -187,7 +187,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.92 · 26-10-27</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.02.93 · 26-10-27</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -270,12 +270,14 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
     <div class="fr"><label id="mMembersLbl">멤버/원인</label><input type="text" id="mMembers" placeholder="홍길동 / 손목방향, 엎어침..."></div>
     <div class="fr"><label>핵심키워드 / 대책,해결방안</label><textarea id="mTitle" rows="2" style="height:auto;min-height:3.4em;resize:vertical" placeholder="핵심키워드 / 대책,해결방안 (길게 써도 자동 줄바꿈)"></textarea></div>
     <div class="fr"><label>상세 메모 <span style="font-size:0.68rem;font-weight:400;color:#888">— 부분강조: <code style="background:#fee;padding:0 3px;border-radius:3px;color:#c00">ㅃ빨강ㅃ</code> · <code style="background:#eef;padding:0 3px;border-radius:3px;color:#1a4d9e">ㅍ파랑ㅍ</code> · <code style="background:#efe;padding:0 3px;border-radius:3px;color:#1a7a1a">ㄴ녹색ㄴ</code> · <code style="background:#eee;padding:0 3px;border-radius:3px">**굵게**</code></span></label><textarea id="mMemo" placeholder="ㅡ 상세 내용&#10;ㅡ 느낀점"></textarea></div>
-    <div class="fr"><input type="file" id="mMedia" accept="image/*,video/*" multiple style="font-size:0.82rem;padding:6px 0">
+    <!-- 26-10-27 이사님: 파일선택 칸 좁게, ⛳ 스코어 버튼은 같은 줄 맨 오른쪽 -->
+    <div class="fr">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <input type="file" id="mMedia" accept="image/*,video/*" multiple style="font-size:0.8rem;padding:4px 0;width:auto;max-width:230px;flex:0 1 230px;border:none">
+        <span id="mScoreSum" style="font-size:0.82rem;color:#2d7a2d;font-weight:700;margin-left:auto"></span>
+        <button type="button" onclick="openScore()" style="background:#2d7a2d;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:0.88rem;font-weight:700;cursor:pointer;flex-shrink:0">⛳ 스코어</button>
+      </div>
       <div id="mMediaPreview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px"></div>
-    </div>
-    <div class="fr" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-      <button type="button" onclick="openScore()" style="background:#2d7a2d;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:0.88rem;font-weight:700;cursor:pointer">⛳ 스코어</button>
-      <span id="mScoreSum" style="font-size:0.82rem;color:#2d7a2d;font-weight:700"></span>
     </div>
     <div class="fr" style="margin-top:6px">
       <div style="display:flex;flex-direction:row;align-items:center;gap:12px">
