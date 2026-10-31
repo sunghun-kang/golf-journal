@@ -187,7 +187,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1 style="line-height:1.05" title="Kang's Life Story">🏌️ Kang's<br><span style="font-size:0.92em">Life Story</span></h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.25 · 26-11-01</div></div>
+    <div style="flex-shrink:0"><h1 style="line-height:1.05" title="Kang's Life Story">🏌️ Kang's<br><span style="font-size:0.92em">Life Story</span></h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.26 · 26-11-01</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -1824,13 +1824,14 @@ var SC_SHOTS=['D','W','U','I','A','P'];
 var SC_CLUB_PH={D:'D',W:'4W',U:'5U',I:'7',A:'52',P:'퍼트'};
 var SC_HASH={I:1,A:1};   // 윗줄을 「#」+번호로 입력하는 칸
 var SC_LIST={I:'scIList',A:'scAList'};
-var SC_GROUP=[['D','Driver',['D']],['W','Wood',['W']],['U','Utility',['U']],['I','Iron',['I']],['A','Approach',['A']],['P','Putt',['P']]];
+var SC_GROUP=[['D','Driver',['D']],['4W','Wood',['W']],['5U','Utility',['U']],   // 머리줄 W→4W, U→5U (26-11-01 이사님: 우드 4번·유틸 5번만 씀)
+  ['I','Iron',['I']],['A','Approach',['A']],['P','Putt',['P']]];
 // 26-10-27 이사님 표: 한 줄에 세부칸 — D·W·U = 방향|거리, I·A·P = #|방향|거리 (P 의 # = 퍼트 수)
 var SC_SUB={D:['d','m'],W:['d','m'],U:['d','m'],I:['c','d','m'],A:['c','d','m'],P:['c','d','m']};
 var SC_SUBNAME={c:'#',d:'방향',m:'거리'};
 var SC_NSUB=SC_SHOTS.reduce(function(n,k){ return n+SC_SUB[k].length; },0);
 var SC_COLS=3+SC_NSUB+2;   // 홀·파·기록 + 세부칸 + 메모 + 개선방향(26-10-27 이사님)
-function scLabel(k){ return k.replace(/\d$/,''); }
+function scLabel(k){ k=k.replace(/\d$/,''); return k==='W'?'4W':k==='U'?'5U':k; }   // 🤖질문 요약도 4W·5U (11/01)
 function scClubTxt(k,c){ if(!c) return ''; c=String(c).replace(/^#/,''); if(SC_HASH[k]) c=c.replace(/\s*(i|I|°|도)$/,''); return SC_HASH[k]?'#'+c:c; }
 // V01.02.84 에서 잠깐 I1~I3·A1~A3 3칸이었음 → 첫 칸은 I·A 로, 2·3번째 칸 값은 메모 뒤에 붙여 보존 (몇 번 불러도 같음)
 function scMigrate(sc){
@@ -2890,6 +2891,8 @@ idbOpen(function(){
 #score-ov, .sc-view{font-family:"Malgun Gothic","맑은 고딕","Apple SD Gothic Neo","Noto Sans KR",sans-serif}
 #score-ov #scTbl input, #score-ov #scTbl td.sc-c-c input, #score-ov #scTbl td.sc-c-d input, #score-ov #scTbl td.sc-c-m input{font-family:inherit;font-size:12px;height:22px;line-height:22px;padding:0 2px;font-weight:400;box-sizing:border-box;vertical-align:middle;font-variant-numeric:tabular-nums;color:#222}
 #score-ov #scTbl td.sc-c-d input{color:#1a4d9e}
+#score-ov #scTbl td.sc-c-d{padding-left:1px;padding-right:1px}
+#score-ov #scTbl td.sc-c-d input{padding:0 1px}   /* 방향 칸 55px 안에 한글 4자 (11/01 이사님 「여백 줄여」) */
 #score-ov #scTbl td.sc-rel input{font-weight:700}
 #score-ov #scTbl td.sc-rel input.sc-plus{color:#c0392b}
 #score-ov #scTbl td.sc-rel input.sc-minus{color:#1a4d9e}
