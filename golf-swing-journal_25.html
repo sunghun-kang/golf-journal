@@ -187,7 +187,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1 style="line-height:1.05" title="Kang's Life Story">🏌️ Kang's<br><span style="font-size:0.92em">Life Story</span></h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.27 · 26-11-01</div></div>
+    <div style="flex-shrink:0"><h1 style="line-height:1.05" title="Kang's Life Story">🏌️ Kang's<br><span style="font-size:0.92em">Life Story</span></h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.28 · 26-11-01</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -1827,8 +1827,8 @@ var SC_LIST={I:'scIList',A:'scAList'};
 var SC_GROUP=[['D','Driver',['D']],['4W','Wood',['W']],['5U','Utility',['U']],   // 머리줄 W→4W, U→5U (26-11-01 이사님: 우드 4번·유틸 5번만 씀)
   ['I','Iron',['I']],['A','Approach',['A']],['P','Putt',['P']]];
 // 26-10-27 이사님 표: 한 줄에 세부칸 — D·W·U = 방향|거리, I·A·P = #|방향|거리 (P 의 # = 퍼트 수)
-var SC_SUB={D:['d','m'],W:['d','m'],U:['d','m'],I:['c','d','m'],A:['c','d','m'],P:['d','m']};   // 퍼트 # 칸 없앰 (26-11-01 이사님: 퍼터는 종류 없음). 예전 P.c 값은 데이터에만 남음
-var SC_SUBNAME={c:'#',d:'방향',m:'거리'};
+var SC_SUB={D:['d','m','q'],W:['d','m'],U:['d','m'],I:['c','d','m'],A:['c','d','m'],P:['d','m']};   // 퍼트 # 칸 없앰 (26-11-01 이사님: 퍼터는 종류 없음). 예전 P.c 값은 데이터에만 남음
+var SC_SUBNAME={c:'#',d:'방향',m:'거리',q:'구질'};   // q=구질: 드라이버만 (26-11-01 이사님: 뜬공·땅볼·쪼루·정타)
 var SC_NSUB=SC_SHOTS.reduce(function(n,k){ return n+SC_SUB[k].length; },0);
 var SC_COLS=3+SC_NSUB+2;   // 홀·파·기록 + 세부칸 + 메모 + 개선방향(26-10-27 이사님)
 function scLabel(k){ k=k.replace(/\d$/,''); return k==='W'?'4W':k==='U'?'5U':k; }   // 🤖질문 요약도 4W·5U (11/01)
@@ -1877,7 +1877,7 @@ function scoreHasData(sc){
   scMigrate(sc);
   return ['front','back'].some(function(k){ return (sc[k].holes||[]).some(function(x){
     if(x.rel!==''&&x.rel!=null) return true; if(x.note||x.fix) return true;
-    return SC_SHOTS.some(function(s){ var v=(x.s||{})[s]; return v&&(v.c||v.d||v.m); });
+    return SC_SHOTS.some(function(s){ var v=(x.s||{})[s]; return v&&(v.c||v.d||v.m||v.q); });
   }); });
 }
 // 「BA비스타 몬티·벨라 82(+10)」 — 9홀만 쳤으면 그 9홀만
@@ -1902,6 +1902,7 @@ function scoreRowHtml(half, i, x){
       var cls='sc-c-'+f+(j===0?' sc-gs':''), val=v[f]||'', inp;
       if(f==='c') inp='<input class="sc-club" inputmode="text" list="'+(SC_LIST[s]||'')+'" data-h="'+key+'" data-k="'+s+'.c" value="'+esc(scClubTxt(s,val).replace(/^#/,''))+'" placeholder="'+(s==='P'?'2':SC_CLUB_PH[s])+'">';
       else if(f==='d') inp='<input class="sc-dir" list="scDirList" data-h="'+key+'" data-k="'+s+'.d" value="'+esc(val)+'">';
+      else if(f==='q') inp='<input class="sc-q" list="scQList" data-h="'+key+'" data-k="'+s+'.q" value="'+esc(val)+'" placeholder="구질">';
       else inp='<input class="sc-dist" inputmode="text" data-h="'+key+'" data-k="'+s+'.m" value="'+esc(val)+'">';
       t+='<td class="'+cls+'">'+inp+'</td>';
     });
@@ -1935,7 +1936,7 @@ function scoreCollect(){
     else if(k==='rel'){ x.rel=scRel(v); }
     else if(k==='note'){ x.note=v; }
     else if(k==='fix'){ x.fix=v; }
-    else { var sk=k.split('.'); x.s=x.s||{}; x.s[sk[0]]=x.s[sk[0]]||{}; x.s[sk[0]][sk[1]]=v; if(!x.s[sk[0]].c&&!x.s[sk[0]].d&&!x.s[sk[0]].m) delete x.s[sk[0]]; }
+    else { var sk=k.split('.'); x.s=x.s||{}; x.s[sk[0]]=x.s[sk[0]]||{}; x.s[sk[0]][sk[1]]=v; if(!x.s[sk[0]].c&&!x.s[sk[0]].d&&!x.s[sk[0]].m&&!x.s[sk[0]].q) delete x.s[sk[0]]; }
   });
 }
 function scoreTotalsUpdate(){
@@ -2297,14 +2298,14 @@ function scoreViewHtml(sc, ri){
   var c=scoreCalc(sc), h='<div class="sc-view">'+(closeBtn||hd?'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">'+hd+(closeBtn||'')+'</div>':'')+'<table class="sc-tbl">'+scHeadEdit();   // 26-10-27: 입력표와 같은 한 줄 세부칸(# | 방향 | 거리)
   [['front','전반'],['back','후반']].forEach(function(p){
     var half=sc[p[0]], rows=half.holes.map(function(x,i){ return {x:x, n:i+1}; }).filter(function(o){
-      var x=o.x; return (x.rel!==''&&x.rel!=null)||x.note||x.fix||SC_SHOTS.some(function(s){ var v=(x.s||{})[s]; return v&&(v.c||v.d||v.m); }); });
+      var x=o.x; return (x.rel!==''&&x.rel!=null)||x.note||x.fix||SC_SHOTS.some(function(s){ var v=(x.s||{})[s]; return v&&(v.c||v.d||v.m||v.q); }); });
     if(!rows.length) return;
     h+='<tr class="sc-course"><td colspan="'+SC_COLS+'">'+p[1]+(half.course?(' · '+esc(half.course)):'')+'</td></tr>';
     rows.forEach(function(o){
       var x=o.x, rc=scRowCls(x.rel); h+='<tr'+(rc?' class="'+rc+'"':'')+'><td><b>'+o.n+'</b></td><td>'+esc(String(x.par||''))+'</td><td class="sc-relv '+scRelCls(x.rel)+'">'+(x.rel!==''&&x.rel!=null&&+x.rel<0?'<span class="sc-heart">'+esc(scRelTxt(x.rel))+'</span>':esc(scRelTxt(x.rel)))+'</td>';
       SC_SHOTS.forEach(function(s){ var v=(x.s||{})[s]||{};
         SC_SUB[s].forEach(function(f,j){
-          var t=f==='c'?scClubTxt(s,v.c):(f==='m'?(v.m?String(v.m).replace(/\s*m$/,''):''):(v.d||''));
+          var t=f==='c'?scClubTxt(s,v.c):(f==='m'?(v.m?String(v.m).replace(/\s*m$/,''):''):(f==='q'?(v.q||''):(v.d||'')));
           h+='<td class="sc-c-'+f+(j===0?' sc-gs':'')+'">'+esc(t)+'</td>';
         });
       });
@@ -2321,7 +2322,7 @@ function scoreForAI(sc){
   var out=[scoreSummary(sc)];
   ['front','back'].forEach(function(k,hi){ (sc[k].holes||[]).forEach(function(x,i){
     var parts=[];
-    SC_SHOTS.forEach(function(s){ var v=(x.s||{})[s]; if(v&&(v.c||v.d||v.m)) parts.push(scLabel(s)+':'+[s==='P'?'':scClubTxt(s,v.c),v.d,v.m?(v.m+'m'):''].filter(Boolean).join(' ')); });
+    SC_SHOTS.forEach(function(s){ var v=(x.s||{})[s]; if(v&&(v.c||v.d||v.m||v.q)) parts.push(scLabel(s)+':'+[s==='P'?'':scClubTxt(s,v.c),v.d,v.m?(v.m+'m'):'',v.q?('구질 '+v.q):''].filter(Boolean).join(' ')); });
     if((x.rel!==''&&x.rel!=null)||parts.length||x.note||x.fix) out.push((hi?'후반':'전반')+(i+1)+'H P'+(x.par||'?')+' '+scRelTxt(x.rel)+(parts.length?' '+parts.join(' '):'')+(x.note?' ('+x.note+')':'')+(x.fix?' [개선:'+x.fix+']':''));
   }); });
   return out.join(' | ');
@@ -2833,6 +2834,9 @@ idbOpen(function(){
 #scTbl td.sc-c-c{width:30px;min-width:30px}
 #scTbl td.sc-c-d{width:55px;min-width:55px}   /* 34→64→55px (11/01 이사님 「55로 통일」) — 34→64px (26-11-01 이사님: 「방향 칸 좁아 글자 다 안 나옴」 — 12px 한글 4자까지 실측 OK, 5자는 잘림) */
 #scTbl td.sc-c-m{width:38px;min-width:38px}
+#scTbl td.sc-c-q{width:42px;min-width:42px}
+#score-ov #scTbl td.sc-c-q input{color:#8a4b00;padding:0 1px}
+.sc-tbl input.sc-q::-webkit-calendar-picker-indicator{display:none !important}
 #scTbl td.sc-c-c input,#scTbl td.sc-c-d input,#scTbl td.sc-c-m input{font-size:0.74rem;padding:1px}
 #scTbl td.sc-c-c input{font-weight:700;color:#1b3a1b}
 #scTbl td.sc-c-d input{color:#1a4d9e}
@@ -2881,6 +2885,7 @@ idbOpen(function(){
 .sc-view td.sc-c-c{min-width:26px;font-weight:700;color:#1b3a1b}
 .sc-view td.sc-c-d{min-width:55px;width:55px;color:#1a4d9e}   /* 30→60→55px (11/01 이사님 「55로 통일」) — 30→60px 모든 방향 칸 같은 폭 (26-11-01 이사님: 「I·W·P 방향 칸만 좁다」 — 글자 있는 칸만 늘어나던 것) */
 .sc-view td.sc-c-m{min-width:32px;color:#555}
+.sc-view td.sc-c-q{min-width:40px;color:#8a4b00;white-space:nowrap;padding:2px 3px}
 .sc-view td.sc-c-c,.sc-view td.sc-c-d,.sc-view td.sc-c-m{white-space:nowrap;padding:2px 3px}
 .sc-view .sc-gs,.sc-view th.sc-g{border-left:2px solid #9fb59f}
 .sc-view tr.sc-h2 th{font-size:12px;font-weight:400;color:#4a6a4a;padding:1px}
@@ -2924,6 +2929,7 @@ idbOpen(function(){
   <div class="sc-wrap"><table class="sc-tbl" id="scTbl"></table></div>
   <datalist id="scVenueList"><option value="BA비스타"><option value="썬밸리"><option value="오너스"></datalist>
   <datalist id="scIList"><option value="3"><option value="4"><option value="5"><option value="6"><option value="7"><option value="8"><option value="9"><option value="P"><option value="M9"></datalist>   <!-- M9 추가 (26-11-01 이사님: P 밑에) -->
+  <datalist id="scQList"><option value="정타"><option value="뜬공"><option value="땅볼"><option value="쪼루"></datalist>
   <datalist id="scAList"><option value="50"><option value="52"><option value="56"><option value="58"></datalist>
   <datalist id="scDirList"><option value="중앙"><option value="좌"><option value="우"><option value="좌중"><option value="우중"><option value="OB"><option value="해저드"><option value="벙커"><option value="러프"><option value="온"><option value="숏"><option value="롱"></datalist>
 </div>
