@@ -187,7 +187,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1 style="line-height:1.05" title="Kang's Life Story">🏌️ Kang's<br><span style="font-size:0.92em">Life Story</span></h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.22 · 26-11-01</div></div>
+    <div style="flex-shrink:0"><h1 style="line-height:1.05" title="Kang's Life Story">🏌️ Kang's<br><span style="font-size:0.92em">Life Story</span></h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.23 · 26-11-01</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -2286,7 +2286,14 @@ function scoreViewHtml(sc, ri){
   // 닫기 + 수정 (26-10-27 이사님: 스코어카드에도 수정 버튼) — 수정은 기록 수정창을 열고 스코어창까지 바로 띄움
   var closeBtn=(ri!=null)?'<span style="display:inline-flex;gap:6px"><button class="pcbtn" style="opacity:1;background:#8a8a8a" onclick="event.stopPropagation();scoreViewClose('+ri+')">✕ 닫기</button>'
     +'<button class="pcbtn" style="opacity:1;background:#2d7a2d" onclick="event.stopPropagation();ed('+ri+');openScore()" title="이 스코어카드 바로 고치기">✏️ 수정</button></span>':'';
-  var c=scoreCalc(sc), h='<div class="sc-view">'+(closeBtn?'<div style="display:flex;justify-content:flex-end;margin-bottom:4px">'+closeBtn+'</div>':'')+'<table class="sc-tbl">'+scHeadEdit();   // 26-10-27: 입력표와 같은 한 줄 세부칸(# | 방향 | 거리)
+  // 윗줄 왼쪽 = 날짜(요일 색) + 구장 아이콘·이름 + 코스 + 타수 (26-11-01 이사님: 「분석할 때 표 위에 날짜·구장 한 줄, 닫기·수정 줄에」)
+  var hd='';
+  if(ri!=null && data[ri]){ var _r=data[ri], _dw=dowN(_r.date), _dc=(_dw===0||HOLIDAYS.has(_r.date))?'#d42020':(_dw===6?'#1a8a1a':'#1b3a1b');
+    var _vn=(sc.venue||_r.venue||'').trim(), _crs=[sc.front.course, sc.back.course].filter(Boolean).join('·'), _c0=scoreCalc(sc);
+    hd='<div class="sc-vhead"><b style="color:'+_dc+'">'+shortY(_r.date)+'('+dow(_r.date)+')</b>'+(daySeq(_r)?'<b>'+daySeq(_r)+'</b>':'')
+      +' <span>'+venueIcon(_vn)+'<b>'+esc(_vn||'구장 없음')+'</b>'+(_crs?' · '+esc(_crs):'')+'</span>'
+      +(_c0.done?' <span class="sc-vtot">'+(_c0.f.done&&_c0.b.done?_c0.strokes:(_c0.f.done?_c0.f.strokes:_c0.b.strokes))+' ('+scRelTxt(_c0.f.done&&_c0.b.done?_c0.rel:(_c0.f.done?_c0.f.rel:_c0.b.rel))+')</span>':'')+'</div>'; }
+  var c=scoreCalc(sc), h='<div class="sc-view">'+(closeBtn||hd?'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">'+hd+(closeBtn||'')+'</div>':'')+'<table class="sc-tbl">'+scHeadEdit();   // 26-10-27: 입력표와 같은 한 줄 세부칸(# | 방향 | 거리)
   [['front','전반'],['back','후반']].forEach(function(p){
     var half=sc[p[0]], rows=half.holes.map(function(x,i){ return {x:x, n:i+1}; }).filter(function(o){
       var x=o.x; return (x.rel!==''&&x.rel!=null)||x.note||x.fix||SC_SHOTS.some(function(s){ var v=(x.s||{})[s]; return v&&(v.c||v.d||v.m); }); });
@@ -2806,6 +2813,8 @@ idbOpen(function(){
 .sc-tbl tr.sc-course td{background:#e6f1e2;color:#1b3a1b;font-weight:700;text-align:left;padding:4px 8px;border-top:2px solid #9fb59f}   /* 26-10-27 이사님: 「전반·후반 줄 너무 진해」 → 연한 초록 + 진초록 글자 */
 .date .dseq{font-weight:800;margin-left:1px}   /* 같은 날 2번째·3번째 기록 번호 (26-11-01) */
 .sc-card-chip{display:inline-block;font-size:0.72rem;font-weight:700;color:#1a4d9e;background:#e3efff;border:1px solid #9cbfe8;border-radius:10px;padding:0 7px;line-height:1.5;white-space:nowrap;flex-shrink:0}
+.sc-vhead{font-size:0.95rem;color:#1b3a1b;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.sc-vhead .sc-vtot{font-weight:700;color:#1a4d9e}   /* 스코어표 윗줄 날짜·구장 (26-11-01) */
 .memo-tblw{overflow-x:auto;margin:4px 0;white-space:normal}
 .memo-tbl{border-collapse:collapse;font-size:0.85em;line-height:1.4}
 .memo-tbl th,.memo-tbl td{border:1px solid #c8d4c8;padding:3px 7px;text-align:left;vertical-align:top;color:#222}
