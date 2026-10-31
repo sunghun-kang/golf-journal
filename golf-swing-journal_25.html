@@ -187,7 +187,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.19 · 26-11-01</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.20 · 26-11-01</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -1279,6 +1279,18 @@ document.addEventListener('click',function(e){
 });
 
 
+// 같은 날 기록 번호 (26-11-01 이사님: 「같은 날에 추가되면 26-11-01(일)2 · 26-11-01(일)3 — 안 헷갈리게」)
+// 그날 먼저 만든 순(createdAt). 첫 번째는 번호 없음. 필터와 상관없이 전체 기록 기준이라 번호가 안 바뀜
+var _daySeq=null;
+function daySeqBuild(){
+  var by={};
+  data.forEach(function(r){ if(!r||!r.date||r.deleted||String(r.id||'').indexOf('__')===0) return; (by[r.date]=by[r.date]||[]).push(r); });
+  _daySeq={};
+  Object.keys(by).forEach(function(d){ var a=by[d]; if(a.length<2) return;
+    a.slice().sort(function(x,y){ var cx=x.createdAt||x.id||'', cy=y.createdAt||y.id||''; return cx<cy?-1:cx>cy?1:0; })
+     .forEach(function(r,k){ if(k>0) _daySeq[r.id]=k+1; }); });
+}
+function daySeq(r){ if(!_daySeq) daySeqBuild(); return _daySeq[r.id]||0; }
 function cardHtml(r, i){
   var dw=dowN(r.date);
   var isHol=HOLIDAYS.has(r.date);
@@ -1340,7 +1352,7 @@ function cardHtml(r, i){
     +'<div class="row-top">'
     +(r.pinned?'<span title="게시" style="font-weight:700">📌</span>':'')
     +(r.important?'<span style="color:#d42020;font-weight:700">★</span>':'')
-    +'<span class="date '+dateColor+'">'+dateStr+'</span>'
+    +'<span class="date '+dateColor+'">'+dateStr+(daySeq(r)?'<span class="dseq" title="이날 '+daySeq(r)+'번째 기록">'+daySeq(r)+'</span>':'')+'</span>'
     +vtHtml+scoreBadge+venueHtml+memberHtml
     +'<span class="acts" onclick="event.stopPropagation()">'
     +(hasBody?'<button class="btn-view" id="vb'+i+'" onclick="tog('+i+')">'+(memoHit?'닫기':'보기')+'</button>':'')
@@ -1387,6 +1399,7 @@ function cardHtml(r, i){
 }
 
 function render(){
+  daySeqBuild();   // 같은 날 번호 다시 셈
   var q=document.getElementById('q').value.toLowerCase();
   blinkKws = q.trim() ? [q.trim()] : [];
   var fF=document.getElementById('flt-f').checked;
@@ -2789,6 +2802,7 @@ idbOpen(function(){
 #score-ov #scTbl tr.sc-good:not(.sc-course):not(.sc-h2) td.sc-rel input{color:#c2185b !important}   /* 하트 위 -1 은 진분홍 그대로 */
 #score-ov #scTbl tr.sc-good:not(.sc-course):not(.sc-h2) input:focus{color:#222 !important}   /* 입력 중(연노랑 바탕)엔 진한 글자 (26-11-01 이사님: 「바탕도 흰색 글자도 흰색 안 보임」) */
 .sc-tbl tr.sc-course td{background:#e6f1e2;color:#1b3a1b;font-weight:700;text-align:left;padding:4px 8px;border-top:2px solid #9fb59f}   /* 26-10-27 이사님: 「전반·후반 줄 너무 진해」 → 연한 초록 + 진초록 글자 */
+.date .dseq{font-weight:800;margin-left:1px}   /* 같은 날 2번째·3번째 기록 번호 (26-11-01) */
 .sc-card-chip{display:inline-block;font-size:0.72rem;font-weight:700;color:#1a4d9e;background:#e3efff;border:1px solid #9cbfe8;border-radius:10px;padding:0 7px;line-height:1.5;white-space:nowrap;flex-shrink:0}
 .memo-tblw{overflow-x:auto;margin:4px 0;white-space:normal}
 .memo-tbl{border-collapse:collapse;font-size:0.85em;line-height:1.4}
