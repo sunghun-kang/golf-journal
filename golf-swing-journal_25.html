@@ -187,7 +187,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.11 · 26-10-27</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.12 · 26-11-01</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -1793,15 +1793,15 @@ function scoreRowHtml(half, i, x){
   var key=half+'-'+i, h=i+1;   // 후반도 1번부터 (26-10-27 이사님)
   var rc=scRowCls(x.rel);
   var t='<tr'+(rc?' class="'+rc+'"':'')+'><td><b>'+h+'</b></td>'
-    +'<td class="sc-par"><input inputmode="numeric" data-h="'+key+'" data-k="par" value="'+esc(String(x.par==null?'':x.par))+'"></td>'
+    +'<td class="sc-par"><input inputmode="text" data-h="'+key+'" data-k="par" value="'+esc(String(x.par==null?'':x.par))+'"></td>'
     +'<td class="sc-rel"><input inputmode="text" data-h="'+key+'" data-k="rel" class="'+scRelCls(x.rel)+'" value="'+esc(scRelTxt(x.rel))+'" placeholder="0"></td>';
   SC_SHOTS.forEach(function(s){
     var v=(x.s||{})[s]||{};
     SC_SUB[s].forEach(function(f,j){
       var cls='sc-c-'+f+(j===0?' sc-gs':''), val=v[f]||'', inp;
-      if(f==='c') inp='<input class="sc-club" inputmode="numeric" list="'+(SC_LIST[s]||'')+'" data-h="'+key+'" data-k="'+s+'.c" value="'+esc(scClubTxt(s,val).replace(/^#/,''))+'" placeholder="'+(s==='P'?'2':SC_CLUB_PH[s])+'">';
+      if(f==='c') inp='<input class="sc-club" inputmode="text" list="'+(SC_LIST[s]||'')+'" data-h="'+key+'" data-k="'+s+'.c" value="'+esc(scClubTxt(s,val).replace(/^#/,''))+'" placeholder="'+(s==='P'?'2':SC_CLUB_PH[s])+'">';
       else if(f==='d') inp='<input class="sc-dir" list="scDirList" data-h="'+key+'" data-k="'+s+'.d" value="'+esc(val)+'">';
-      else inp='<input class="sc-dist" inputmode="numeric" data-h="'+key+'" data-k="'+s+'.m" value="'+esc(val)+'">';
+      else inp='<input class="sc-dist" inputmode="text" data-h="'+key+'" data-k="'+s+'.m" value="'+esc(val)+'">';
       t+='<td class="'+cls+'">'+inp+'</td>';
     });
   });
@@ -1830,7 +1830,7 @@ function scoreCollect(){
   sc.back.course=document.getElementById('scBack').value.trim();
   document.querySelectorAll('#scTbl input[data-h]').forEach(function(el){
     var hk=el.getAttribute('data-h').split('-'), x=sc[hk[0]].holes[+hk[1]], k=el.getAttribute('data-k'), v=el.value.trim();
-    if(k==='par'){ x.par=v===''?'':(+v||''); }
+    if(k==='par'){ x.par=v===''?'':(isFinite(+v)&&+v?+v:v); }   // 숫자 아니어도 적은 그대로 (26-11-01 이사님: 숫자 제한 X)
     else if(k==='rel'){ x.rel=scRel(v); }
     else if(k==='note'){ x.note=v; }
     else if(k==='fix'){ x.fix=v; }
@@ -2750,7 +2750,10 @@ idbOpen(function(){
 .sc-tbl th.sc-fh{color:#8a4b00}
 .sc-tbl td.sc-D,.sc-tbl td.sc-W,.sc-tbl td.sc-U,.sc-tbl td.sc-I,.sc-tbl td.sc-A,.sc-tbl td.sc-P{width:1%}   /* 맨 오른쪽 = 메모, 남는 폭 다 씀 */
 .sc-tbl td.sc-note input,.sc-tbl td.sc-fix input{text-align:left}
-.sc-tbl input.sc-dir::-webkit-calendar-picker-indicator{display:none !important}   /* 좁은 칸에서 화살표가 글자 자리 먹음 — 목록은 입력하면 그대로 뜸 */
+.sc-tbl input.sc-dir::-webkit-calendar-picker-indicator{display:none !important}
+/* 방향 칸 좌맞춤 (26-11-01 이사님) — 입력표·목록표 */
+.sc-tbl input.sc-dir, #score-ov #scTbl input.sc-dir{text-align:left !important}
+.sc-view td.sc-c-d{text-align:left}   /* 좁은 칸에서 화살표가 글자 자리 먹음 — 목록은 입력하면 그대로 뜸 */
 .sc-tbl .sc-relv{font-weight:700}
 .sc-plus{color:#c0392b}.sc-minus{color:#1a4d9e}
 /* 목록 카드 안 읽기 전용 표 */
