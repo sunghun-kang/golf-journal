@@ -187,7 +187,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1 style="line-height:1.05" title="Kang's Life Story">🏌️ Kang's<br><span style="font-size:0.92em">Life Story</span></h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.24 · 26-11-01</div></div>
+    <div style="flex-shrink:0"><h1 style="line-height:1.05" title="Kang's Life Story">🏌️ Kang's<br><span style="font-size:0.92em">Life Story</span></h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.25 · 26-11-01</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -2830,7 +2830,7 @@ idbOpen(function(){
 #scTbl tr.sc-sub:not(.sc-course) > td:nth-child(-n+3){background:#f3f7e8}
 .sc-tbl input::placeholder{color:#c8cfc8;font-weight:400}
 #scTbl td.sc-c-c{width:30px;min-width:30px}
-#scTbl td.sc-c-d{width:64px;min-width:64px}   /* 34→64px (26-11-01 이사님: 「방향 칸 좁아 글자 다 안 나옴」 — 12px 한글 4자까지 실측 OK, 5자는 잘림) */
+#scTbl td.sc-c-d{width:55px;min-width:55px}   /* 34→64→55px (11/01 이사님 「55로 통일」) — 34→64px (26-11-01 이사님: 「방향 칸 좁아 글자 다 안 나옴」 — 12px 한글 4자까지 실측 OK, 5자는 잘림) */
 #scTbl td.sc-c-m{width:38px;min-width:38px}
 #scTbl td.sc-c-c input,#scTbl td.sc-c-d input,#scTbl td.sc-c-m input{font-size:0.74rem;padding:1px}
 #scTbl td.sc-c-c input{font-weight:700;color:#1b3a1b}
@@ -2878,7 +2878,7 @@ idbOpen(function(){
 .sc-view .sc-tbl td{padding:2px 4px}
 .sc-view .sc-c{font-weight:700;color:#1b3a1b}
 .sc-view td.sc-c-c{min-width:26px;font-weight:700;color:#1b3a1b}
-.sc-view td.sc-c-d{min-width:60px;width:60px;color:#1a4d9e}   /* 30→60px 모든 방향 칸 같은 폭 (26-11-01 이사님: 「I·W·P 방향 칸만 좁다」 — 글자 있는 칸만 늘어나던 것) */
+.sc-view td.sc-c-d{min-width:55px;width:55px;color:#1a4d9e}   /* 30→60→55px (11/01 이사님 「55로 통일」) — 30→60px 모든 방향 칸 같은 폭 (26-11-01 이사님: 「I·W·P 방향 칸만 좁다」 — 글자 있는 칸만 늘어나던 것) */
 .sc-view td.sc-c-m{min-width:32px;color:#555}
 .sc-view td.sc-c-c,.sc-view td.sc-c-d,.sc-view td.sc-c-m{white-space:nowrap;padding:2px 3px}
 .sc-view .sc-gs,.sc-view th.sc-g{border-left:2px solid #9fb59f}
