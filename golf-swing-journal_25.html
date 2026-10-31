@@ -187,7 +187,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.12 · 26-11-01</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.13 · 26-11-01</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -1559,7 +1559,60 @@ function renderMediaPreview(){
   });
 }
 
+// 영상 줄이기 (26-11-01 이사님: 필드 영상 32MB 가 서버에 못 올라감 — 영상 있는 기록이 서버에 하나도 없었음)
+// 폰에서 그대로 재생하며 캔버스로 다시 녹화: 짧은 변 480px · 약 1Mbps · 소리 없음. 슬로 영상은 슬로 그대로. 26초 → 약 3MB
+// 재생 시간만큼 걸림(26초 영상 = 약 26초). 이 브라우저가 못 하면(MediaRecorder 없음 등) null → 원본 그대로
+var VID_SMALL=4*1024*1024;   // 이보다 작은 영상은 그대로
+function vidMime(){
+  if(!window.MediaRecorder) return '';
+  var c=['video/mp4;codecs=avc1','video/mp4','video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'];
+  for(var i=0;i<c.length;i++){ try{ if(MediaRecorder.isTypeSupported(c[i])) return c[i]; }catch(e){} }
+  return '';
+}
+function shrinkVideo(file, onPct){
+  return new Promise(function(resolve){
+    var mime=vidMime(), cv=document.createElement('canvas');
+    if(!mime || !cv.captureStream){ resolve(null); return; }
+    var url=URL.createObjectURL(file), v=document.createElement('video'), done=false;
+    v.muted=true; v.playsInline=true; v.setAttribute('playsinline',''); v.preload='auto';
+    // 화면에 붙여 둬야 새 프레임이 나옴 (안 붙이면 첫 장면만 계속 그려짐 — 11/01 실측). 2px·거의 투명
+    v.style.cssText='position:fixed;left:0;top:0;width:2px;height:2px;opacity:0.01;pointer-events:none;z-index:-1';
+    document.body.appendChild(v); v.src=url;
+    var timer=null;
+    function finish(r){ if(done) return; done=true; if(timer) clearInterval(timer); try{ v.pause(); v.remove(); URL.revokeObjectURL(url); }catch(e){} resolve(r); }
+    v.onerror=function(){ finish(null); };
+    v.onloadedmetadata=function(){
+      var w=v.videoWidth, h=v.videoHeight; if(!w||!h){ finish(null); return; }
+      var k=Math.min(1, 480/Math.min(w,h)); cv.width=Math.round(w*k/2)*2; cv.height=Math.round(h*k/2)*2;
+      var g=cv.getContext('2d'), chunks=[], rec;
+      try{ rec=new MediaRecorder(cv.captureStream(30), {mimeType:mime, videoBitsPerSecond:1000000}); }catch(e){ finish(null); return; }
+      rec.ondataavailable=function(e){ if(e.data&&e.data.size) chunks.push(e.data); };
+      rec.onstop=function(){
+        var b=new Blob(chunks,{type:mime.split(';')[0]});
+        if(!b.size){ finish(null); return; }
+        var rd=new FileReader(); rd.onload=function(ev){ finish(ev.target.result); }; rd.onerror=function(){ finish(null); }; rd.readAsDataURL(b);
+      };
+      // 33ms 마다 그리기 (requestAnimationFrame 은 화면이 안 보이면 멈춰서 첫 장면만 녹화됨 — 11/01 실측 82KB)
+      function draw(){ if(done||rec.state==='inactive') return; g.drawImage(v,0,0,cv.width,cv.height);
+        if(onPct&&v.duration) onPct(Math.min(99,Math.round(v.currentTime/v.duration*100))); }
+      v.onended=function(){ draw(); if(timer){ clearInterval(timer); timer=null; } setTimeout(function(){ if(rec.state!=='inactive') rec.stop(); },200); };
+      rec.start(1000);
+      v.play().then(function(){ draw(); timer=setInterval(draw,33); }).catch(function(){ try{ rec.stop(); }catch(e){} finish(null); });
+    };
+  });
+}
 function readMediaFile(file){
+  if(file.type.indexOf('video')===0 && file.size>VID_SMALL){
+    var mb=(file.size/1048576).toFixed(0);
+    showSyncStatus('🎬 영상 줄이는 중… ('+mb+'MB, 영상 길이만큼 걸려요)');
+    return shrinkVideo(file, function(p){ showSyncStatus('🎬 영상 줄이는 중… '+p+'% ('+mb+'MB)'); }).then(function(d){
+      if(d){ var smb=d.length*0.75/1048576;   // 서버는 6MB 행까지 실측 OK (11/01)
+        showSyncStatus('🎬 영상 '+mb+'MB → '+smb.toFixed(1)+'MB 로 줄임'+(smb>6?' — ⚠ 그래도 커서 서버에 안 올라갈 수 있어요(1분 이하로 잘라 주세요)':''));
+        return {type:'video', data:d}; }
+      showSyncStatus('⚠ 이 브라우저는 영상을 못 줄여요 — 원본('+mb+'MB)은 서버에 안 올라갈 수 있어요');
+      return new Promise(function(res){ var rd=new FileReader(); rd.onload=function(ev){ res({type:'video', data:ev.target.result}); }; rd.readAsDataURL(file); });
+    });
+  }
   return new Promise(function(resolve){
     var reader=new FileReader();
     reader.onload=function(ev){
