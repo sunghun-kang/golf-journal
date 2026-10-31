@@ -187,7 +187,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.16 · 26-11-01</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.17 · 26-11-01</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -2777,6 +2777,7 @@ idbOpen(function(){
 #score-ov #scTbl tr.sc-good:not(.sc-course):not(.sc-h2) input{color:#fff !important}
 #score-ov #scTbl tr.sc-good:not(.sc-course):not(.sc-h2) input::placeholder{color:#a9c9ef}
 #score-ov #scTbl tr.sc-good:not(.sc-course):not(.sc-h2) td.sc-rel input{color:#c2185b !important}   /* 하트 위 -1 은 진분홍 그대로 */
+#score-ov #scTbl tr.sc-good:not(.sc-course):not(.sc-h2) input:focus{color:#222 !important}   /* 입력 중(연노랑 바탕)엔 진한 글자 (26-11-01 이사님: 「바탕도 흰색 글자도 흰색 안 보임」) */
 .sc-tbl tr.sc-course td{background:#e6f1e2;color:#1b3a1b;font-weight:700;text-align:left;padding:4px 8px;border-top:2px solid #9fb59f}   /* 26-10-27 이사님: 「전반·후반 줄 너무 진해」 → 연한 초록 + 진초록 글자 */
 .sc-card-chip{display:inline-block;font-size:0.72rem;font-weight:700;color:#1a4d9e;background:#e3efff;border:1px solid #9cbfe8;border-radius:10px;padding:0 7px;line-height:1.5;white-space:nowrap;flex-shrink:0}
 .memo-tblw{overflow-x:auto;margin:4px 0;white-space:normal}
