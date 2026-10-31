@@ -187,7 +187,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.17 · 26-11-01</div></div>
+    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.18 · 26-11-01</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -219,8 +219,8 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 
 <div class="vt-filter">
   <label class="flt-all-lbl"><input type="checkbox" id="flt-all" onchange="fltChange('all')"> 전체</label>
-  <label class="flt-f-lbl"><input type="checkbox" id="flt-f" onchange="fltChange('f')"> <span style="font-size:0.86rem;letter-spacing:-4px;white-space:nowrap;display:inline-block;vertical-align:middle">⛳🏌️</span></label>
-  <label class="flt-s-lbl"><input type="checkbox" id="flt-s" onchange="fltChange('s')"> <span style="font-size:0.86rem;vertical-align:middle">🏌️‍♀️</span></label>
+  <label class="flt-f-lbl"><input type="checkbox" id="flt-f" onchange="fltChange('f')"> <span class="fld-ic" style="font-size:0.86rem;display:inline-block;vertical-align:middle"></span></label>
+  <label class="flt-s-lbl"><input type="checkbox" id="flt-s" onchange="fltChange('s')"> <span style="font-size:0.86rem;vertical-align:middle">⛳</span></label>
   <label class="flt-n-lbl"><input type="checkbox" id="flt-n" checked onchange="fltChange('n')"> <span style="font-size:0.86rem;vertical-align:middle">🔍</span></label>
   <label class="flt-ai-lbl"><input type="checkbox" id="flt-ai" checked onchange="fltChange('ai')"> <svg width="23" height="17" viewBox="0 0 30 22" style="vertical-align:middle"><g stroke="#9b7fe0" stroke-width="0.7" opacity="0.5"><line x1="4" y1="5" x2="15" y2="4"/><line x1="4" y1="5" x2="15" y2="11"/><line x1="4" y1="5" x2="15" y2="18"/><line x1="4" y1="11" x2="15" y2="4"/><line x1="4" y1="11" x2="15" y2="11"/><line x1="4" y1="11" x2="15" y2="18"/><line x1="4" y1="17" x2="15" y2="4"/><line x1="4" y1="17" x2="15" y2="11"/><line x1="4" y1="17" x2="15" y2="18"/></g><g stroke="#4bb6c6" stroke-width="0.7" opacity="0.55"><line x1="15" y1="4" x2="26" y2="8"/><line x1="15" y1="4" x2="26" y2="14"/><line x1="15" y1="11" x2="26" y2="8"/><line x1="15" y1="11" x2="26" y2="14"/><line x1="15" y1="18" x2="26" y2="8"/><line x1="15" y1="18" x2="26" y2="14"/></g><circle cx="4" cy="5" r="2.1" fill="#b04bd6"/><circle cx="4" cy="11" r="2.1" fill="#b04bd6"/><circle cx="4" cy="17" r="2.1" fill="#b04bd6"/><circle cx="15" cy="4" r="2.1" fill="#2aa9c4"/><circle cx="15" cy="11" r="2.1" fill="#2aa9c4"/><circle cx="15" cy="18" r="2.1" fill="#2aa9c4"/><circle cx="26" cy="8" r="2.1" fill="#e8722c"/><circle cx="26" cy="14" r="2.1" fill="#e8722c"/></svg></label>
   <label class="flt-l-lbl"><input type="checkbox" id="flt-l" onchange="fltChange('l')"> 人生</label>
@@ -253,8 +253,8 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
       <div style="flex:0 0 100px"><label>구분</label>
         <select id="mVt" onchange="mVtChanged()">
           <option value="">없음</option>
-          <option value="F">⛳🏌️ 필드</option>
-          <option value="S">🏌️‍♀️ 스크린</option>
+          <option value="F">🏞️ 필드</option>
+          <option value="S">⛳ 스크린</option>
           <option value="A">🔍 분석</option>
           <option value="L">L 人生</option>
           <option value="E">E 영어</option>
@@ -1071,6 +1071,16 @@ function dowN(ds){
 }
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}   // " 도 (26-10-27: 홀 메모 「52" 오버」가 value 속성에서 잘림)
 function shortY(d){ return (d||'').replace(/\b(\d{2})(\d{2})-(\d{1,2})-(\d{1,2})\b/g,'$2-$3-$4'); }  // 2026-09-06 → 26-09-06
+var FIELD_SVG='<svg class="fld-svg" viewBox="0 0 24 24" width="1.25em" height="1.25em" style="vertical-align:-0.28em;flex-shrink:0" aria-label="필드"><rect width="24" height="24" rx="5" fill="#bfe3f7"/><path d="M0 13 Q6 9 12 12 T24 11 V24 H0Z" fill="#7fb85a"/><rect x="3" y="10.5" width="1" height="3" fill="#6b4a2b"/><circle cx="3.5" cy="9.6" r="2.6" fill="#2f7a34"/><rect x="20.5" y="10" width="1" height="2.8" fill="#6b4a2b"/><circle cx="21" cy="9.2" r="2.3" fill="#3c8a3c"/><path d="M0 17 Q8 13 16 16 T24 15 V24 H0Z" fill="#4e9a3a"/><ellipse cx="6" cy="20" rx="4.6" ry="1.7" fill="#4fa3dc"/><ellipse cx="16" cy="17.6" rx="3.8" ry="1.35" fill="#9fd47a"/><line x1="16.5" y1="17.6" x2="16.5" y2="7.8" stroke="#444" stroke-width="0.8"/><path d="M16.5 7.8 L20.6 9.1 L16.5 10.4Z" fill="#e0402f"/><g stroke-linecap="round"><line x1="11.9" y1="8.4" x2="8.2" y2="6.6" stroke="#555" stroke-width="0.55"/><line x1="10.2" y1="10.9" x2="11.9" y2="8.4" stroke="#2b4a8a" stroke-width="0.9"/><line x1="10.1" y1="10.3" x2="10.4" y2="14" stroke="#2b4a8a" stroke-width="1.3"/><line x1="10.4" y1="14" x2="9.3" y2="17.2" stroke="#333" stroke-width="0.9"/><line x1="10.4" y1="14" x2="11.5" y2="16.9" stroke="#333" stroke-width="0.9"/></g><circle cx="10" cy="9.2" r="1.05" fill="#333"/></svg>';
+// 구장 아이콘 (26-11-01 이사님: 「BA비스타·썬밸리는 그 구장에 맞는 아이콘으로, 스코어카드 목록에」)
+// BA비스타 = 산·호수(코스 이름 몬티=산, 라고=호수) / 썬밸리 = 해 + 계곡. 이름으로 찾음
+var VENUE_SVG={
+  ba:'<svg viewBox="0 0 24 24" width="1.2em" height="1.2em" style="vertical-align:-0.25em;margin-right:2px" aria-label="BA비스타"><rect width="24" height="24" rx="5" fill="#cfe9fb"/><path d="M0 14 L6 6.5 L10 10.5 L14.5 5 L24 14Z" fill="#7d9bb5"/><path d="M12.6 7.3 L14.5 5 L16.3 7.2 L15 7.8 L14.2 7 L13.5 7.9Z" fill="#fff"/><path d="M0 14 H24 V17.3 H0Z" fill="#5aa3d6"/><path d="M0 16.8 Q8 15.2 14 17 T24 16.6 V24 H0Z" fill="#5fae45"/><line x1="17" y1="19.5" x2="17" y2="11.5" stroke="#444" stroke-width="0.8"/><path d="M17 11.5 L20.6 12.7 L17 13.9Z" fill="#e0402f"/></svg>',
+  sun:'<svg viewBox="0 0 24 24" width="1.2em" height="1.2em" style="vertical-align:-0.25em;margin-right:2px" aria-label="썬밸리"><rect width="24" height="24" rx="5" fill="#fde7b8"/><circle cx="12" cy="10" r="4.2" fill="#f59d3d"/><g stroke="#f59d3d" stroke-width="0.9" stroke-linecap="round"><line x1="12" y1="2.6" x2="12" y2="4.2"/><line x1="5.6" y1="5" x2="6.7" y2="6.1"/><line x1="18.4" y1="5" x2="17.3" y2="6.1"/></g><path d="M0 9 Q6 10 12 17 Q18 10 24 9 V24 H0Z" fill="#5d9c45"/><path d="M7 24 Q10.5 19 12 16.5 Q13.5 19 17 24Z" fill="#8cc865"/><line x1="15.5" y1="19" x2="15.5" y2="12.5" stroke="#3a3a3a" stroke-width="0.8"/><path d="M15.5 12.5 L18.8 13.6 L15.5 14.7Z" fill="#d23b2a"/></svg>'
+};
+function venueIcon(v){ v=String(v||''); if(/비스타|vista/i.test(v)) return VENUE_SVG.ba; if(/썬\s*밸리|sun\s*val/i.test(v)) return VENUE_SVG.sun; return ''; }
+function fldIcFill(){ document.querySelectorAll('.fld-ic').forEach(function(e){ if(!e.firstChild) e.innerHTML=FIELD_SVG; }); }   // 필터·테마의 필드 칸
+fldIcFill(); document.addEventListener('DOMContentLoaded', fldIcFill);
 var AI_SVG='<span title="AI가 만든 기록" style="display:inline-flex;align-items:center;vertical-align:middle;flex-shrink:0"><svg width="22" height="16" viewBox="0 0 30 22" aria-label="AI"><g stroke="#9b7fe0" stroke-width="0.7" opacity="0.5"><line x1="4" y1="5" x2="15" y2="4"/><line x1="4" y1="5" x2="15" y2="11"/><line x1="4" y1="5" x2="15" y2="18"/><line x1="4" y1="11" x2="15" y2="4"/><line x1="4" y1="11" x2="15" y2="11"/><line x1="4" y1="11" x2="15" y2="18"/><line x1="4" y1="17" x2="15" y2="4"/><line x1="4" y1="17" x2="15" y2="11"/><line x1="4" y1="17" x2="15" y2="18"/></g><g stroke="#4bb6c6" stroke-width="0.7" opacity="0.55"><line x1="15" y1="4" x2="26" y2="8"/><line x1="15" y1="4" x2="26" y2="14"/><line x1="15" y1="11" x2="26" y2="8"/><line x1="15" y1="11" x2="26" y2="14"/><line x1="15" y1="18" x2="26" y2="8"/><line x1="15" y1="18" x2="26" y2="14"/></g><circle cx="4" cy="5" r="2.1" fill="#b04bd6"/><circle cx="4" cy="11" r="2.1" fill="#b04bd6"/><circle cx="4" cy="17" r="2.1" fill="#b04bd6"/><circle cx="15" cy="4" r="2.1" fill="#2aa9c4"/><circle cx="15" cy="11" r="2.1" fill="#2aa9c4"/><circle cx="15" cy="18" r="2.1" fill="#2aa9c4"/><circle cx="26" cy="8" r="2.1" fill="#e8722c"/><circle cx="26" cy="14" r="2.1" fill="#e8722c"/></svg></span>';
 var AI_SVG2='<span title="AI가 정리한 기록" style="display:inline-flex;align-items:center;vertical-align:middle;flex-shrink:0"><svg width="20" height="16" viewBox="0 0 22 20" aria-label="AI정리"><line x1="1.5" y1="18.6" x2="21" y2="18.6" stroke="#888" stroke-width="0.8"/><rect x="3" y="11" width="4.5" height="7" rx="1" fill="#b04bd6"/><rect x="9" y="7" width="4.5" height="11" rx="1" fill="#2aa9c4"/><rect x="15" y="3" width="4.5" height="15" rx="1" fill="#e8722c"/></svg></span>';
 function hilite(s){
@@ -1200,9 +1210,9 @@ function renderCal(){
         var member1=r.members?r.members.trim():'';
         var tagTxt;
         if(r.vt==='F'){
-          tagTxt='⛳🏌️ '+esc(r.venue||'필드');
+          tagTxt=FIELD_SVG+' '+esc(r.venue||'필드');
         } else if(r.vt==='S'){
-          tagTxt='🏌️‍♀️ '+esc(r.venue||'스크린');
+          tagTxt='⛳ '+esc(r.venue||'스크린');
         } else if(r.vt==='E') {
           tagTxt='E '+esc(r.venue||'영어');
         } else if(r.vt==='A') {
@@ -1242,8 +1252,8 @@ function showCpop(ds){
   recs.forEach(function(r){
     var cc=r.important?'ci':r.vt==='F'?'cf':r.vt==='S'?'cs':'';
     var tags='';
-    if(r.vt==='F') tags+='<span class="cpop-tag" style="background:#d7ecdd;color:#2b7d3c">⛳🏌️ 필드</span>';
-    if(r.vt==='S') tags+='<span class="cpop-tag" style="background:#d7e5f7;color:#245fb0">🏌️‍♀️ 스크린</span>';
+    if(r.vt==='F') tags+='<span class="cpop-tag" style="background:#d7ecdd;color:#2b7d3c">'+FIELD_SVG+' 필드</span>';
+    if(r.vt==='S') tags+='<span class="cpop-tag" style="background:#d7e5f7;color:#245fb0">⛳ 스크린</span>';
     if(r.vt==='L') tags+='<span class="cpop-tag" style="background:#f2dcec;color:#a82789">人生</span>';
     if(r.vt==='E') tags+='<span class="cpop-tag" style="background:#eddfca;color:#96591c">E 영어</span>';
     if(r.vt==='C') tags+='<span class="cpop-tag" style="background:#f7e0c2;color:#b7620a">C 회사</span>';
@@ -1282,7 +1292,7 @@ function cardHtml(r, i){
   var isTidy = /^\s*📊/.test(_tt) || /AI정리/.test(_tt);     // 📊 AI정리(자동)
   var isAnalysis = /^\s*🧠/.test(_tt) || /\[?AI\s*분석\]?/.test(_tt);  // 🧠 AI분석(내가 만들어주는 분석기록)
   var isAI = r.ai || isSum || isTidy || isAnalysis;
-  var vtHtml=r.vt==='F'?'<span style="font-size:0.95rem;letter-spacing:-4px;white-space:nowrap;display:inline-block;flex-shrink:0;vertical-align:middle">⛳🏌️</span>':r.vt==='S'?'<span style="font-size:1rem;vertical-align:middle">🏌️‍♀️</span>':r.vt==='L'?'<span class="vt vt-l">人</span>':r.vt==='E'?'<span class="vt vt-e">E</span>':r.vt==='C'?'<span class="vt vt-c">C</span>':r.vt==='A'?'<span class="vt vt-a" style="font-size:0.85rem">🔍</span>':'';
+  var vtHtml=r.vt==='F'?'<span style="font-size:0.95rem;display:inline-block;flex-shrink:0;vertical-align:middle;line-height:1">'+FIELD_SVG+'</span>':r.vt==='S'?'<span style="font-size:1rem;vertical-align:middle">⛳</span>':r.vt==='L'?'<span class="vt vt-l">人</span>':r.vt==='E'?'<span class="vt vt-e">E</span>':r.vt==='C'?'<span class="vt vt-c">C</span>':r.vt==='A'?'<span class="vt vt-a" style="font-size:0.85rem">🔍</span>':'';
   if(isTidy) vtHtml=AI_SVG2+'<span style="background:#d7e6f4;color:#2b76ab;font-weight:700;font-size:0.72rem;height:22px;padding:0 9px;border-radius:11px;display:inline-flex;align-items:center;box-sizing:border-box;flex-shrink:0;margin-left:2px">AI정리</span>';
   else if(isAnalysis) vtHtml='<span style="font-size:0.85rem;display:inline-flex;align-items:center;flex-shrink:0">🧠</span><span style="background:#fbe8d6;color:#c77a2f;font-weight:700;font-size:0.72rem;height:22px;padding:0 9px;border-radius:11px;display:inline-flex;align-items:center;box-sizing:border-box;flex-shrink:0;margin-left:2px">AI분석</span>';
   else if(isSum || isAI) vtHtml=AI_SVG+'<span style="background:#d5efdf;color:#10894f;font-weight:700;font-size:0.72rem;height:22px;padding:0 9px;border-radius:11px;display:inline-flex;align-items:center;box-sizing:border-box;flex-shrink:0;margin-left:2px">AI요약</span>';
@@ -1318,7 +1328,7 @@ function cardHtml(r, i){
   if(scoreHtml){ var _sc=scoreCalc(r.score), _two=_sc.f.done&&_sc.b.done; var _st=_two?_sc.strokes:(_sc.f.done?_sc.f.strokes:_sc.b.strokes), _rl=_two?_sc.rel:(_sc.f.done?_sc.f.rel:_sc.b.rel);
     // 「구장'스코어」 한 칩 (26-10-27 이사님: 썬밸리'86(+14)) — 기록의 구장 칩이 같은 이름이면 따로 안 띄움
     var _vn=(r.score.venue||'').trim();
-    scoreBadge=_sc.done?'<span class="venue" title="'+esc(scoreSummary(r.score))+'" style="font-weight:700">'+(_vn?esc(_vn)+"'":'⛳ ')+_st+'('+scRelTxt(_rl)+')</span>':'';
+    scoreBadge=_sc.done?'<span class="venue" title="'+esc(scoreSummary(r.score))+'" style="font-weight:700">'+venueIcon(_vn||r.venue)+(_vn?esc(_vn)+"'":FIELD_SVG+' ')+_st+'('+scRelTxt(_rl)+')</span>':'';   // 구장 아이콘 (26-11-01)
     if(_sc.done && _vn && (r.venue||'').trim()===_vn) venueHtml='';
     // 「스코어카드」 칩 (26-10-27 이사님: 스코어 들어있는 기록은 목록에서 바로 보이게)
     // 전반·후반 +N 나눠서 (26-10-27 이사님: 「스코어카드 +5,+6」) — 한 반만 쳤으면 그 반만
@@ -2930,8 +2940,8 @@ if('serviceWorker' in navigator){
     <!-- 1줄: 필터칩 먼저 -->
     <div class="th-filter" style="display:flex;flex-wrap:wrap;gap:3px;align-items:center;font-size:0.8rem;margin-bottom:5px">
       <label><input type="checkbox" id="thAll" checked onchange="thToggleAll(this)"> 전체</label>
-      <label><input type="checkbox" class="thcat" data-k="F" checked onchange="thSyncAll();runTheme()"> ⛳🏌️</label>
-      <label><input type="checkbox" class="thcat" data-k="S" checked onchange="thSyncAll();runTheme()"> 🏌️‍♀️</label>
+      <label><input type="checkbox" class="thcat" data-k="F" checked onchange="thSyncAll();runTheme()"> <span class="fld-ic"></span></label>
+      <label><input type="checkbox" class="thcat" data-k="S" checked onchange="thSyncAll();runTheme()"> ⛳</label>
       <label><input type="checkbox" class="thcat" data-k="A" checked onchange="thSyncAll();runTheme()"> 🔍</label>
       <label><input type="checkbox" class="thcat" data-k="ai" checked onchange="thSyncAll();runTheme()"> <svg width="20" height="14" viewBox="0 0 30 22" style="vertical-align:middle"><g stroke="#9b7fe0" stroke-width="0.7" opacity="0.5"><line x1="4" y1="5" x2="15" y2="4"/><line x1="4" y1="5" x2="15" y2="11"/><line x1="4" y1="5" x2="15" y2="18"/><line x1="4" y1="11" x2="15" y2="4"/><line x1="4" y1="11" x2="15" y2="11"/><line x1="4" y1="11" x2="15" y2="18"/><line x1="4" y1="17" x2="15" y2="4"/><line x1="4" y1="17" x2="15" y2="11"/><line x1="4" y1="17" x2="15" y2="18"/></g><g stroke="#4bb6c6" stroke-width="0.7" opacity="0.55"><line x1="15" y1="4" x2="26" y2="8"/><line x1="15" y1="4" x2="26" y2="14"/><line x1="15" y1="11" x2="26" y2="8"/><line x1="15" y1="11" x2="26" y2="14"/><line x1="15" y1="18" x2="26" y2="8"/><line x1="15" y1="18" x2="26" y2="14"/></g><circle cx="4" cy="5" r="2.1" fill="#b04bd6"/><circle cx="4" cy="11" r="2.1" fill="#b04bd6"/><circle cx="4" cy="17" r="2.1" fill="#b04bd6"/><circle cx="15" cy="4" r="2.1" fill="#2aa9c4"/><circle cx="15" cy="11" r="2.1" fill="#2aa9c4"/><circle cx="15" cy="18" r="2.1" fill="#2aa9c4"/><circle cx="26" cy="8" r="2.1" fill="#e8722c"/><circle cx="26" cy="14" r="2.1" fill="#e8722c"/></svg></label>
       <label><input type="checkbox" class="thcat" data-k="L" checked onchange="thSyncAll();runTheme()"> 人生</label>
@@ -3412,11 +3422,12 @@ function thDatePad(txt){
     .replace(/(?<=\d{1,2}\/\d{1,2}(?:\s*\([일월화수목금토]\))?\s*[·~]\s*)(\d{1,2})\/(\d{1,2})(?![\d\/])/g, function(m,a,b){ return ok(a,b)? p(a)+'/'+p(b) : m; });
 }
 // 🏷 날짜 뒤에 그 날 기록의 구분 아이콘 (목록과 같은 ⛳필드 🏌️‍♀️스크린 🔍분석, 人生·영어·회사는 🌱🔤🏢) (26-10-24)
-var VT_ICON={F:'⛳',S:'🏌️‍♀️',A:'🔍',L:'🌱',E:'🔤',C:'🏢'};
+// 26-11-01 이사님: 필드 = 페어웨이+나무+헤저드+깃발 그림(FIELD_SVG), 스크린 = ⛳. 글자만 되는 곳(선택칸·AI 글)은 필드 🏞️ / 스크린 ⛳
+var VT_ICON={F:'🏞️',S:'⛳',A:'🔍',L:'🌱',E:'🔤',C:'🏢'};
 function thDateIcons(txt, used){
   var by={};
   used.forEach(function(r){ if(!r.date) return; var k=r.date.slice(5,7)+'/'+r.date.slice(8,10), ic=VT_ICON[r.vt]; if(!ic) return; by[k]=by[k]||[]; if(by[k].indexOf(ic)<0) by[k].push(ic); });
-  var order=['⛳','🏌️‍♀️','🔍','🌱','🔤','🏢'];
+  var order=['🏞️','⛳','🔍','🌱','🔤','🏢','🏌️‍♀️'];   // 🏌️‍♀️ = 예전 스크린(이미 붙은 것 다시 안 붙이게)
   return String(txt||'').replace(/(\d{2}\/\d{2})(\s*\([일월화수목금토]\))(\*\*)?/g, function(m,md,w,b,off,all){
     var ics=by[md]; if(!ics) return m;
     var rest=all.slice(off+m.length, off+m.length+12).replace(/^\s+/,'');
