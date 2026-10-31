@@ -8,11 +8,11 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="골프일지">
+<meta name="apple-mobile-web-app-title" content="Life Story">
 <meta name="theme-color" content="#1b3a1b">
 <link rel="manifest" href="manifest.json">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>강'Story</title>
+<title>Kang's Life Story</title>
 <style>
 
 
@@ -187,7 +187,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1>🏌️ 강'Story</h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.20 · 26-11-01</div></div>
+    <div style="flex-shrink:0"><h1 style="line-height:1.05" title="Kang's Life Story">🏌️ Kang's<br><span style="font-size:0.92em">Life Story</span></h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.21 · 26-11-01</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -1542,7 +1542,7 @@ function ed(i){
 function mMembersLabel(isAI){
   var l=document.getElementById('mMembersLbl'), i=document.getElementById('mMembers'); if(!l||!i) return;
   l.innerHTML=isAI?'<span style="color:#7a3fb8;font-weight:700">🤖 질문·키워드</span> <span style="font-size:0.7rem;font-weight:400;color:#888">— 🔄다시요약이 이 질문으로 다시 정리</span>':'멤버/원인';
-  i.placeholder=isAI?'예: 9월 필드 분석 / 슬라이스 원인 / 10월 내가 쓴 골프 날짜별로 요약':'홍길동 / 손목방향, 엎어침...';
+  i.placeholder=isAI?'예: 9월 필드 분석 / 슬라이스 원인 / 10월 내가 쓴 기록 날짜별로 요약':'홍길동 / 손목방향, 엎어침...';
   i.style.borderColor=isAI?'#b48be0':'';
   var fw=document.getElementById('mFocusWrap'); if(fw) fw.style.display=isAI?'block':'none';
   var fi=document.getElementById('mFocus'); if(fi) fi.value='';
@@ -1551,7 +1551,7 @@ function mMembersLabel(isAI){
 // 예전엔 그 칸 전체 문장을 키워드로 찾아서 🤖질문으로 만든 기록은 0건 → 「키워드에 맞는 기록이 없어요」 (26-10-24)
 function regenAI(){
   var q=(document.getElementById('mMembers').value||'').trim();
-  if(!q){ alert('「🤖 질문·키워드」 칸이 비어있어요.\n예: "9월 필드 분석", "슬라이스 원인", "10월 내가 쓴 골프 날짜별로 요약"'); try{ document.getElementById('mMembers').focus(); }catch(e){} return; }
+  if(!q){ alert('「🤖 질문·키워드」 칸이 비어있어요.\n예: "9월 필드 분석", "슬라이스 원인", "10월 내가 쓴 기록 날짜별로 요약"'); try{ document.getElementById('mMembers').focus(); }catch(e){} return; }
   var key=themeAIKey(false); if(!key) return;
   var sel=themeAskSelect(q);
   var selfId = (editIdx>=0 && data[editIdx]) ? data[editIdx].id : null;
@@ -2034,8 +2034,8 @@ function scShrink(dataUrl, cb){
   im.onerror=function(){ cb(dataUrl); };
   im.src=dataUrl;
 }
-var SC_IMPORT_PROMPT='이 이미지는 골프 스코어카드(스마트스코어 등)야. 카드 맨 위에 크게 적힌 본인 이름(예: 강성훈)의 행만 읽어서 아래 JSON 하나만 출력해(설명·코드블록 없이).\n'
-  +'{"venue":"골프장 이름","date":"YYYY-MM-DD","player":"이름","front":{"course":"전반 코스 이름(표 왼쪽 위 칸)","par":[9개],"score":[9개],"total":전반 합계 타수},"back":{"course":"후반 코스 이름","par":[9개],"score":[9개],"total":후반 합계 타수},"grand":전체 타수}\n'
+var SC_IMPORT_PROMPT='이 이미지는 Golf 스코어카드(스마트스코어 등)야. 카드 맨 위에 크게 적힌 본인 이름(예: 강성훈)의 행만 읽어서 아래 JSON 하나만 출력해(설명·코드블록 없이).\n'
+  +'{"venue":"구장(Golf club) 이름","date":"YYYY-MM-DD","player":"이름","front":{"course":"전반 코스 이름(표 왼쪽 위 칸)","par":[9개],"score":[9개],"total":전반 합계 타수},"back":{"course":"후반 코스 이름","par":[9개],"score":[9개],"total":후반 합계 타수},"grand":전체 타수}\n'
   +'- score 는 표에 적힌 그대로의 숫자(파 대비: 0=파, 1=보기, -1=버디, 2=더블…). 숫자 옆 아이콘(나비·새 등)은 무시하고 숫자만.\n'
   +'- 전반=위쪽 표, 후반=아래쪽 표. 9홀만 있으면 back 은 null.\n- 안 보이는 칸은 null.';
 // ── 🔢 키 없이 읽기: Tesseract.js(무료 OCR, 기기 안에서) (26-10-27)
@@ -2635,7 +2635,7 @@ function exportExcel(){
 
   var wbXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
     +'<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
-    +'<sheets><sheet name="골프일지" sheetId="1" r:id="rId1"/></sheets>'
+    +'<sheets><sheet name="LifeStory" sheetId="1" r:id="rId1"/></sheets>'
     +'</workbook>';
 
   var ct='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
@@ -2664,7 +2664,7 @@ function exportExcel(){
   var a=document.createElement('a');
   var today=new Date();
   var ds=today.getFullYear()+''+(today.getMonth()+1<10?'0':'')+(today.getMonth()+1)+''+(today.getDate()<10?'0':'')+today.getDate();
-  a.href=url; a.download='골프일지_'+ds+'.xlsx';
+  a.href=url; a.download='KangsLifeStory_'+ds+'.xlsx';
   document.body.appendChild(a); a.click();
   document.body.removeChild(a); URL.revokeObjectURL(url);
 }
@@ -3403,8 +3403,8 @@ function themeAskPrompt(q, used, dateLabel, focusToks){
   var src=isList ? thSrcByDate(used) : used.map(function(r){
     return '['+(r.date||'')+(r.date?'('+dow(r.date)+')':'')+']'+thRecLine(r);
   }).join('\n');
-  var sys='당신은 골프 스윙 코치입니다. 사용자의 골프 일지 기록을 근거로 질문에 한국어로 간결하고 실전적으로 답합니다. 기록에 있는 내용을 우선 근거로 삼고, 기록에 없어 일반 지식으로 보완할 때는 "(일반적으로)"라고 표시하세요. 아래 제공된 기록은 질문어와 기간으로 걸러낸 일부일 뿐, 사용자의 전체 일지가 아닙니다. "기록이 없다/부족하다"처럼 전체 일지에 대한 단정은 하지 말고, "이번에 참고한 자료에는 ~가 포함되어 있지 않음" 식으로 이 분석의 범위 안에서만 말하세요.';
-  var user='질문: '+q+(dateLabel?('\n(대상 기간: '+dateLabel+')'):'')+'\n\n아래는 내 골프 일지 기록이야'+(dateLabel?('('+dateLabel+' 기준으로 추린 것)'):'')+'. 이 기록을 근거로 위 질문에 답해줘.\n※ 질문이 정리방식을 지정하면(예: "날짜별로", 시간순, 주제별) 그 방식을 최우선으로 따라줘. 지정이 없으면 (1) 반복되는 핵심 원인 (2) 효과 있었던/권장 대책 (3) 두 줄 핵심요약 구조로. 소제목·불릿으로 간결하게.\n※ 날짜로 인용할 땐 반드시 최신 날짜부터(내림차순)로, 날짜 뒤에 (요일)까지 표기해줘. 예: 09/19(토). 월/일은 반드시 두 자리로 맞춰(3/5 → 03/05).\n맨 마지막에 반드시 아래 형식으로 2줄 핵심요약을 써줘(각 줄 20자 내외):\n핵심요약:\n<첫째 줄 - 핵심 문제>\n<둘째 줄 - 결론/대책>\n\n=== 기록('+used.length+'건'+(dateLabel?(' · '+dateLabel):'')+') ===\n'+src;
+  var sys='당신은 Golf 스윙 코치입니다. 답에 「골프」라는 한글 단어 대신 「Golf」라고 쓰세요. 사용자의 일지(Kang\'s Life Story) 기록을 근거로 질문에 한국어로 간결하고 실전적으로 답합니다. 기록에 있는 내용을 우선 근거로 삼고, 기록에 없어 일반 지식으로 보완할 때는 "(일반적으로)"라고 표시하세요. 아래 제공된 기록은 질문어와 기간으로 걸러낸 일부일 뿐, 사용자의 전체 일지가 아닙니다. "기록이 없다/부족하다"처럼 전체 일지에 대한 단정은 하지 말고, "이번에 참고한 자료에는 ~가 포함되어 있지 않음" 식으로 이 분석의 범위 안에서만 말하세요.';
+  var user='질문: '+q+(dateLabel?('\n(대상 기간: '+dateLabel+')'):'')+'\n\n아래는 내 일지(Kang\'s Life Story) 기록이야'+(dateLabel?('('+dateLabel+' 기준으로 추린 것)'):'')+'. 이 기록을 근거로 위 질문에 답해줘.\n※ 질문이 정리방식을 지정하면(예: "날짜별로", 시간순, 주제별) 그 방식을 최우선으로 따라줘. 지정이 없으면 (1) 반복되는 핵심 원인 (2) 효과 있었던/권장 대책 (3) 두 줄 핵심요약 구조로. 소제목·불릿으로 간결하게.\n※ 날짜로 인용할 땐 반드시 최신 날짜부터(내림차순)로, 날짜 뒤에 (요일)까지 표기해줘. 예: 09/19(토). 월/일은 반드시 두 자리로 맞춰(3/5 → 03/05).\n맨 마지막에 반드시 아래 형식으로 2줄 핵심요약을 써줘(각 줄 20자 내외):\n핵심요약:\n<첫째 줄 - 핵심 문제>\n<둘째 줄 - 결론/대책>\n\n=== 기록('+used.length+'건'+(dateLabel?(' · '+dateLabel):'')+') ===\n'+src;
   if(isList){
     // 목록형 질문(정리·날짜별·내림차순…)이면 AI가 비슷한 날을 묶으며 날짜를 빠뜨림(26-10-24: 39건 중 9건 누락) → 날짜 전부 명시
     var ds=thUsedDates(used);
@@ -3458,7 +3458,7 @@ var VENUES=[
   {name:'오너스',   alias:['오너스']}
 ];
 function thVenueRule(){
-  return '※ 구장(골프장) 이름은 큰따옴표로 표시해줘. 예: "오너스". 별칭은 정식 이름으로: '
+  return '※ 구장(Golf club) 이름은 큰따옴표로 표시해줘. 예: "오너스". 별칭은 정식 이름으로: '
     +VENUES.map(function(v){ var a=v.alias.filter(function(x){return x!==v.name;}); return (a.length?a.join('·')+' → ':'')+'"'+v.name+'"'; }).join(', ')
     +'. (주로 가는 곳: "BA비스타", "썬밸리")';
 }
@@ -3585,8 +3585,8 @@ function themeAI(){
       +(r.memo?(' 메모:'+thStrip(r.memo).replace(/\n/g,' ').slice(0,300)):'');
   }).join('\n');
   var kw=m.kws.join(', ')||'전체';
-  var sys='당신은 골프 스윙 코치입니다. 사용자의 골프 일지 기록만을 근거로 특정 주제의 원인과 대책을 한국어로 간결하게 요약합니다. 기록에 없는 내용을 지어내지 마세요. 아래 제공된 기록은 주제어로 걸러낸 일부일 뿐, 사용자의 전체 일지가 아닙니다. "기록이 없다/부족하다"처럼 전체 일지에 대한 단정은 하지 말고, "이번에 참고한 자료에는 ~가 포함되어 있지 않음" 식으로 이 분석의 범위 안에서만 말하세요.';
-  var user='주제 키워드: '+kw+'\n\n아래는 내 골프 일지 기록들이야. 이 주제에 대해 (1) 반복되는 핵심 원인, (2) 효과가 있었던/권장되는 대책, (3) 두 줄 핵심요약 을 정리해줘. 소제목과 불릿으로 간결하게.\n※ 날짜로 인용할 땐 최신부터(내림차순), 날짜 뒤에 (요일)까지 표기. 예: 09/19(토). 월/일은 반드시 두 자리로 맞춰(3/5 → 03/05).\n그리고 맨 마지막에 반드시 아래 형식으로 2줄 핵심요약을 써줘(각 줄 20자 내외):\n핵심요약:\n<첫째 줄 - 핵심 문제>\n<둘째 줄 - 결론/대책>\n\n=== 기록 ('+m.res.length+'건) ===\n'+src;
+  var sys='당신은 Golf 스윙 코치입니다. 답에 「골프」라는 한글 단어 대신 「Golf」라고 쓰세요. 사용자의 일지(Kang\'s Life Story) 기록만을 근거로 특정 주제의 원인과 대책을 한국어로 간결하게 요약합니다. 기록에 없는 내용을 지어내지 마세요. 아래 제공된 기록은 주제어로 걸러낸 일부일 뿐, 사용자의 전체 일지가 아닙니다. "기록이 없다/부족하다"처럼 전체 일지에 대한 단정은 하지 말고, "이번에 참고한 자료에는 ~가 포함되어 있지 않음" 식으로 이 분석의 범위 안에서만 말하세요.';
+  var user='주제 키워드: '+kw+'\n\n아래는 내 일지(Kang\'s Life Story) 기록들이야. 이 주제에 대해 (1) 반복되는 핵심 원인, (2) 효과가 있었던/권장되는 대책, (3) 두 줄 핵심요약 을 정리해줘. 소제목과 불릿으로 간결하게.\n※ 날짜로 인용할 땐 최신부터(내림차순), 날짜 뒤에 (요일)까지 표기. 예: 09/19(토). 월/일은 반드시 두 자리로 맞춰(3/5 → 03/05).\n그리고 맨 마지막에 반드시 아래 형식으로 2줄 핵심요약을 써줘(각 줄 20자 내외):\n핵심요약:\n<첫째 줄 - 핵심 문제>\n<둘째 줄 - 결론/대책>\n\n=== 기록 ('+m.res.length+'건) ===\n'+src;
   fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
     headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
@@ -3605,7 +3605,7 @@ function runTheme(){ var m=themeMatch(); blinkKws=m.kws; if(themeMode==='analyze
 function saveTheme(){
   var m=themeMatch();
   if(!m.res.length && !themeExtra.length){ alert('저장할 내용이 없어요. 먼저 🔍찾기로 결과를 만들어주세요.'); return; }
-  var title='골프 테마모음 '+(m.kws.join('_')||'전체')+' '+(m.from||'')+'~'+(m.to||'');
+  var title='Kang\'s Life Story 테마모음 '+(m.kws.join('_')||'전체')+' '+(m.from||'')+'~'+(m.to||'');
   themeExportMode=true;
   var html='<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(title)+'</title>'
     +'<style>body{font-family:sans-serif;background:#efefea;margin:0;padding:10px;color:#222}h1{font-size:1.1rem}img,video{max-width:100%}.thbl{color:#fff;border-radius:2px;padding:0 2px;font-weight:700;animation:thblink 0.7s steps(1,end) infinite}@keyframes thblink{50%{opacity:0.3}}.thbl0{background:#e11d1d}.thbl1{background:#1a4d9e}.thbl2{background:#1a7a1a}.thbl3{background:#7a3fb8}.thbl4{background:#c76a00}.thbl5{background:#0d8a8a}</style></head><body>'
