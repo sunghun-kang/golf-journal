@@ -187,7 +187,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1 style="line-height:1.05" title="Kang's Life Story">🏌️ Kang's<br><span style="font-size:0.92em">Life Story</span></h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.32 · 26-11-01</div></div>
+    <div style="flex-shrink:0"><h1 style="line-height:1.05" title="Kang's Life Story">🏌️ Kang's<br><span style="font-size:0.92em">Life Story</span></h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.33 · 26-11-02</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -435,7 +435,26 @@ function pendUp(id){ var p=getPend(); if(p.up.indexOf(id)<0)p.up.push(id); var d
 function pendDel(id){ var p=getPend(); if(p.del.indexOf(id)<0)p.del.push(id); var ui=p.up.indexOf(id); if(ui>=0)p.up.splice(ui,1); setPend(p); }
 function pendClear(id){ var p=getPend(); var ui=p.up.indexOf(id); if(ui>=0)p.up.splice(ui,1); var di=p.del.indexOf(id); if(di>=0)p.del.splice(di,1); setPend(p); }
 
+// 너무 큰 기록은 영상(→사진) 빼고 올림, 뺀 것은 이 기기에만 (26-11-02 이사님: 「영상이 너무 커서 안 올라가면 영상 빼고 올리기, 영상은 로컬에만」)
+// 서버 한 행 6MB 까지 실측 OK(11/01) → 5MB 넘으면 큰 것부터 뺌. 뺀 미디어는 로컬 기록에 local:true 표시 → 다음 저장 때도 안 올림
+var SRV_MAX=5*1000*1000, _srvStripped=0;
+function srvRow(row){
+  var r=row.data; if(!r||!r.media||!r.media.length||String(row.id||'').indexOf('__')===0) return row;
+  var keep=r.media.filter(function(m){ return !m.local; });
+  var size=JSON.stringify(r).length - r.media.filter(function(m){ return m.local; }).reduce(function(a,m){ return a+String(m.data||'').length; },0);
+  if(size>SRV_MAX){
+    keep.slice().sort(function(a,b){ return (a.type==='video'?0:1)-(b.type==='video'?0:1) || String(b.data||'').length-String(a.data||'').length; })
+      .forEach(function(m){ if(size>SRV_MAX){ m.local=true; size-=String(m.data||'').length; _srvStripped++; } });
+    keep=r.media.filter(function(m){ return !m.local; });
+    try{ save(); }catch(e){}
+  }
+  if(keep.length===r.media.length) return row;
+  var c={}; Object.keys(r).forEach(function(k){ c[k]=r[k]; }); c.media=keep;
+  c.localOnly=r.media.length-keep.length;   // 다른 기기에 「영상은 올린 기기에만」 알림용
+  return {id:row.id, data:c, updated_at:row.updated_at};
+}
 function postRows(rows){
+  rows=rows.map(srvRow);
   return fetchTO(SUPABASE_URL+'/rest/v1/golf_posts', {method:'POST', headers:sbH({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}), body:JSON.stringify(rows)}, 20000)
     .then(function(res){ if(!res.ok){ return res.text().then(function(t){ throw new Error('HTTP '+res.status+' '+String(t).slice(0,120)); }); } });
 }
@@ -443,8 +462,9 @@ function postRows(rows){
 function pushRecord(rec){
   save();
   showSyncStatus('저장중...');
+  _srvStripped=0;
   postRows([{id:rec.id, data:rec, updated_at:new Date().toISOString()}])
-  .then(function(){ pendClear(rec.id); showSyncStatus('✅ 저장완료'); })
+  .then(function(){ pendClear(rec.id); var lo=(rec.media||[]).filter(function(m){ return m.local; }).length; showSyncStatus('✅ 저장완료'+(lo?' · 큰 영상 '+lo+'개는 이 기기에만 (서버엔 글만)':'')); })
   .catch(function(){ pendUp(rec.id); showSyncStatus('💾 로컬 저장 (서버 실패 → 나중에 자동 재시도)'); });
 }
 
@@ -505,6 +525,7 @@ function applyServerRows(rows){
     if(!cur){ byId[id]=rec; return; }
     if((rec.updatedAt||'') > (cur.updatedAt||'')){
       if(cur.media&&cur.media.length&&(!rec.media||!rec.media.length)) rec.media=cur.media;
+      else if(cur.media){ var lo=cur.media.filter(function(m){ return m.local; }); if(lo.length) rec.media=(rec.media||[]).concat(lo); }   // 이 기기에만 있는 영상은 지키기 (11/02)
       byId[id]=rec;
     }
   });
@@ -1332,12 +1353,14 @@ function cardHtml(r, i){
         mediaHtml+='<img src="'+m.data+'" style="max-width:160px;max-height:120px;border-radius:6px;border:1px solid #ddd;cursor:pointer" onclick="openPhoto('+i+','+bodyImgIdx+')">';
         bodyImgIdx++;
       } else {
-        mediaHtml+='<video src="'+m.data+'" controls style="max-width:240px;max-height:160px;border-radius:6px;border:1px solid #ddd"></video>';
+        mediaHtml+='<span style="display:inline-flex;flex-direction:column;align-items:flex-start;gap:2px"><video src="'+m.data+'" controls style="max-width:240px;max-height:160px;border-radius:6px;border:1px solid #ddd"></video>'+(m.local?'<span style="font-size:0.7rem;color:#8a4b00;background:#fff3d6;border:1px solid #f0d08a;border-radius:8px;padding:0 6px" title="너무 커서 서버에 안 올림 — 이 폰/PC에만 있어요">📱 이 기기에만</span>':'')+'</span>';
       }
     });
     mediaHtml+='</div>';
   }
 
+  // 다른 기기에서 올린 큰 영상: 서버엔 글만 → 여기엔 알림 (26-11-02 이사님: 폰에서 올리면 폰에만 영상, PC엔 영상 뺀 것)
+  if(r.localOnly && !(r.media||[]).some(function(m){ return m.local; })) mediaHtml+='<div style="margin-top:6px;font-size:0.78rem;color:#8a4b00;background:#fff3d6;border:1px solid #f0d08a;border-radius:8px;padding:2px 8px;display:inline-block">📱 큰 영상 '+r.localOnly+'개는 올린 기기에만 있어요</div>';
   var scoreHtml=(r.score&&scoreHasData(r.score))?scoreViewHtml(r.score, i):'';   // ⛳ 스코어 표
   var scoreBadge='';
   if(scoreHtml){ var _sc=scoreCalc(r.score), _two=_sc.f.done&&_sc.b.done; var _st=_two?_sc.strokes:(_sc.f.done?_sc.f.strokes:_sc.b.strokes), _rl=_two?_sc.rel:(_sc.f.done?_sc.f.rel:_sc.b.rel);
