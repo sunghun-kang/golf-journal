@@ -187,7 +187,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1 style="line-height:1.05" title="Kang's Life Story">🏌️ Kang's<br><span style="font-size:0.92em">Life Story</span></h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.29 · 26-11-01</div></div>
+    <div style="flex-shrink:0"><h1 style="line-height:1.05" title="Kang's Life Story">🏌️ Kang's<br><span style="font-size:0.92em">Life Story</span></h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.30 · 26-11-01</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -1827,7 +1827,8 @@ var SC_LIST={I:'scIList',A:'scAList'};
 var SC_GROUP=[['D','Driver',['D']],['4W','Wood',['W']],['5U','Utility',['U']],   // 머리줄 W→4W, U→5U (26-11-01 이사님: 우드 4번·유틸 5번만 씀)
   ['I','Iron',['I']],['A','Approach',['A']],['P','Putt',['P']]];
 // 26-10-27 이사님 표: 한 줄에 세부칸 — D·W·U = 방향|거리, I·A·P = #|방향|거리 (P 의 # = 퍼트 수)
-var SC_SUB={D:['d','m','q'],W:['d','m'],U:['d','m'],I:['c','d','m'],A:['c','d','m'],P:['d','m']};   // 퍼트 # 칸 없앰 (26-11-01 이사님: 퍼터는 종류 없음). 예전 P.c 값은 데이터에만 남음
+var SC_SUB={D:['q','d','m'],   // 구질을 D 맨 왼쪽으로 (26-11-01 이사님)
+  W:['d','m'],U:['d','m'],I:['c','d','m'],A:['c','d','m'],P:['d','m']};   // 퍼트 # 칸 없앰 (26-11-01 이사님: 퍼터는 종류 없음). 예전 P.c 값은 데이터에만 남음
 var SC_SUBNAME={c:'#',d:'방향',m:'거리',q:'구질'};   // q=구질: 드라이버만 (26-11-01 이사님: 뜬공·땅볼·쪼루·정타)
 var SC_NSUB=SC_SHOTS.reduce(function(n,k){ return n+SC_SUB[k].length; },0);
 var SC_COLS=3+SC_NSUB+2;   // 홀·파·기록 + 세부칸 + 메모 + 개선방향(26-10-27 이사님)
