@@ -187,7 +187,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1 style="line-height:1.05" title="Kang's Life Story">🏌️ Kang's<br><span style="font-size:0.92em">Life Story</span></h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.31 · 26-11-01</div></div>
+    <div style="flex-shrink:0"><h1 style="line-height:1.05" title="Kang's Life Story">🏌️ Kang's<br><span style="font-size:0.92em">Life Story</span></h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.32 · 26-11-01</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -1282,11 +1282,12 @@ document.addEventListener('click',function(e){
 
 
 // 같은 날 기록 번호 (26-11-01 이사님: 「같은 날에 추가되면 26-11-01(일)2 · 26-11-01(일)3 — 안 헷갈리게」)
-// 그날 먼저 만든 순(createdAt). 첫 번째는 번호 없음. 필터와 상관없이 전체 기록 기준이라 번호가 안 바뀜
+// 그날 먼저 만든 순(createdAt). 첫 번째는 번호 없음.
+// ★지금 목록에 보이는 기록끼리만 셈 (11/01 이사님: 「10-04 2개뿐인데 (일)4」 — 전체 기준이면 필터로 숨은 영어·분석까지 세서 헷갈림)
 var _daySeq=null;
-function daySeqBuild(){
+function daySeqBuild(list){
   var by={};
-  data.forEach(function(r){ if(!r||!r.date||r.deleted||String(r.id||'').indexOf('__')===0) return; (by[r.date]=by[r.date]||[]).push(r); });
+  (list||data).forEach(function(r){ if(!r||!r.date||r.deleted||String(r.id||'').indexOf('__')===0) return; (by[r.date]=by[r.date]||[]).push(r); });
   _daySeq={};
   Object.keys(by).forEach(function(d){ var a=by[d]; if(a.length<2) return;
     a.slice().sort(function(x,y){ var cx=x.createdAt||x.id||'', cy=y.createdAt||y.id||''; return cx<cy?-1:cx>cy?1:0; })
@@ -1401,7 +1402,6 @@ function cardHtml(r, i){
 }
 
 function render(){
-  daySeqBuild();   // 같은 날 번호 다시 셈
   var q=document.getElementById('q').value.toLowerCase();
   blinkKws = q.trim() ? [q.trim()] : [];
   var fF=document.getElementById('flt-f').checked;
@@ -1433,6 +1433,7 @@ function render(){
     if(!show) continue;
     matched.push(i);
   }
+  daySeqBuild(matched.map(function(k){ return data[k]; }));   // 같은 날 번호 = 보이는 것끼리
   _listOrder=matched.slice();   // 사진 보기에서 ‹이전/다음› 으로 이웃 기록 사진까지 넘기려고 기억
   var html='';
   // 📌 게시 — 검색 안 할 때만, 전체 기록 기준 최신 게시글 1개(지금 10-12)를 맨 위에.
