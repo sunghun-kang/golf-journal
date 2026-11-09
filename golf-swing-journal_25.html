@@ -187,7 +187,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1 style="line-height:1.05" title="Kang's Life Story">🏌️ Kang's<br><span style="font-size:0.92em">Life Story</span></h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.34 · 26-11-03</div></div>
+    <div style="flex-shrink:0"><h1 style="line-height:1.05" title="Kang's Life Story">🏌️ Kang's<br><span style="font-size:0.92em">Life Story</span></h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.35 · 26-11-09</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -275,7 +275,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <input type="file" id="mMedia" accept="image/*,video/*" multiple style="font-size:0.8rem;padding:4px 0;width:auto;max-width:230px;flex:0 1 230px;border:none">
         <span id="mScoreSum" style="font-size:0.82rem;color:#2d7a2d;font-weight:700;margin-left:auto"></span>
-        <button type="button" onclick="openScore()" style="background:#2d7a2d;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:0.88rem;font-weight:700;cursor:pointer;flex-shrink:0">⛳ 스코어</button>
+        <button type="button" id="mScoreBtn" onclick="openScore()" style="background:#2d7a2d;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:0.88rem;font-weight:700;cursor:pointer;flex-shrink:0">⛳ 스코어</button>
       </div>
       <div id="mMediaPreview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px"></div>
     </div>
@@ -1504,8 +1504,16 @@ function subTint(vt){
   }
 }
 // 구분 2단계: 어떤 구분이든 선택하면 세부 입력칸 표시(人生은 금융/연예/운동 추천)
+// 스코어 버튼은 필드·스크린·분석(AI 포함)일 때만 (26-11-09 이사님: 인생·회사·영어·없음엔 안 나오게). 이미 스코어가 있으면 보임
+function scoreBtnState(){
+  var b=document.getElementById('mScoreBtn'), v=(document.getElementById('mVt')||{}).value||'';
+  var on=(v==='F'||v==='S'||v==='A') || !!(pendingScore && scoreHasData(pendingScore));
+  if(b) b.style.display=on?'':'none';
+  var sum=document.getElementById('mScoreSum'); if(sum) sum.style.display=on?'':'none';
+}
 function mVtChanged(){
   var v=document.getElementById('mVt').value;
+  scoreBtnState();
   var wrap=document.getElementById('mSubWrap'), inp=document.getElementById('mSub'), dl=document.getElementById('mSubList');
   var show=(v!=='');
   wrap.style.display=show?'block':'none';
@@ -2307,7 +2315,7 @@ function scoreApplyImport(o, auto){
     +(o._ocr?'\n\n구장·코스 이름은 위 칸에 직접 적어 주세요.':'')
     +'\n\nD~P 상세는 표에서 적고 「완료」를 누르세요.');
 }
-function scoreSumLabel(){ var el=document.getElementById('mScoreSum'); if(el) el.textContent=pendingScore?scoreSummary(pendingScore):''; }
+function scoreSumLabel(){ var el=document.getElementById('mScoreSum'); if(el) el.textContent=pendingScore?scoreSummary(pendingScore):''; scoreBtnState(); }
 document.addEventListener('input', function(e){ if(e.target && e.target.closest && e.target.closest('#scTbl, #score-ov .sc-top')) scoreTotalsUpdate(); });
 // 목록 카드 안 읽기 전용 표 (입력된 홀만)
 function scoreViewHtml(sc, ri){
