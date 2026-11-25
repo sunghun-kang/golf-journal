@@ -187,7 +187,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ef
 <body>
 <div class="top">
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <div style="flex-shrink:0"><h1 style="line-height:1.05" title="Kang's Life Story">🏌️ Kang's<br><span style="font-size:0.92em">Life Story</span></h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.35 · 26-11-09</div></div>
+    <div style="flex-shrink:0"><h1 style="line-height:1.05" title="Kang's Life Story">🏌️ Kang's<br><span style="font-size:0.92em">Life Story</span></h1><div id="appVerLabel" style="font-size:0.54rem;color:#9fc;margin-top:1px;white-space:nowrap">V01.03.36 · 26-11-25</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button class="tab-btn active" id="tb-list" onclick="swTab('list')" style="background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:inset 0 0 0 2px #fff">목록</button>
       <button class="tab-btn" id="tb-cal" onclick="swTab('cal')" style="background:#2f9e6f;color:#fff;border:none;border-radius:8px;padding:5px 9px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.55">달력</button>
@@ -3369,6 +3369,16 @@ function themeAskSelect(q){
     // "10월~8월"처럼 일(day) 없이 달만 범위로 준 경우: 두 달 중 이른 달 1일~늦은 달 말일까지로 처리(입력 순서는 무관)
     var _mA=+mR[1], _mB=+mR[2], _mLo=Math.min(_mA,_mB), _mHi=Math.max(_mA,_mB);
     dateFrom=_cy+'-'+pad2(_mLo)+'-01'; dateTo=_cy+'-'+pad2(_mHi)+'-31'; qd=qd.replace(mR[0],' ');
+  }
+  // 열린 범위 「10/12 이후」「10/12부터」「10월 12일 이후」 → 그날~오늘(「어제까지」면 어제) (26-11-25 이사님: 「10/12일 이후 어제까지 필드」가 10/12 하루로 읽혀 필드 기록이 하나도 안 들어감)
+  if(!dateFrom){
+    var _open=new RegExp('(?:(20\\d{2})\\s*[.\\-\\/]\\s*)?(\\d{1,2})\\s*(?:[\\/\\.]|월)\\s*(\\d{1,2})\\s*일?\\s*(?:이후|부터|후)');
+    if(mR=qd.match(_open)){
+      var _d=new Date(Date.now()+9*3600*1000); if(/어제\s*까지/.test(qd)) _d=new Date(_d.getTime()-24*3600*1000);
+      dateFrom=(mR[1]||_cy)+'-'+pad2(mR[2])+'-'+pad2(mR[3]);
+      dateTo=_d.getUTCFullYear()+'-'+pad2(_d.getUTCMonth()+1)+'-'+pad2(_d.getUTCDate());
+      qd=qd.replace(new RegExp(_open.source,'g'),' ').replace(/(?:어제|오늘)\s*까지/g,' ');
+    }
   }
   if(dateFrom && dateTo){
     if(dateFrom>dateTo){ var _t=dateFrom; dateFrom=dateTo; dateTo=_t; }
